@@ -1,4 +1,4 @@
-﻿import { Building2, Coins, RefreshCw, UserRoundPlus, Users } from "lucide-react";
+import { Building2, Coins, RefreshCw, UserRoundPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/server/db/prisma";
 import {
@@ -151,7 +151,7 @@ export default async function SettingsPage() {
               >
                 {data.currencies.map((currency) => (
                   <option key={currency.code} value={currency.code}>
-                    {currency.code} Â· {currency.name}
+                    {currency.code} / {currency.name}
                   </option>
                 ))}
               </select>
@@ -338,7 +338,7 @@ export default async function SettingsPage() {
                       >
                         {user.status === "ACTIVE" ? "Active" : "Inactive"}
                         {user.mustChangePassword && user.status === "ACTIVE"
-                          ? " Â· password pending"
+                          ? " / password pending"
                           : ""}
                       </span>
                     </td>
