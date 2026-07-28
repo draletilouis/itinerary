@@ -1,4 +1,4 @@
-import { Building2, Coins, RefreshCw, UserRoundPlus, Users } from "lucide-react";
+﻿import { Building2, Coins, RefreshCw, UserRoundPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/server/db/prisma";
 import {
@@ -47,6 +47,7 @@ const inputClass =
 
 export default async function SettingsPage() {
   const data = await getSettings();
+  const currenciesConfigured = data.currencies.length >= 2;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -75,6 +76,13 @@ export default async function SettingsPage() {
         <div className="mt-6 rounded-2xl border border-[#e7c98f] bg-[#fff8e8] px-5 py-4 text-sm text-[#745521]">
           Configure PostgreSQL and apply the database migration before editing
           company settings.
+        </div>
+      ) : null}
+
+      {data.connected && !currenciesConfigured ? (
+        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+          Core currencies are missing. Apply the latest production migration before
+          saving company settings or exchange rates.
         </div>
       ) : null}
 
@@ -143,14 +151,14 @@ export default async function SettingsPage() {
               >
                 {data.currencies.map((currency) => (
                   <option key={currency.code} value={currency.code}>
-                    {currency.code} · {currency.name}
+                    {currency.code} Â· {currency.name}
                   </option>
                 ))}
               </select>
             </label>
             <div className="sm:col-span-2">
               <button
-                disabled={!data.connected}
+                disabled={!data.connected || !currenciesConfigured}
                 className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save company profile
@@ -222,7 +230,7 @@ export default async function SettingsPage() {
             </label>
             <div className="sm:col-span-2">
               <button
-                disabled={!data.connected}
+                disabled={!data.connected || !currenciesConfigured}
                 className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save exchange rate
@@ -330,7 +338,7 @@ export default async function SettingsPage() {
                       >
                         {user.status === "ACTIVE" ? "Active" : "Inactive"}
                         {user.mustChangePassword && user.status === "ACTIVE"
-                          ? " · password pending"
+                          ? " Â· password pending"
                           : ""}
                       </span>
                     </td>
@@ -386,7 +394,7 @@ export default async function SettingsPage() {
               />
             </label>
             <button
-              disabled={!data.connected}
+              disabled={!data.connected || !currenciesConfigured}
               className="mt-5 h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white disabled:opacity-50"
             >
               Create user

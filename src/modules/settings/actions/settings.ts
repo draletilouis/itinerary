@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -21,6 +21,13 @@ export async function updateCompanyProfileAction(formData: FormData) {
   const parsed = companySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid company settings.");
+  }
+  const reportingCurrency = await prisma.currency.findFirst({
+    where: { code: parsed.data.reportingCurrencyCode, active: true },
+    select: { code: true },
+  });
+  if (!reportingCurrency) {
+    throw new Error("Select an active reporting currency. Apply the core currency migration if none are available.");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -74,6 +81,15 @@ export async function createExchangeRateAction(formData: FormData) {
   }
   if (parsed.data.baseCurrencyCode === parsed.data.quoteCurrencyCode) {
     throw new Error("Choose two different currencies.");
+  }
+  const configuredCurrencies = await prisma.currency.count({
+    where: {
+      active: true,
+      code: { in: [parsed.data.baseCurrencyCode, parsed.data.quoteCurrencyCode] },
+    },
+  });
+  if (configuredCurrencies !== 2) {
+    throw new Error("Both exchange-rate currencies must be active.");
   }
 
   const rate = new Prisma.Decimal(parsed.data.rate);
