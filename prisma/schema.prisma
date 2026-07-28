@@ -1,0 +1,1864 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  FAMILY
+  GROUP
+  CORPORATE
+  SCHOOL
+  ORGANISATION
+  TRAVEL_AGENCY
+  TOUR_OPERATOR
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  QUALIFYING
+  PLANNING
+  QUOTATION_SENT
+  NEGOTIATION
+  CONFIRMED
+  LOST
+  CANCELLED
+}
+
+enum TourType {
+  CUSTOM
+  STANDARD_PACKAGE
+  GROUP_DEPARTURE
+  PRIVATE
+  CORPORATE
+  SCHOOL
+  DAY
+  MULTI_DAY
+}
+
+enum TourStatus {
+  DRAFT
+  PLANNING
+  COSTING
+  QUOTED
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  OPERATIONAL_PREPARATION
+  READY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum BookingStatus {
+  PROVISIONAL
+  AWAITING_DEPOSIT
+  CONFIRMED
+  PARTIALLY_PAID
+  FULLY_PAID
+  IN_OPERATION
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentScheduleStatus {
+  PENDING
+  DUE
+  PAID
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  REFUNDED
+}
+
+enum InvoiceType {
+  DEPOSIT
+  INSTALMENT
+  FINAL_BALANCE
+  ADDITIONAL_SERVICE
+  CANCELLATION
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum FinancialRecordStatus {
+  RECORDED
+  REVERSED
+}
+
+enum SupplierBillStatus {
+  DRAFT
+  RECEIVED
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ExchangeRateSource {
+  MANUAL
+  BANK
+  PROVIDER
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ItineraryStatus {
+  DRAFT
+  INTERNAL_REVIEW
+  CLIENT_REVIEW
+  APPROVED
+  PUBLISHED
+  SUPERSEDED
+  ARCHIVED
+}
+
+enum ItineraryItemType {
+  ACTIVITY
+  ACCOMMODATION
+  TRANSPORT
+  MEAL
+  NOTE
+  OTHER
+}
+
+enum CostCalculationBasis {
+  STANDARD
+  ACCOMMODATION
+  PER_PERSON
+  VEHICLE
+  OVERRIDE
+}
+
+enum PricingMarkupMethod {
+  PERCENTAGE
+  FIXED
+  PER_PERSON
+  CATEGORY
+  TARGET_PRICE
+  TARGET_MARGIN
+}
+
+enum QuotationStatus {
+  DRAFT
+  GENERATED
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+  SUPERSEDED
+}
+
+model User {
+  id                            String                 @id @default(uuid()) @db.Uuid
+  fullName                      String
+  email                         String                 @unique
+  passwordHash                  String
+  mustChangePassword            Boolean                @default(true)
+  passwordChangedAt             DateTime?
+  avatarUrl                     String?
+  status                        UserStatus             @default(ACTIVE)
+  lastLoginAt                   DateTime?
+  createdAt                     DateTime               @default(now())
+  updatedAt                     DateTime               @updatedAt
+  createdCustomers              Customer[]             @relation("CustomerCreator")
+  assignedEnquiries             Enquiry[]              @relation("EnquiryAssignee")
+  createdEnquiries              Enquiry[]              @relation("EnquiryCreator")
+  ownedTours                    Tour[]                 @relation("TourOwner")
+  createdTourPackages           TourPackage[]          @relation("TourPackageCreator")
+  tourStatusChanges             TourStatusHistory[]
+  sessions                      AuthSession[]
+  createdFollowUps              EnquiryFollowUp[]      @relation("FollowUpCreator")
+  assignedFollowUps             EnquiryFollowUp[]      @relation("FollowUpAssignee")
+  communications                Communication[]
+  enquiryChanges                EnquiryStatusHistory[]
+  attachments                   Attachment[]
+  createdItineraries            Itinerary[]            @relation("ItineraryCreator")
+  createdVersions               ItineraryVersion[]     @relation("VersionCreator")
+  createdCostItems              TourCostItem[]         @relation("CostItemCreator")
+  createdPricing                TourPricing[]          @relation("PricingCreator")
+  changedMargins                TourMarginSetting[]    @relation("MarginChanger")
+  createdQuotations             Quotation[]            @relation("QuotationCreator")
+  createdQuotationVersions      QuotationVersion[]     @relation("QuotationVersionCreator")
+  createdBookings               Booking[]              @relation("BookingCreator")
+  createdInvoices               Invoice[]              @relation("InvoiceCreator")
+  createdCustomerPayments       CustomerPayment[]      @relation("CustomerPaymentCreator")
+  createdRefunds                Refund[]               @relation("RefundCreator")
+  createdSupplierBills          SupplierBill[]         @relation("SupplierBillCreator")
+  createdSupplierPayments       SupplierPayment[]      @relation("SupplierPaymentCreator")
+  createdTourExpenses           TourExpense[]          @relation("TourExpenseCreator")
+  createdResourceAvailabilities ResourceAvailability[] @relation("ResourceAvailabilityCreator")
+  assignedResources             ResourceAssignment[]   @relation("ResourceAssigner")
+  createdVehicleMaintenance     VehicleMaintenance[]   @relation("MaintenanceCreator")
+  createdOperationalTasks       OperationalTask[]      @relation("OperationalTaskCreator")
+  completedOperationalTasks     OperationalTask[]      @relation("OperationalTaskCompleter")
+  createdSupplierConfirmations  SupplierConfirmation[] @relation("SupplierConfirmationCreator")
+  createdIncidents              TourIncident[]         @relation("IncidentCreator")
+  resolvedIncidents             TourIncident[]         @relation("IncidentResolver")
+  generatedOperationalDocuments OperationalDocument[]  @relation("OperationalDocumentGenerator")
+  auditEvents                   AuditEvent[]
+}
+
+model AuthSession {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt, revokedAt])
+}
+
+model AuthLoginAttempt {
+  id          String   @id @default(uuid()) @db.Uuid
+  email       String
+  successful  Boolean
+  ipAddress   String?
+  attemptedAt DateTime @default(now())
+
+  @@index([email, attemptedAt(sort: Desc)])
+  @@index([ipAddress, attemptedAt(sort: Desc)])
+}
+
+model CompanyProfile {
+  id                    String   @id @default(uuid()) @db.Uuid
+  singletonKey          String   @unique @default("primary")
+  name                  String
+  logoUrl               String?
+  address               String?
+  phone                 String?
+  email                 String?
+  website               String?
+  taxNumber             String?
+  bankDetails           String?
+  terms                 String?
+  emergencyContact      String?
+  reportingCurrencyCode String   @db.Char(3)
+  reportingCurrency     Currency @relation(fields: [reportingCurrencyCode], references: [code])
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Currency {
+  code                       String                          @id @db.Char(3)
+  name                       String
+  symbol                     String
+  decimalPlaces              Int                             @default(2)
+  active                     Boolean                         @default(true)
+  createdAt                  DateTime                        @default(now())
+  updatedAt                  DateTime                        @updatedAt
+  reportingCompanies         CompanyProfile[]
+  baseExchangeRates          ExchangeRate[]                  @relation("BaseCurrency")
+  quoteExchangeRates         ExchangeRate[]                  @relation("QuoteCurrency")
+  costingTours               Tour[]                          @relation("TourCostingCurrency")
+  quotationTours             Tour[]                          @relation("TourQuotationCurrency")
+  packageCostingCurrencies   TourPackage[]                   @relation("PackageCostingCurrency")
+  packageQuotationCurrencies TourPackage[]                   @relation("PackageQuotationCurrency")
+  bookings                   Booking[]
+  activityRates              ActivityRate[]
+  accommodationRates         AccommodationRate[]
+  supplierCurrencies         Supplier[]
+  supplierRates              SupplierRate[]
+  originalCostItems          TourCostItem[]                  @relation("OriginalCostCurrency")
+  convertedCostItems         TourCostItem[]                  @relation("ConvertedCostCurrency")
+  pricingSnapshots           TourPricing[]
+  quotationVersions          QuotationVersion[]
+  exchangeSnapshotSources    QuotationExchangeRateSnapshot[] @relation("SnapshotSourceCurrency")
+  exchangeSnapshotTargets    QuotationExchangeRateSnapshot[] @relation("SnapshotTargetCurrency")
+  invoices                   Invoice[]
+  customerPayments           CustomerPayment[]               @relation("CustomerPaymentCurrency")
+  customerPaymentBookings    CustomerPayment[]               @relation("CustomerPaymentBookingCurrency")
+  refundPayments             Refund[]                        @relation("RefundPaymentCurrency")
+  refundBookings             Refund[]                        @relation("RefundBookingCurrency")
+  supplierBills              SupplierBill[]
+  supplierPayments           SupplierPayment[]               @relation("SupplierPaymentCurrency")
+  supplierPaymentBills       SupplierPayment[]               @relation("SupplierPaymentBillCurrency")
+  originalExpenses           TourExpense[]                   @relation("ExpenseOriginalCurrency")
+  costingExpenses            TourExpense[]                   @relation("ExpenseCostingCurrency")
+  vehicleMaintenance         VehicleMaintenance[]
+}
+
+model ExchangeRate {
+  id                String             @id @default(uuid()) @db.Uuid
+  baseCurrencyCode  String             @db.Char(3)
+  quoteCurrencyCode String             @db.Char(3)
+  rate              Decimal            @db.Decimal(24, 10)
+  effectiveAt       DateTime
+  expiresAt         DateTime?
+  source            ExchangeRateSource @default(MANUAL)
+  sourceReference   String?
+  lockedAt          DateTime?
+  createdAt         DateTime           @default(now())
+  baseCurrency      Currency           @relation("BaseCurrency", fields: [baseCurrencyCode], references: [code])
+  quoteCurrency     Currency           @relation("QuoteCurrency", fields: [quoteCurrencyCode], references: [code])
+
+  @@unique([baseCurrencyCode, quoteCurrencyCode, effectiveAt])
+  @@index([baseCurrencyCode, quoteCurrencyCode, effectiveAt(sort: Desc)])
+}
+
+model ReferenceSequence {
+  id           String   @id @default(uuid()) @db.Uuid
+  sequenceName String
+  prefix       String
+  year         Int
+  currentValue Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([sequenceName, year])
+}
+
+model Customer {
+  id                           String            @id @default(uuid()) @db.Uuid
+  reference                    String            @unique
+  type                         CustomerType      @default(INDIVIDUAL)
+  fullName                     String
+  organisation                 String?
+  email                        String?
+  phone                        String?
+  alternativePhone             String?
+  country                      String?
+  nationality                  String?
+  address                      String?
+  preferredCommunicationMethod String?
+  travelPreferences            String?
+  dietaryRequirements          String?
+  accessibilityRequirements    String?
+  specialRequests              String?
+  emergencyContact             String?
+  notes                        String?
+  tags                         String[]
+  status                       CustomerStatus    @default(ACTIVE)
+  createdById                  String            @db.Uuid
+  createdBy                    User              @relation("CustomerCreator", fields: [createdById], references: [id])
+  travellers                   Traveller[]
+  enquiries                    Enquiry[]
+  tours                        Tour[]
+  bookings                     Booking[]
+  quotations                   Quotation[]
+  invoices                     Invoice[]
+  customerPayments             CustomerPayment[]
+  refunds                      Refund[]
+  createdAt                    DateTime          @default(now())
+  updatedAt                    DateTime          @updatedAt
+  archivedAt                   DateTime?
+
+  @@index([fullName])
+  @@index([email])
+  @@index([phone])
+  @@index([status])
+}
+
+model Traveller {
+  id                String          @id @default(uuid()) @db.Uuid
+  customerId        String          @db.Uuid
+  customer          Customer        @relation(fields: [customerId], references: [id])
+  fullName          String
+  dateOfBirth       DateTime?       @db.Date
+  nationality       String?
+  passportNumber    String?
+  passportExpiry    DateTime?       @db.Date
+  visaStatus        String?
+  dietaryNeeds      String?
+  accessibilityNote String?
+  roomPreference    String?
+  emergencyContact  String?
+  relationship      String?
+  tourLinks         TourTraveller[]
+  ledBookings       Booking[]       @relation("BookingLeadTraveller")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([customerId])
+  @@index([passportNumber])
+}
+
+model Enquiry {
+  id                        String                 @id @default(uuid()) @db.Uuid
+  reference                 String                 @unique
+  dateReceived              DateTime               @default(now())
+  customerId                String                 @db.Uuid
+  customer                  Customer               @relation(fields: [customerId], references: [id])
+  source                    String
+  assignedToId              String?                @db.Uuid
+  assignedTo                User?                  @relation("EnquiryAssignee", fields: [assignedToId], references: [id])
+  createdById               String                 @db.Uuid
+  createdBy                 User                   @relation("EnquiryCreator", fields: [createdById], references: [id])
+  proposedStartDate         DateTime?              @db.Date
+  proposedEndDate           DateTime?              @db.Date
+  flexibleDates             Boolean                @default(false)
+  adults                    Int                    @default(1)
+  children                  Int                    @default(0)
+  childAges                 Int[]
+  rooms                     Int?
+  destinationsOfInterest    String[]
+  arrivalLocation           String?
+  departureLocation         String?
+  customerBudget            Decimal?               @db.Decimal(18, 2)
+  budgetCurrencyCode        String?                @db.Char(3)
+  accommodationPreference   String?
+  activityInterests         String[]
+  transportPreference       String?
+  dietaryRequirements       String?
+  accessibilityRequirements String?
+  specialRequests           String?
+  notes                     String?
+  status                    EnquiryStatus          @default(NEW)
+  followUpAt                DateTime?
+  lossReason                String?
+  tours                     Tour[]
+  followUps                 EnquiryFollowUp[]
+  communications            Communication[]
+  statusHistory             EnquiryStatusHistory[]
+  itineraries               Itinerary[]
+  createdAt                 DateTime               @default(now())
+  updatedAt                 DateTime               @updatedAt
+  archivedAt                DateTime?
+
+  @@index([status, followUpAt])
+  @@index([customerId])
+  @@index([assignedToId])
+}
+
+model EnquiryFollowUp {
+  id           String         @id @default(uuid()) @db.Uuid
+  enquiryId    String         @db.Uuid
+  enquiry      Enquiry        @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  scheduledFor DateTime
+  status       FollowUpStatus @default(PENDING)
+  notes        String?
+  outcome      String?
+  completedAt  DateTime?
+  assignedToId String?        @db.Uuid
+  assignedTo   User?          @relation("FollowUpAssignee", fields: [assignedToId], references: [id])
+  createdById  String         @db.Uuid
+  createdBy    User           @relation("FollowUpCreator", fields: [createdById], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([enquiryId, scheduledFor])
+  @@index([assignedToId, status, scheduledFor])
+}
+
+model Communication {
+  id          String                 @id @default(uuid()) @db.Uuid
+  enquiryId   String                 @db.Uuid
+  enquiry     Enquiry                @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  channel     String
+  direction   CommunicationDirection
+  subject     String?
+  content     String
+  occurredAt  DateTime               @default(now())
+  createdById String                 @db.Uuid
+  createdBy   User                   @relation(fields: [createdById], references: [id])
+  createdAt   DateTime               @default(now())
+
+  @@index([enquiryId, occurredAt(sort: Desc)])
+}
+
+model EnquiryStatusHistory {
+  id          String         @id @default(uuid()) @db.Uuid
+  enquiryId   String         @db.Uuid
+  enquiry     Enquiry        @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  fromStatus  EnquiryStatus?
+  toStatus    EnquiryStatus
+  reason      String?
+  changedById String         @db.Uuid
+  changedBy   User           @relation(fields: [changedById], references: [id])
+  createdAt   DateTime       @default(now())
+
+  @@index([enquiryId, createdAt(sort: Desc)])
+}
+
+model Tour {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  reference             String                 @unique
+  name                  String
+  customerId            String                 @db.Uuid
+  customer              Customer               @relation(fields: [customerId], references: [id])
+  sourceEnquiryId       String?                @db.Uuid
+  sourceEnquiry         Enquiry?               @relation(fields: [sourceEnquiryId], references: [id])
+  sourcePackageId       String?                @db.Uuid
+  sourcePackage         TourPackage?           @relation(fields: [sourcePackageId], references: [id])
+  sourcePackageRevision Int?
+  type                  TourType
+  startDate             DateTime               @db.Date
+  endDate               DateTime               @db.Date
+  adults                Int                    @default(1)
+  children              Int                    @default(0)
+  ownerId               String                 @db.Uuid
+  owner                 User                   @relation("TourOwner", fields: [ownerId], references: [id])
+  costingCurrencyCode   String                 @db.Char(3)
+  costingCurrency       Currency               @relation("TourCostingCurrency", fields: [costingCurrencyCode], references: [code])
+  quotationCurrencyCode String                 @db.Char(3)
+  quotationCurrency     Currency               @relation("TourQuotationCurrency", fields: [quotationCurrencyCode], references: [code])
+  estimatedInternalCost Decimal                @default(0) @db.Decimal(18, 2)
+  sellingPrice          Decimal                @default(0) @db.Decimal(18, 2)
+  estimatedProfit       Decimal                @default(0) @db.Decimal(18, 2)
+  estimatedMargin       Decimal                @default(0) @db.Decimal(9, 4)
+  actualCost            Decimal                @default(0) @db.Decimal(18, 2)
+  actualRevenue         Decimal                @default(0) @db.Decimal(18, 2)
+  actualProfit          Decimal                @default(0) @db.Decimal(18, 2)
+  actualMargin          Decimal                @default(0) @db.Decimal(9, 4)
+  paymentStatus         PaymentStatus          @default(UNPAID)
+  bookingStatus         BookingStatus?
+  status                TourStatus             @default(DRAFT)
+  notes                 String?
+  tags                  String[]
+  statusHistory         TourStatusHistory[]
+  booking               Booking?
+  travellers            TourTraveller[]
+  itineraries           Itinerary[]
+  costItems             TourCostItem[]
+  pricingSnapshots      TourPricing[]
+  marginSetting         TourMarginSetting?
+  quotations            Quotation[]
+  supplierBills         SupplierBill[]
+  expenses              TourExpense[]
+  resourceAssignments   ResourceAssignment[]
+  operationalTasks      OperationalTask[]
+  supplierConfirmations SupplierConfirmation[]
+  incidents             TourIncident[]
+  operationalDocuments  OperationalDocument[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  archivedAt            DateTime?
+
+  @@index([status, startDate])
+  @@index([customerId])
+  @@index([sourceEnquiryId])
+  @@index([sourcePackageId])
+  @@index([ownerId])
+}
+
+model TourPackage {
+  id                       String              @id @default(uuid()) @db.Uuid
+  reference                String              @unique
+  name                     String
+  description              String?
+  type                     TourType            @default(STANDARD_PACKAGE)
+  durationDays             Int
+  defaultAdults            Int                 @default(2)
+  defaultChildren          Int                 @default(0)
+  costingCurrencyCode      String              @db.Char(3)
+  costingCurrency          Currency            @relation("PackageCostingCurrency", fields: [costingCurrencyCode], references: [code])
+  quotationCurrencyCode    String              @db.Char(3)
+  quotationCurrency        Currency            @relation("PackageQuotationCurrency", fields: [quotationCurrencyCode], references: [code])
+  introduction             String?
+  summary                  String?
+  inclusions               String[]
+  exclusions               String[]
+  importantNotes           String?
+  terms                    String?
+  itineraryTemplate        Json
+  costTemplate             Json
+  defaultContingencyMethod String              @default("NONE")
+  defaultContingencyValue  Decimal             @default(0) @db.Decimal(18, 4)
+  defaultMarkupMethod      PricingMarkupMethod @default(PERCENTAGE)
+  defaultMarkupValue       Decimal             @default(20) @db.Decimal(18, 4)
+  defaultTaxMethod         String              @default("NONE")
+  defaultTaxValue          Decimal             @default(0) @db.Decimal(18, 4)
+  defaultDiscountMethod    String              @default("NONE")
+  defaultDiscountValue     Decimal             @default(0) @db.Decimal(18, 4)
+  minimumMargin            Decimal?            @db.Decimal(9, 4)
+  status                   RecordStatus        @default(ACTIVE)
+  revision                 Int                 @default(1)
+  createdById              String              @db.Uuid
+  createdBy                User                @relation("TourPackageCreator", fields: [createdById], references: [id])
+  tours                    Tour[]
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+  archivedAt               DateTime?
+
+  @@index([status, name])
+  @@index([createdById])
+}
+
+model TourStatusHistory {
+  id          String      @id @default(uuid()) @db.Uuid
+  tourId      String      @db.Uuid
+  tour        Tour        @relation(fields: [tourId], references: [id])
+  fromStatus  TourStatus?
+  toStatus    TourStatus
+  reason      String?
+  changedById String      @db.Uuid
+  changedBy   User        @relation(fields: [changedById], references: [id])
+  createdAt   DateTime    @default(now())
+
+  @@index([tourId, createdAt(sort: Desc)])
+}
+
+model Booking {
+  id                         String                   @id @default(uuid()) @db.Uuid
+  reference                  String                   @unique
+  tourId                     String                   @unique @db.Uuid
+  tour                       Tour                     @relation(fields: [tourId], references: [id])
+  customerId                 String                   @db.Uuid
+  customer                   Customer                 @relation(fields: [customerId], references: [id])
+  acceptedQuotationVersionId String                   @unique @db.Uuid
+  acceptedQuotationVersion   QuotationVersion         @relation(fields: [acceptedQuotationVersionId], references: [id])
+  acceptedItineraryVersionId String?                  @db.Uuid
+  acceptedItineraryVersion   ItineraryVersion?        @relation(fields: [acceptedItineraryVersionId], references: [id])
+  bookingDate                DateTime                 @default(now()) @db.Date
+  travellerCount             Int
+  leadTravellerId            String?                  @db.Uuid
+  leadTraveller              Traveller?               @relation("BookingLeadTraveller", fields: [leadTravellerId], references: [id])
+  currencyCode               String                   @db.Char(3)
+  currency                   Currency                 @relation(fields: [currencyCode], references: [code])
+  totalAmount                Decimal                  @db.Decimal(18, 4)
+  depositAmount              Decimal                  @default(0) @db.Decimal(18, 4)
+  amountPaid                 Decimal                  @default(0) @db.Decimal(18, 4)
+  balanceDue                 Decimal                  @db.Decimal(18, 4)
+  finalPaymentDate           DateTime?                @db.Date
+  status                     BookingStatus            @default(PROVISIONAL)
+  notes                      String?
+  cancellationReason         String?
+  confirmedAt                DateTime?
+  cancelledAt                DateTime?
+  createdById                String                   @db.Uuid
+  createdBy                  User                     @relation("BookingCreator", fields: [createdById], references: [id])
+  travellers                 TourTraveller[]
+  paymentSchedule            BookingPaymentSchedule[]
+  invoices                   Invoice[]
+  customerPayments           CustomerPayment[]
+  refunds                    Refund[]
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime                 @updatedAt
+
+  @@index([status])
+  @@index([customerId])
+  @@index([finalPaymentDate, status])
+}
+
+model TourTraveller {
+  id          String    @id @default(uuid()) @db.Uuid
+  tourId      String    @db.Uuid
+  tour        Tour      @relation(fields: [tourId], references: [id])
+  bookingId   String    @db.Uuid
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  travellerId String    @db.Uuid
+  traveller   Traveller @relation(fields: [travellerId], references: [id])
+  isLead      Boolean   @default(false)
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([tourId, travellerId])
+  @@unique([bookingId, travellerId])
+  @@index([bookingId, isLead])
+}
+
+model BookingPaymentSchedule {
+  id         String                @id @default(uuid()) @db.Uuid
+  bookingId  String                @db.Uuid
+  booking    Booking               @relation(fields: [bookingId], references: [id])
+  sequence   Int
+  label      String
+  dueDate    DateTime              @db.Date
+  amount     Decimal               @db.Decimal(18, 4)
+  amountPaid Decimal               @default(0) @db.Decimal(18, 4)
+  status     PaymentScheduleStatus @default(PENDING)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  invoice    Invoice?
+
+  @@unique([bookingId, sequence])
+  @@index([dueDate, status])
+}
+
+model Destination {
+  id                String          @id @default(uuid()) @db.Uuid
+  name              String
+  country           String
+  region            String?
+  shortDescription  String?
+  fullDescription   String?
+  latitude          Decimal?        @db.Decimal(10, 7)
+  longitude         Decimal?        @db.Decimal(10, 7)
+  bestTravelPeriods String?
+  typicalStayDays   Int?
+  entryRequirements String?
+  travelAdvice      String?
+  status            RecordStatus    @default(ACTIVE)
+  activities        Activity[]
+  accommodations    Accommodation[]
+  itineraryDays     ItineraryDay[]
+  routesFrom        TravelRoute[]   @relation("RouteOrigin")
+  routesTo          TravelRoute[]   @relation("RouteDestination")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([name, country])
+  @@index([country, status])
+}
+
+model TravelRoute {
+  id               String       @id @default(uuid()) @db.Uuid
+  originId         String       @db.Uuid
+  origin           Destination  @relation("RouteOrigin", fields: [originId], references: [id])
+  destinationId    String       @db.Uuid
+  destination      Destination  @relation("RouteDestination", fields: [destinationId], references: [id])
+  distanceKm       Decimal?     @db.Decimal(10, 2)
+  estimatedMinutes Int?
+  routeNotes       String?
+  roadConditions   String?
+  recommendedStops String?
+  transportType    String?
+  status           RecordStatus @default(ACTIVE)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([originId, destinationId, transportType])
+  @@index([originId, destinationId])
+}
+
+model SupplierCategory {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @unique
+  description String?
+  status      RecordStatus @default(ACTIVE)
+  suppliers   Supplier[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  archivedAt  DateTime?
+
+  @@index([status, name])
+}
+
+model Supplier {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  reference             String                 @unique
+  name                  String
+  categoryId            String                 @db.Uuid
+  category              SupplierCategory       @relation(fields: [categoryId], references: [id])
+  contactPerson         String?
+  phone                 String?
+  email                 String?
+  address               String?
+  taxIdentifier         String?
+  paymentTerms          String?
+  preferredCurrencyCode String?                @db.Char(3)
+  preferredCurrency     Currency?              @relation(fields: [preferredCurrencyCode], references: [code])
+  bankDetails           String?
+  contractStart         DateTime?              @db.Date
+  contractEnd           DateTime?              @db.Date
+  rating                Decimal?               @db.Decimal(3, 2)
+  notes                 String?
+  status                RecordStatus           @default(ACTIVE)
+  contacts              SupplierContact[]
+  activities            Activity[]
+  accommodations        Accommodation[]
+  activityRates         ActivityRate[]
+  accommodationRates    AccommodationRate[]
+  rates                 SupplierRate[]
+  bills                 SupplierBill[]
+  payments              SupplierPayment[]
+  expenses              TourExpense[]
+  itineraryItems        ItineraryItem[]
+  costItems             TourCostItem[]
+  vehicles              Vehicle[]
+  drivers               Driver[]
+  guides                Guide[]
+  confirmations         SupplierConfirmation[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  archivedAt            DateTime?
+
+  @@index([name])
+  @@index([categoryId, status])
+}
+
+model SupplierRate {
+  id           String       @id @default(uuid()) @db.Uuid
+  supplierId   String       @db.Uuid
+  supplier     Supplier     @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  service      String
+  unit         String
+  amount       Decimal      @db.Decimal(18, 2)
+  currencyCode String       @db.Char(3)
+  currency     Currency     @relation(fields: [currencyCode], references: [code])
+  startDate    DateTime     @db.Date
+  endDate      DateTime?    @db.Date
+  notes        String?
+  status       RecordStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([supplierId, startDate, endDate])
+  @@index([currencyCode])
+}
+
+model SupplierContact {
+  id         String   @id @default(uuid()) @db.Uuid
+  supplierId String   @db.Uuid
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  fullName   String
+  role       String?
+  phone      String?
+  email      String?
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([supplierId])
+}
+
+model Activity {
+  id                    String          @id @default(uuid()) @db.Uuid
+  name                  String
+  destinationId         String          @db.Uuid
+  destination           Destination     @relation(fields: [destinationId], references: [id])
+  category              String
+  description           String?
+  durationMinutes       Int?
+  availableStartTimes   String[]
+  ageRestrictions       String?
+  capacity              Int?
+  supplierId            String?         @db.Uuid
+  supplier              Supplier?       @relation(fields: [supplierId], references: [id])
+  suggestedSellingValue Decimal?        @db.Decimal(18, 2)
+  seasonalAvailability  String?
+  permitRequirements    String?
+  equipmentRequirements String?
+  safetyNotes           String?
+  status                RecordStatus    @default(ACTIVE)
+  rates                 ActivityRate[]
+  itineraryItems        ItineraryItem[]
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@unique([name, destinationId])
+  @@index([destinationId, status])
+  @@index([supplierId])
+}
+
+model ActivityRate {
+  id             String       @id @default(uuid()) @db.Uuid
+  activityId     String       @db.Uuid
+  activity       Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  supplierId     String?      @db.Uuid
+  supplier       Supplier?    @relation(fields: [supplierId], references: [id])
+  rateType       String
+  amount         Decimal      @db.Decimal(18, 2)
+  currencyCode   String       @db.Char(3)
+  currency       Currency     @relation(fields: [currencyCode], references: [code])
+  startDate      DateTime     @db.Date
+  endDate        DateTime?    @db.Date
+  commissionable Boolean      @default(false)
+  notes          String?
+  status         RecordStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([activityId, startDate, endDate])
+  @@index([supplierId])
+}
+
+model Accommodation {
+  id             String              @id @default(uuid()) @db.Uuid
+  name           String
+  destinationId  String              @db.Uuid
+  destination    Destination         @relation(fields: [destinationId], references: [id])
+  type           String
+  rating         String?
+  description    String?
+  contactInfo    String?
+  checkInTime    String?
+  checkOutTime   String?
+  amenities      String[]
+  mealPlans      String[]
+  supplierId     String?             @db.Uuid
+  supplier       Supplier?           @relation(fields: [supplierId], references: [id])
+  status         RecordStatus        @default(ACTIVE)
+  roomTypes      RoomType[]
+  rates          AccommodationRate[]
+  itineraryItems ItineraryItem[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([name, destinationId])
+  @@index([destinationId, status])
+  @@index([supplierId])
+}
+
+model RoomType {
+  id               String              @id @default(uuid()) @db.Uuid
+  accommodationId  String              @db.Uuid
+  accommodation    Accommodation       @relation(fields: [accommodationId], references: [id], onDelete: Cascade)
+  name             String
+  maximumOccupancy Int
+  adultCapacity    Int
+  childCapacity    Int                 @default(0)
+  bedConfiguration String?
+  description      String?
+  status           RecordStatus        @default(ACTIVE)
+  rates            AccommodationRate[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@unique([accommodationId, name])
+  @@index([accommodationId, status])
+}
+
+model AccommodationRate {
+  id                String        @id @default(uuid()) @db.Uuid
+  accommodationId   String        @db.Uuid
+  accommodation     Accommodation @relation(fields: [accommodationId], references: [id], onDelete: Cascade)
+  roomTypeId        String        @db.Uuid
+  roomType          RoomType      @relation(fields: [roomTypeId], references: [id])
+  supplierId        String?       @db.Uuid
+  supplier          Supplier?     @relation(fields: [supplierId], references: [id])
+  mealPlan          String
+  occupancy         String
+  amount            Decimal       @db.Decimal(18, 2)
+  childRate         Decimal?      @db.Decimal(18, 2)
+  extraBedRate      Decimal?      @db.Decimal(18, 2)
+  currencyCode      String        @db.Char(3)
+  currency          Currency      @relation(fields: [currencyCode], references: [code])
+  startDate         DateTime      @db.Date
+  endDate           DateTime?     @db.Date
+  taxIncluded       Boolean       @default(false)
+  commissionPercent Decimal?      @db.Decimal(9, 4)
+  contractReference String?
+  status            RecordStatus  @default(ACTIVE)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([accommodationId, roomTypeId, startDate, endDate])
+  @@index([supplierId])
+}
+
+model Itinerary {
+  id                   String             @id @default(uuid()) @db.Uuid
+  reference            String             @unique
+  title                String
+  enquiryId            String?            @db.Uuid
+  enquiry              Enquiry?           @relation(fields: [enquiryId], references: [id])
+  tourId               String?            @db.Uuid
+  tour                 Tour?              @relation(fields: [tourId], references: [id])
+  startDate            DateTime?          @db.Date
+  endDate              DateTime?          @db.Date
+  status               ItineraryStatus    @default(DRAFT)
+  currentVersionNumber Int                @default(1)
+  coverImageUrl        String?
+  brandingTemplate     String?
+  createdById          String             @db.Uuid
+  createdBy            User               @relation("ItineraryCreator", fields: [createdById], references: [id])
+  versions             ItineraryVersion[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  archivedAt           DateTime?
+
+  @@index([tourId])
+  @@index([enquiryId])
+  @@index([status, updatedAt(sort: Desc)])
+}
+
+model ItineraryVersion {
+  id                String             @id @default(uuid()) @db.Uuid
+  itineraryId       String             @db.Uuid
+  itinerary         Itinerary          @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  versionNumber     Int
+  title             String
+  introduction      String?
+  summary           String?
+  inclusions        String[]
+  exclusions        String[]
+  importantNotes    String?
+  terms             String?
+  status            ItineraryStatus    @default(DRAFT)
+  changeNote        String?
+  createdById       String             @db.Uuid
+  createdBy         User               @relation("VersionCreator", fields: [createdById], references: [id])
+  days              ItineraryDay[]
+  quotationVersions QuotationVersion[]
+  bookings          Booking[]
+  createdAt         DateTime           @default(now())
+  approvedAt        DateTime?
+  publishedAt       DateTime?
+
+  @@unique([itineraryId, versionNumber])
+  @@index([itineraryId, status])
+}
+
+model ItineraryDay {
+  id              String           @id @default(uuid()) @db.Uuid
+  versionId       String           @db.Uuid
+  version         ItineraryVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  dayNumber       Int
+  date            DateTime?        @db.Date
+  title           String
+  startLocation   String?
+  endLocation     String?
+  destinationId   String?          @db.Uuid
+  destination     Destination?     @relation(fields: [destinationId], references: [id])
+  clientNarrative String?
+  meals           String[]
+  transport       String?
+  distanceKm      Decimal?         @db.Decimal(10, 2)
+  drivingMinutes  Int?
+  pickupTime      String?
+  checkInTime     String?
+  checkOutTime    String?
+  clientNotes     String?
+  supplierNotes   String?
+  items           ItineraryItem[]
+  costItems       TourCostItem[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([versionId, dayNumber])
+  @@index([versionId, dayNumber])
+  @@index([destinationId])
+}
+
+model ItineraryItem {
+  id                String            @id @default(uuid()) @db.Uuid
+  dayId             String            @db.Uuid
+  day               ItineraryDay      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  sortOrder         Int
+  type              ItineraryItemType
+  startTime         String?
+  endTime           String?
+  title             String
+  clientDescription String?
+  activityId        String?           @db.Uuid
+  activity          Activity?         @relation(fields: [activityId], references: [id])
+  accommodationId   String?           @db.Uuid
+  accommodation     Accommodation?    @relation(fields: [accommodationId], references: [id])
+  supplierId        String?           @db.Uuid
+  supplier          Supplier?         @relation(fields: [supplierId], references: [id])
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([dayId, sortOrder])
+  @@index([dayId, sortOrder])
+}
+
+model TourCostItem {
+  id                    String               @id @default(uuid()) @db.Uuid
+  tourId                String               @db.Uuid
+  tour                  Tour                 @relation(fields: [tourId], references: [id])
+  itineraryDayId        String?              @db.Uuid
+  itineraryDay          ItineraryDay?        @relation(fields: [itineraryDayId], references: [id])
+  supplierId            String?              @db.Uuid
+  supplier              Supplier?            @relation(fields: [supplierId], references: [id])
+  category              String
+  description           String
+  basis                 CostCalculationBasis
+  unitCost              Decimal              @db.Decimal(18, 4)
+  quantity              Decimal              @default(1) @db.Decimal(12, 4)
+  days                  Decimal              @default(1) @db.Decimal(12, 4)
+  nights                Decimal              @default(0) @db.Decimal(12, 4)
+  rooms                 Decimal              @default(0) @db.Decimal(12, 4)
+  vehicles              Decimal              @default(0) @db.Decimal(12, 4)
+  eligibleTravellers    Decimal              @default(0) @db.Decimal(12, 4)
+  taxPercentage         Decimal              @default(0) @db.Decimal(9, 4)
+  commissionPercentage  Decimal              @default(0) @db.Decimal(9, 4)
+  overrideTotal         Decimal?             @db.Decimal(18, 4)
+  overrideReason        String?
+  originalCurrencyCode  String               @db.Char(3)
+  originalCurrency      Currency             @relation("OriginalCostCurrency", fields: [originalCurrencyCode], references: [code])
+  originalTotal         Decimal              @db.Decimal(18, 4)
+  exchangeRate          Decimal              @db.Decimal(24, 10)
+  exchangeRateDate      DateTime             @db.Date
+  convertedCurrencyCode String               @db.Char(3)
+  convertedCurrency     Currency             @relation("ConvertedCostCurrency", fields: [convertedCurrencyCode], references: [code])
+  convertedTotal        Decimal              @db.Decimal(18, 4)
+  isEstimate            Boolean              @default(true)
+  createdById           String               @db.Uuid
+  createdBy             User                 @relation("CostItemCreator", fields: [createdById], references: [id])
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  archivedAt            DateTime?
+
+  @@index([tourId, category])
+  @@index([supplierId])
+  @@index([itineraryDayId])
+}
+
+model TourMarginSetting {
+  id            String   @id @default(uuid()) @db.Uuid
+  tourId        String   @unique @db.Uuid
+  tour          Tour     @relation(fields: [tourId], references: [id])
+  minimumMargin Decimal? @db.Decimal(9, 4)
+  changedById   String   @db.Uuid
+  changedBy     User     @relation("MarginChanger", fields: [changedById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model TourPricing {
+  id                     String              @id @default(uuid()) @db.Uuid
+  tourId                 String              @db.Uuid
+  tour                   Tour                @relation(fields: [tourId], references: [id])
+  revision               Int
+  currencyCode           String              @db.Char(3)
+  currency               Currency            @relation(fields: [currencyCode], references: [code])
+  internalCost           Decimal             @db.Decimal(18, 4)
+  costingToQuotationRate Decimal             @db.Decimal(24, 10)
+  contingency            Decimal             @db.Decimal(18, 4)
+  costAfterContingency   Decimal             @db.Decimal(18, 4)
+  markupMethod           PricingMarkupMethod
+  markupValue            Decimal             @db.Decimal(18, 4)
+  markupAmount           Decimal             @db.Decimal(18, 4)
+  markupPercentage       Decimal             @db.Decimal(9, 4)
+  tax                    Decimal             @db.Decimal(18, 4)
+  discount               Decimal             @db.Decimal(18, 4)
+  sellingPrice           Decimal             @db.Decimal(18, 4)
+  estimatedProfit        Decimal             @db.Decimal(18, 4)
+  estimatedMargin        Decimal             @db.Decimal(9, 4)
+  pricePerTraveller      Decimal             @db.Decimal(18, 4)
+  minimumMargin          Decimal?            @db.Decimal(9, 4)
+  belowMinimumReason     String?
+  createdById            String              @db.Uuid
+  createdBy              User                @relation("PricingCreator", fields: [createdById], references: [id])
+  quotationVersions      QuotationVersion[]
+  createdAt              DateTime            @default(now())
+
+  @@unique([tourId, revision])
+  @@index([tourId, createdAt(sort: Desc)])
+}
+
+model Quotation {
+  id                   String             @id @default(uuid()) @db.Uuid
+  reference            String             @unique
+  tourId               String             @db.Uuid
+  tour                 Tour               @relation(fields: [tourId], references: [id])
+  customerId           String             @db.Uuid
+  customer             Customer           @relation(fields: [customerId], references: [id])
+  currentVersionNumber Int                @default(1)
+  status               QuotationStatus    @default(DRAFT)
+  createdById          String             @db.Uuid
+  createdBy            User               @relation("QuotationCreator", fields: [createdById], references: [id])
+  versions             QuotationVersion[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  archivedAt           DateTime?
+
+  @@index([tourId, status])
+  @@index([customerId, createdAt(sort: Desc)])
+}
+
+model QuotationVersion {
+  id                    String                          @id @default(uuid()) @db.Uuid
+  quotationId           String                          @db.Uuid
+  quotation             Quotation                       @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  versionNumber         Int
+  itineraryVersionId    String?                         @db.Uuid
+  itineraryVersion      ItineraryVersion?               @relation(fields: [itineraryVersionId], references: [id])
+  pricingId             String                          @db.Uuid
+  pricing               TourPricing                     @relation(fields: [pricingId], references: [id])
+  title                 String
+  issueDate             DateTime                        @db.Date
+  validUntil            DateTime                        @db.Date
+  currencyCode          String                          @db.Char(3)
+  currency              Currency                        @relation(fields: [currencyCode], references: [code])
+  subtotal              Decimal                         @db.Decimal(18, 4)
+  tax                   Decimal                         @db.Decimal(18, 4)
+  discount              Decimal                         @db.Decimal(18, 4)
+  total                 Decimal                         @db.Decimal(18, 4)
+  internalCost          Decimal                         @db.Decimal(18, 4)
+  estimatedProfit       Decimal                         @db.Decimal(18, 4)
+  estimatedMargin       Decimal                         @db.Decimal(9, 4)
+  customerNotes         String?
+  terms                 String?
+  revisionReason        String?
+  status                QuotationStatus                 @default(GENERATED)
+  sentAt                DateTime?
+  acceptedAt            DateTime?
+  declinedAt            DateTime?
+  expiredAt             DateTime?
+  createdById           String                          @db.Uuid
+  createdBy             User                            @relation("QuotationVersionCreator", fields: [createdById], references: [id])
+  lines                 QuotationLine[]
+  costSnapshots         QuotationCostSnapshot[]
+  exchangeRateSnapshots QuotationExchangeRateSnapshot[]
+  booking               Booking?
+  createdAt             DateTime                        @default(now())
+
+  @@unique([quotationId, versionNumber])
+  @@index([quotationId, status])
+  @@index([validUntil, status])
+}
+
+model QuotationLine {
+  id          String           @id @default(uuid()) @db.Uuid
+  versionId   String           @db.Uuid
+  version     QuotationVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sortOrder   Int
+  description String
+  details     String?
+  quantity    Decimal          @default(1) @db.Decimal(12, 4)
+  unitPrice   Decimal          @db.Decimal(18, 4)
+  total       Decimal          @db.Decimal(18, 4)
+  createdAt   DateTime         @default(now())
+
+  @@unique([versionId, sortOrder])
+}
+
+model QuotationCostSnapshot {
+  id                    String           @id @default(uuid()) @db.Uuid
+  versionId             String           @db.Uuid
+  version               QuotationVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceCostItemId      String?          @db.Uuid
+  category              String
+  description           String
+  originalCurrencyCode  String           @db.Char(3)
+  originalTotal         Decimal          @db.Decimal(18, 4)
+  exchangeRate          Decimal          @db.Decimal(24, 10)
+  exchangeRateDate      DateTime         @db.Date
+  convertedCurrencyCode String           @db.Char(3)
+  convertedTotal        Decimal          @db.Decimal(18, 4)
+  createdAt             DateTime         @default(now())
+
+  @@index([versionId, category])
+}
+
+model QuotationExchangeRateSnapshot {
+  id                 String           @id @default(uuid()) @db.Uuid
+  versionId          String           @db.Uuid
+  version            QuotationVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceCurrencyCode String           @db.Char(3)
+  sourceCurrency     Currency         @relation("SnapshotSourceCurrency", fields: [sourceCurrencyCode], references: [code])
+  targetCurrencyCode String           @db.Char(3)
+  targetCurrency     Currency         @relation("SnapshotTargetCurrency", fields: [targetCurrencyCode], references: [code])
+  rate               Decimal          @db.Decimal(24, 10)
+  effectiveAt        DateTime         @db.Date
+  purpose            String
+  createdAt          DateTime         @default(now())
+
+  @@index([versionId])
+}
+
+model Invoice {
+  id                String                  @id @default(uuid()) @db.Uuid
+  reference         String                  @unique
+  bookingId         String                  @db.Uuid
+  booking           Booking                 @relation(fields: [bookingId], references: [id])
+  customerId        String                  @db.Uuid
+  customer          Customer                @relation(fields: [customerId], references: [id])
+  paymentScheduleId String?                 @unique @db.Uuid
+  paymentSchedule   BookingPaymentSchedule? @relation(fields: [paymentScheduleId], references: [id])
+  type              InvoiceType
+  currencyCode      String                  @db.Char(3)
+  currency          Currency                @relation(fields: [currencyCode], references: [code])
+  issueDate         DateTime                @db.Date
+  dueDate           DateTime                @db.Date
+  subtotal          Decimal                 @db.Decimal(18, 4)
+  tax               Decimal                 @default(0) @db.Decimal(18, 4)
+  total             Decimal                 @db.Decimal(18, 4)
+  amountPaid        Decimal                 @default(0) @db.Decimal(18, 4)
+  balanceDue        Decimal                 @db.Decimal(18, 4)
+  status            InvoiceStatus           @default(DRAFT)
+  notes             String?
+  issuedAt          DateTime?
+  cancelledAt       DateTime?
+  createdById       String                  @db.Uuid
+  createdBy         User                    @relation("InvoiceCreator", fields: [createdById], references: [id])
+  lines             InvoiceLine[]
+  allocations       PaymentAllocation[]
+  refunds           Refund[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  @@index([bookingId, status])
+  @@index([customerId, dueDate, status])
+}
+
+model InvoiceLine {
+  id          String   @id @default(uuid()) @db.Uuid
+  invoiceId   String   @db.Uuid
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  sortOrder   Int
+  description String
+  quantity    Decimal  @default(1) @db.Decimal(12, 4)
+  unitPrice   Decimal  @db.Decimal(18, 4)
+  total       Decimal  @db.Decimal(18, 4)
+  createdAt   DateTime @default(now())
+
+  @@unique([invoiceId, sortOrder])
+}
+
+model CustomerPayment {
+  id                    String                @id @default(uuid()) @db.Uuid
+  receiptReference      String                @unique
+  customerId            String                @db.Uuid
+  customer              Customer              @relation(fields: [customerId], references: [id])
+  bookingId             String                @db.Uuid
+  booking               Booking               @relation(fields: [bookingId], references: [id])
+  paymentDate           DateTime              @db.Date
+  paymentCurrencyCode   String                @db.Char(3)
+  paymentCurrency       Currency              @relation("CustomerPaymentCurrency", fields: [paymentCurrencyCode], references: [code])
+  originalAmount        Decimal               @db.Decimal(18, 4)
+  bookingCurrencyCode   String                @db.Char(3)
+  bookingCurrency       Currency              @relation("CustomerPaymentBookingCurrency", fields: [bookingCurrencyCode], references: [code])
+  exchangeRate          Decimal               @db.Decimal(24, 10)
+  exchangeRateDate      DateTime              @db.Date
+  bookingCurrencyAmount Decimal               @db.Decimal(18, 4)
+  method                String
+  externalReference     String?
+  notes                 String?
+  status                FinancialRecordStatus @default(RECORDED)
+  reversedAt            DateTime?
+  reversalReason        String?
+  createdById           String                @db.Uuid
+  createdBy             User                  @relation("CustomerPaymentCreator", fields: [createdById], references: [id])
+  allocations           PaymentAllocation[]
+  refunds               Refund[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([bookingId, paymentDate(sort: Desc)])
+  @@index([customerId, status])
+}
+
+model PaymentAllocation {
+  id                    String          @id @default(uuid()) @db.Uuid
+  paymentId             String          @db.Uuid
+  payment               CustomerPayment @relation(fields: [paymentId], references: [id])
+  invoiceId             String          @db.Uuid
+  invoice               Invoice         @relation(fields: [invoiceId], references: [id])
+  paymentCurrencyAmount Decimal         @db.Decimal(18, 4)
+  invoiceCurrencyAmount Decimal         @db.Decimal(18, 4)
+  exchangeRate          Decimal         @db.Decimal(24, 10)
+  exchangeRateDate      DateTime        @db.Date
+  reversedAt            DateTime?
+  createdAt             DateTime        @default(now())
+  refunds               Refund[]
+
+  @@unique([paymentId, invoiceId])
+  @@index([invoiceId, reversedAt])
+}
+
+model Refund {
+  id                    String                @id @default(uuid()) @db.Uuid
+  reference             String                @unique
+  bookingId             String                @db.Uuid
+  booking               Booking               @relation(fields: [bookingId], references: [id])
+  customerId            String                @db.Uuid
+  customer              Customer              @relation(fields: [customerId], references: [id])
+  paymentId             String                @db.Uuid
+  payment               CustomerPayment       @relation(fields: [paymentId], references: [id])
+  allocationId          String                @db.Uuid
+  allocation            PaymentAllocation     @relation(fields: [allocationId], references: [id])
+  invoiceId             String                @db.Uuid
+  invoice               Invoice               @relation(fields: [invoiceId], references: [id])
+  refundDate            DateTime              @db.Date
+  paymentCurrencyCode   String                @db.Char(3)
+  paymentCurrency       Currency              @relation("RefundPaymentCurrency", fields: [paymentCurrencyCode], references: [code])
+  paymentCurrencyAmount Decimal               @db.Decimal(18, 4)
+  bookingCurrencyCode   String                @db.Char(3)
+  bookingCurrency       Currency              @relation("RefundBookingCurrency", fields: [bookingCurrencyCode], references: [code])
+  exchangeRate          Decimal               @db.Decimal(24, 10)
+  bookingCurrencyAmount Decimal               @db.Decimal(18, 4)
+  reason                String
+  status                FinancialRecordStatus @default(RECORDED)
+  createdById           String                @db.Uuid
+  createdBy             User                  @relation("RefundCreator", fields: [createdById], references: [id])
+  createdAt             DateTime              @default(now())
+
+  @@index([bookingId, refundDate(sort: Desc)])
+  @@index([allocationId, status])
+}
+
+model SupplierBill {
+  id           String             @id @default(uuid()) @db.Uuid
+  reference    String             @unique
+  supplierId   String             @db.Uuid
+  supplier     Supplier           @relation(fields: [supplierId], references: [id])
+  tourId       String?            @db.Uuid
+  tour         Tour?              @relation(fields: [tourId], references: [id])
+  supplierRef  String?
+  currencyCode String             @db.Char(3)
+  currency     Currency           @relation(fields: [currencyCode], references: [code])
+  issueDate    DateTime           @db.Date
+  dueDate      DateTime           @db.Date
+  total        Decimal            @db.Decimal(18, 4)
+  amountPaid   Decimal            @default(0) @db.Decimal(18, 4)
+  balanceDue   Decimal            @db.Decimal(18, 4)
+  status       SupplierBillStatus @default(RECEIVED)
+  notes        String?
+  createdById  String             @db.Uuid
+  createdBy    User               @relation("SupplierBillCreator", fields: [createdById], references: [id])
+  payments     SupplierPayment[]
+  expenses     TourExpense[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([supplierId, status])
+  @@index([tourId, dueDate])
+}
+
+model SupplierPayment {
+  id                  String                @id @default(uuid()) @db.Uuid
+  reference           String                @unique
+  supplierId          String                @db.Uuid
+  supplier            Supplier              @relation(fields: [supplierId], references: [id])
+  billId              String                @db.Uuid
+  bill                SupplierBill          @relation(fields: [billId], references: [id])
+  paymentDate         DateTime              @db.Date
+  paymentCurrencyCode String                @db.Char(3)
+  paymentCurrency     Currency              @relation("SupplierPaymentCurrency", fields: [paymentCurrencyCode], references: [code])
+  originalAmount      Decimal               @db.Decimal(18, 4)
+  billCurrencyCode    String                @db.Char(3)
+  billCurrency        Currency              @relation("SupplierPaymentBillCurrency", fields: [billCurrencyCode], references: [code])
+  exchangeRate        Decimal               @db.Decimal(24, 10)
+  exchangeRateDate    DateTime              @db.Date
+  billCurrencyAmount  Decimal               @db.Decimal(18, 4)
+  method              String
+  externalReference   String?
+  notes               String?
+  status              FinancialRecordStatus @default(RECORDED)
+  reversedAt          DateTime?
+  reversalReason      String?
+  createdById         String                @db.Uuid
+  createdBy           User                  @relation("SupplierPaymentCreator", fields: [createdById], references: [id])
+  createdAt           DateTime              @default(now())
+
+  @@index([billId, status])
+  @@index([supplierId, paymentDate(sort: Desc)])
+}
+
+model TourExpense {
+  id                   String                @id @default(uuid()) @db.Uuid
+  reference            String                @unique
+  tourId               String                @db.Uuid
+  tour                 Tour                  @relation(fields: [tourId], references: [id])
+  supplierId           String?               @db.Uuid
+  supplier             Supplier?             @relation(fields: [supplierId], references: [id])
+  supplierBillId       String?               @db.Uuid
+  supplierBill         SupplierBill?         @relation(fields: [supplierBillId], references: [id])
+  category             String
+  description          String
+  expenseDate          DateTime              @db.Date
+  originalCurrencyCode String                @db.Char(3)
+  originalCurrency     Currency              @relation("ExpenseOriginalCurrency", fields: [originalCurrencyCode], references: [code])
+  originalAmount       Decimal               @db.Decimal(18, 4)
+  costingCurrencyCode  String                @db.Char(3)
+  costingCurrency      Currency              @relation("ExpenseCostingCurrency", fields: [costingCurrencyCode], references: [code])
+  exchangeRate         Decimal               @db.Decimal(24, 10)
+  exchangeRateDate     DateTime              @db.Date
+  convertedAmount      Decimal               @db.Decimal(18, 4)
+  receiptReference     String?
+  notes                String?
+  status               FinancialRecordStatus @default(RECORDED)
+  reversedAt           DateTime?
+  reversalReason       String?
+  createdById          String                @db.Uuid
+  createdBy            User                  @relation("TourExpenseCreator", fields: [createdById], references: [id])
+  createdAt            DateTime              @default(now())
+
+  @@index([tourId, expenseDate(sort: Desc)])
+  @@index([supplierId])
+}
+
+model AuditEvent {
+  id             String   @id @default(uuid()) @db.Uuid
+  actorId        String   @db.Uuid
+  actor          User     @relation(fields: [actorId], references: [id])
+  action         String
+  entityType     String
+  entityId       String
+  previousValues Json?
+  newValues      Json?
+  reason         String?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
+}
+
+model Attachment {
+  id           String    @id @default(uuid()) @db.Uuid
+  recordType   String
+  recordId     String
+  documentType String
+  fileName     String
+  mimeType     String
+  fileSize     Int
+  content      Bytes
+  notes        String?
+  expiresAt    DateTime?
+  uploadedById String    @db.Uuid
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([recordType, recordId, createdAt(sort: Desc)])
+  @@index([expiresAt])
+}
+
+enum ResourceStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_SERVICE
+  ARCHIVED
+}
+
+enum ResourceType {
+  VEHICLE
+  DRIVER
+  GUIDE
+  EQUIPMENT
+}
+
+enum ResourceAvailabilityType {
+  AVAILABLE
+  UNAVAILABLE
+  LEAVE
+  RESERVED
+}
+
+enum ResourceAssignmentStatus {
+  PROVISIONAL
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum OperationalTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  WAIVED
+}
+
+enum SupplierConfirmationStatus {
+  PENDING
+  REQUESTED
+  CONFIRMED
+  DECLINED
+  CANCELLED
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
+
+model Vehicle {
+  id              String                 @id @default(uuid()) @db.Uuid
+  reference       String                 @unique
+  registration    String                 @unique
+  make            String
+  model           String
+  vehicleType     String
+  capacity        Int
+  ownership       String
+  supplierId      String?                @db.Uuid
+  supplier        Supplier?              @relation(fields: [supplierId], references: [id])
+  manufactureYear Int?
+  colour          String?
+  notes           String?
+  status          ResourceStatus         @default(ACTIVE)
+  availability    ResourceAvailability[]
+  assignments     ResourceAssignment[]
+  maintenance     VehicleMaintenance[]
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  archivedAt      DateTime?
+
+  @@index([status, vehicleType])
+  @@index([supplierId])
+}
+
+model Driver {
+  id               String                 @id @default(uuid()) @db.Uuid
+  reference        String                 @unique
+  fullName         String
+  phone            String
+  email            String?
+  licenceNumber    String                 @unique
+  licenceClass     String?
+  licenceExpiry    DateTime?              @db.Date
+  supplierId       String?                @db.Uuid
+  supplier         Supplier?              @relation(fields: [supplierId], references: [id])
+  emergencyContact String?
+  notes            String?
+  status           ResourceStatus         @default(ACTIVE)
+  availability     ResourceAvailability[]
+  assignments      ResourceAssignment[]
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  archivedAt       DateTime?
+
+  @@index([status, fullName])
+  @@index([supplierId])
+}
+
+model Guide {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  reference           String                 @unique
+  fullName            String
+  phone               String
+  email               String?
+  languages           String[]
+  specialities        String[]
+  certification       String?
+  certificationExpiry DateTime?              @db.Date
+  supplierId          String?                @db.Uuid
+  supplier            Supplier?              @relation(fields: [supplierId], references: [id])
+  notes               String?
+  status              ResourceStatus         @default(ACTIVE)
+  availability        ResourceAvailability[]
+  assignments         ResourceAssignment[]
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  archivedAt          DateTime?
+
+  @@index([status, fullName])
+  @@index([supplierId])
+}
+
+model Equipment {
+  id           String                 @id @default(uuid()) @db.Uuid
+  reference    String                 @unique
+  name         String
+  category     String
+  quantity     Int                    @default(1)
+  notes        String?
+  status       ResourceStatus         @default(ACTIVE)
+  availability ResourceAvailability[]
+  assignments  ResourceAssignment[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  archivedAt   DateTime?
+
+  @@index([status, category])
+}
+
+model ResourceAvailability {
+  id           String                   @id @default(uuid()) @db.Uuid
+  resourceType ResourceType
+  vehicleId    String?                  @db.Uuid
+  vehicle      Vehicle?                 @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId     String?                  @db.Uuid
+  driver       Driver?                  @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  guideId      String?                  @db.Uuid
+  guide        Guide?                   @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  equipmentId  String?                  @db.Uuid
+  equipment    Equipment?               @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  type         ResourceAvailabilityType
+  startDate    DateTime                 @db.Date
+  endDate      DateTime                 @db.Date
+  reason       String?
+  createdById  String                   @db.Uuid
+  createdBy    User                     @relation("ResourceAvailabilityCreator", fields: [createdById], references: [id])
+  createdAt    DateTime                 @default(now())
+
+  @@index([resourceType, startDate, endDate])
+  @@index([vehicleId, startDate, endDate])
+  @@index([driverId, startDate, endDate])
+  @@index([guideId, startDate, endDate])
+  @@index([equipmentId, startDate, endDate])
+}
+
+model ResourceAssignment {
+  id                     String                   @id @default(uuid()) @db.Uuid
+  tourId                 String                   @db.Uuid
+  tour                   Tour                     @relation(fields: [tourId], references: [id])
+  resourceType           ResourceType
+  vehicleId              String?                  @db.Uuid
+  vehicle                Vehicle?                 @relation(fields: [vehicleId], references: [id])
+  driverId               String?                  @db.Uuid
+  driver                 Driver?                  @relation(fields: [driverId], references: [id])
+  guideId                String?                  @db.Uuid
+  guide                  Guide?                   @relation(fields: [guideId], references: [id])
+  equipmentId            String?                  @db.Uuid
+  equipment              Equipment?               @relation(fields: [equipmentId], references: [id])
+  startDate              DateTime                 @db.Date
+  endDate                DateTime                 @db.Date
+  status                 ResourceAssignmentStatus @default(PROVISIONAL)
+  notes                  String?
+  conflictOverrideReason String?
+  assignedById           String                   @db.Uuid
+  assignedBy             User                     @relation("ResourceAssigner", fields: [assignedById], references: [id])
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+
+  @@index([tourId, status])
+  @@index([resourceType, startDate, endDate, status])
+  @@index([vehicleId, startDate, endDate])
+  @@index([driverId, startDate, endDate])
+  @@index([guideId, startDate, endDate])
+  @@index([equipmentId, startDate, endDate])
+}
+
+model VehicleMaintenance {
+  id              String            @id @default(uuid()) @db.Uuid
+  vehicleId       String            @db.Uuid
+  vehicle         Vehicle           @relation(fields: [vehicleId], references: [id])
+  startDate       DateTime          @db.Date
+  endDate         DateTime          @db.Date
+  description     String
+  serviceProvider String?
+  odometerKm      Int?
+  cost            Decimal           @default(0) @db.Decimal(18, 4)
+  currencyCode    String            @db.Char(3)
+  currency        Currency          @relation(fields: [currencyCode], references: [code])
+  status          MaintenanceStatus @default(SCHEDULED)
+  notes           String?
+  createdById     String            @db.Uuid
+  createdBy       User              @relation("MaintenanceCreator", fields: [createdById], references: [id])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([vehicleId, startDate, endDate, status])
+}
+
+model OperationalTask {
+  id            String                @id @default(uuid()) @db.Uuid
+  tourId        String                @db.Uuid
+  tour          Tour                  @relation(fields: [tourId], references: [id])
+  title         String
+  description   String?
+  dueDate       DateTime?             @db.Date
+  mandatory     Boolean               @default(true)
+  status        OperationalTaskStatus @default(PENDING)
+  completedAt   DateTime?
+  completedById String?               @db.Uuid
+  completedBy   User?                 @relation("OperationalTaskCompleter", fields: [completedById], references: [id])
+  waivedReason  String?
+  createdById   String                @db.Uuid
+  createdBy     User                  @relation("OperationalTaskCreator", fields: [createdById], references: [id])
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([tourId, status, dueDate])
+}
+
+model SupplierConfirmation {
+  id                String                     @id @default(uuid()) @db.Uuid
+  tourId            String                     @db.Uuid
+  tour              Tour                       @relation(fields: [tourId], references: [id])
+  supplierId        String                     @db.Uuid
+  supplier          Supplier                   @relation(fields: [supplierId], references: [id])
+  service           String
+  serviceDate       DateTime?                  @db.Date
+  externalReference String?
+  status            SupplierConfirmationStatus @default(PENDING)
+  requestedAt       DateTime?
+  confirmedAt       DateTime?
+  confirmedByName   String?
+  notes             String?
+  createdById       String                     @db.Uuid
+  createdBy         User                       @relation("SupplierConfirmationCreator", fields: [createdById], references: [id])
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+
+  @@index([tourId, status, serviceDate])
+  @@index([supplierId, serviceDate])
+}
+
+model TourIncident {
+  id             String           @id @default(uuid()) @db.Uuid
+  reference      String           @unique
+  tourId         String           @db.Uuid
+  tour           Tour             @relation(fields: [tourId], references: [id])
+  title          String
+  description    String
+  severity       IncidentSeverity
+  status         IncidentStatus   @default(OPEN)
+  occurredAt     DateTime
+  location       String?
+  peopleInvolved String?
+  resolution     String?
+  resolvedAt     DateTime?
+  createdById    String           @db.Uuid
+  createdBy      User             @relation("IncidentCreator", fields: [createdById], references: [id])
+  resolvedById   String?          @db.Uuid
+  resolvedBy     User?            @relation("IncidentResolver", fields: [resolvedById], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([tourId, status, severity])
+  @@index([occurredAt(sort: Desc)])
+}
+
+model OperationalDocument {
+  id            String   @id @default(uuid()) @db.Uuid
+  reference     String   @unique
+  tourId        String   @db.Uuid
+  tour          Tour     @relation(fields: [tourId], references: [id])
+  documentType  String
+  title         String
+  fileName      String
+  snapshot      Json
+  generatedById String   @db.Uuid
+  generatedBy   User     @relation("OperationalDocumentGenerator", fields: [generatedById], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@index([tourId, createdAt(sort: Desc)])
+}
