@@ -1,4 +1,4 @@
-﻿import { Building2, Plus, Tags } from "lucide-react";
+import { Building2, Plus, Tags } from "lucide-react";
 import {
   addSupplierRateAction,
   createSupplierAction,
