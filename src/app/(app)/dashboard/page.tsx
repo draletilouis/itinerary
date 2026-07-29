@@ -14,7 +14,6 @@ import {
   WalletCards,
 } from "lucide-react";
 import { getDashboardData } from "@/modules/dashboard/queries/get-dashboard";
-import { dashboardCurrencyTotals } from "@/modules/dashboard/presentation";
 import { formatMoney } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
@@ -26,16 +25,6 @@ const statusLabels: Record<string, string> = {
   AWAITING_CONFIRMATION: "Awaiting confirmation",
 };
 
-function currencyTotals(values: Array<{ currencyCode: string; amount: string }>) {
-  const totals = dashboardCurrencyTotals(values);
-  return (
-    <span className="flex flex-col gap-1">
-      {totals.map((entry) => (
-        <span key={entry.currencyCode}>{formatMoney(entry.amount, entry.currencyCode)}</span>
-      ))}
-    </span>
-  );
-}
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
@@ -66,21 +55,21 @@ export default async function DashboardPage() {
     },
     {
       label: "Revenue This Month",
-      value: currencyTotals(data.metrics.revenueThisMonth),
+      value: formatMoney(data.metrics.revenueThisMonth, data.metrics.reportingCurrency),
       icon: CircleDollarSign,
-      detail: "kept in each tour currency",
+      detail: "converted to UGX",
     },
     {
       label: "Outstanding Payments",
-      value: currencyTotals(data.metrics.outstandingPayments),
+      value: formatMoney(data.metrics.outstandingPayments, data.metrics.reportingCurrency),
       icon: WalletCards,
-      detail: "kept in each booking currency",
+      detail: "converted to UGX",
     },
     {
       label: "Estimated Tour Profit",
-      value: currencyTotals(data.metrics.estimatedProfit),
+      value: formatMoney(data.metrics.estimatedProfit, data.metrics.reportingCurrency),
       icon: TrendingUp,
-      detail: "kept in each quotation currency",
+      detail: "converted to UGX",
     },
     {
       label: "Scheduling Conflicts",
@@ -120,6 +109,12 @@ export default async function DashboardPage() {
           The application shell is ready, but live dashboard data will appear
           after the PostgreSQL connection is configured and migrations are
           applied.
+        </div>
+      ) : null}
+
+      {data.connected && data.metrics.unresolvedCurrencies.length ? (
+        <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+          Missing an effective UGX exchange rate for: {data.metrics.unresolvedCurrencies.join(", ")}. Those currencies are excluded until a rate is configured in Settings.
         </div>
       ) : null}
 

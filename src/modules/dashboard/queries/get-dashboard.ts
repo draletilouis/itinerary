@@ -1,4 +1,5 @@
 import { prisma } from "@/server/db/prisma";
+import { convertDashboardTotals } from "../presentation";
 
 const activeTourStatuses = [
   "CONFIRMED",
@@ -32,6 +33,7 @@ async function loadDashboardData() {
     revenue,
     outstanding,
     estimatedProfit,
+    exchangeRates,
     timeline,
     overdueFollowUps,
   ] = await Promise.all([
@@ -67,6 +69,10 @@ async function loadDashboardData() {
       where: { status: { notIn: ["CANCELLED", "ARCHIVED"] } },
       _sum: { estimatedProfit: true },
       orderBy: { quotationCurrencyCode: "asc" },
+    }),
+    prisma.exchangeRate.findMany({
+      where: { effectiveAt: { lte: now } },
+      orderBy: { effectiveAt: "desc" },
     }),
     prisma.tour.findMany({
       where: {
@@ -104,6 +110,25 @@ async function loadDashboardData() {
     }),
   ]);
 
+  const reportingCurrency = "UGX";
+  const revenueInUgx = convertDashboardTotals(
+    revenue.map((entry) => ({ currencyCode: entry.costingCurrencyCode, amount: entry._sum.actualRevenue?.toString() ?? "0" })),
+    exchangeRates, reportingCurrency, now,
+  );
+  const outstandingInUgx = convertDashboardTotals(
+    outstanding.map((entry) => ({ currencyCode: entry.currencyCode, amount: entry._sum.balanceDue?.toString() ?? "0" })),
+    exchangeRates, reportingCurrency, now,
+  );
+  const estimatedProfitInUgx = convertDashboardTotals(
+    estimatedProfit.map((entry) => ({ currencyCode: entry.quotationCurrencyCode, amount: entry._sum.estimatedProfit?.toString() ?? "0" })),
+    exchangeRates, reportingCurrency, now,
+  );
+  const unresolvedCurrencies = [...new Set([
+    ...revenueInUgx.unresolvedCurrencies,
+    ...outstandingInUgx.unresolvedCurrencies,
+    ...estimatedProfitInUgx.unresolvedCurrencies,
+  ])];
+
   return {
     connected: true,
     metrics: {
@@ -111,10 +136,12 @@ async function loadDashboardData() {
       upcomingTours,
       openEnquiries,
       confirmedBookings,
-      revenueThisMonth: revenue.map((entry) => ({ currencyCode: entry.costingCurrencyCode, amount: entry._sum.actualRevenue?.toString() ?? "0" })),
-      outstandingPayments: outstanding.map((entry) => ({ currencyCode: entry.currencyCode, amount: entry._sum.balanceDue?.toString() ?? "0" })),
-      estimatedProfit: estimatedProfit.map((entry) => ({ currencyCode: entry.quotationCurrencyCode, amount: entry._sum.estimatedProfit?.toString() ?? "0" })),
+      revenueThisMonth: revenueInUgx.total.toString(),
+      outstandingPayments: outstandingInUgx.total.toString(),
+      estimatedProfit: estimatedProfitInUgx.total.toString(),
       schedulingConflicts: 0,
+      reportingCurrency,
+      unresolvedCurrencies,
     },
     timeline,
     overdueFollowUps,
@@ -132,10 +159,12 @@ export async function getDashboardData() {
         upcomingTours: 0,
         openEnquiries: 0,
         confirmedBookings: 0,
-        revenueThisMonth: [],
-        outstandingPayments: [],
-        estimatedProfit: [],
+        revenueThisMonth: "0",
+        outstandingPayments: "0",
+        estimatedProfit: "0",
         schedulingConflicts: 0,
+        reportingCurrency: "UGX",
+        unresolvedCurrencies: [],
       },
       timeline: [],
       overdueFollowUps: [],
