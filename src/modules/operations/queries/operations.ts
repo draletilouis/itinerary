@@ -17,7 +17,6 @@ export async function getOperationsWorkspace() {
           "OPERATIONAL_PREPARATION",
           "READY",
           "IN_PROGRESS",
-          "COMPLETED",
         ],
       },
     },
