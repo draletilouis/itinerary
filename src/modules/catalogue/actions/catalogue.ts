@@ -341,7 +341,7 @@ export async function addAccommodationRateAction(formData: FormData) {
       accommodationId: z.string().uuid(),
       roomTypeId: z.string().uuid(),
       mealPlan: z.string().trim().min(1),
-      occupancy: z.string().trim().min(1),
+      occupancyGuests: z.coerce.number().int().positive(),
       amount: positiveMoney,
       currencyCode: z.string().length(3),
       startDate: z.string().min(1),
@@ -352,17 +352,26 @@ export async function addAccommodationRateAction(formData: FormData) {
     })
     .parse(Object.fromEntries(formData));
 
+  const roomType = await prisma.roomType.findFirst({
+    where: { id: data.roomTypeId, accommodationId: data.accommodationId, status: "ACTIVE" },
+    include: { accommodation: { select: { supplierId: true } } },
+  });
+  if (!roomType) throw new Error("The room type does not belong to the selected accommodation.");
+  if (data.occupancyGuests > roomType.maximumOccupancy) {
+    throw new Error(`Occupancy cannot exceed the room maximum of ${roomType.maximumOccupancy}.`);
+  }
   const rate = await prisma.accommodationRate.create({
     data: {
       accommodationId: data.accommodationId,
       roomTypeId: data.roomTypeId,
       mealPlan: data.mealPlan,
-      occupancy: data.occupancy,
+      occupancy: `${data.occupancyGuests} guest${data.occupancyGuests === 1 ? "" : "s"}`,
+      occupancyGuests: data.occupancyGuests,
       amount: new Prisma.Decimal(data.amount),
       currencyCode: data.currencyCode,
       startDate: new Date(data.startDate),
       endDate: data.endDate ? new Date(data.endDate) : null,
-      supplierId: data.supplierId || null,
+      supplierId: roomType.accommodation.supplierId,
       contractReference: data.contractReference || null,
       taxIncluded: data.taxIncluded,
     },

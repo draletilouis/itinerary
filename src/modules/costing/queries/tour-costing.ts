@@ -18,7 +18,23 @@ export async function getTourCosting(tourId: string) {
         marginSetting: true,
       },
     }),
-    prisma.supplier.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
+    prisma.supplier.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { name: "asc" },
+      include: {
+        accommodations: {
+          where: { status: "ACTIVE" },
+          orderBy: { name: "asc" },
+          include: {
+            rates: {
+              where: { status: "ACTIVE" },
+              orderBy: [{ startDate: "desc" }, { amount: "asc" }],
+              include: { roomType: { select: { id: true, name: true, maximumOccupancy: true } } },
+            },
+          },
+        },
+      },
+    }),
     prisma.currency.findMany({ where: { active: true }, orderBy: { code: "asc" } }),
     prisma.itineraryDay.findMany({
       where: { version: { itinerary: { tourId }, status: "DRAFT" } },
@@ -27,5 +43,23 @@ export async function getTourCosting(tourId: string) {
     }),
     getItineraryCostSuggestions(tourId),
   ]);
-  return { tour, suppliers, currencies, itineraryDays, itineraryCostReview };
+  const supplierOptions = suppliers.map((supplier) => ({
+    id: supplier.id,
+    name: supplier.name,
+    roomRates: supplier.accommodations.flatMap((accommodation) =>
+      accommodation.rates.map((rate) => ({
+        id: rate.id,
+        accommodationName: accommodation.name,
+        roomTypeName: rate.roomType.name,
+        maximumOccupancy: rate.roomType.maximumOccupancy,
+        occupancyGuests: rate.occupancyGuests,
+        mealPlan: rate.mealPlan,
+        amount: rate.amount.toString(),
+        currencyCode: rate.currencyCode,
+        startDate: rate.startDate.toISOString(),
+        endDate: rate.endDate?.toISOString() ?? null,
+      })),
+    ),
+  }));
+  return { tour, suppliers: supplierOptions, currencies, itineraryDays, itineraryCostReview };
 }

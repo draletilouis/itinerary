@@ -964,6 +964,7 @@ model AccommodationRate {
   supplier          Supplier?     @relation(fields: [supplierId], references: [id])
   mealPlan          String
   occupancy         String
+  occupancyGuests   Int
   amount            Decimal       @db.Decimal(18, 2)
   childRate         Decimal?      @db.Decimal(18, 2)
   extraBedRate      Decimal?      @db.Decimal(18, 2)

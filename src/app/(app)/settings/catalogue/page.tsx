@@ -154,7 +154,7 @@ export default async function CataloguePage() {
             <form action={addAccommodationRateAction} className="mt-4 space-y-3">
               <select className={input} name="accommodationId" required>{data.accommodations.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
               <select className={input} name="roomTypeId" required>{roomTypes.map((item) => <option key={item.id} value={item.id}>{item.accommodationName} · {item.name}</option>)}</select>
-              <div className="grid grid-cols-2 gap-3"><input className={input} name="mealPlan" required placeholder="Full board" /><input className={input} name="occupancy" required placeholder="Double" /></div>
+              <div className="grid grid-cols-2 gap-3"><input className={input} name="mealPlan" required placeholder="Full board" /><input className={input} name="occupancyGuests" type="number" min={1} required placeholder="People per room" /></div>
               <div className="grid grid-cols-2 gap-3"><input className={input} name="amount" required placeholder="Amount" /><select className={input} name="currencyCode">{data.currencies.map((item) => <option key={item.code}>{item.code}</option>)}</select></div>
               <div className="grid grid-cols-2 gap-3"><input className={input} name="startDate" type="date" required /><input className={input} name="endDate" type="date" /></div>
               <label className="flex items-center gap-2 text-xs"><input name="taxIncluded" type="checkbox" /> Tax included</label>

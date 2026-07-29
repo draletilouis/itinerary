@@ -9,10 +9,18 @@ import {
   suggestedCostBasis,
 } from "@/modules/packages/presentation";
 import type { PackageCostTemplate } from "@/modules/packages/types";
+import { roomsRequired } from "@/modules/costing/presentation/rooms";
 
 const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
 const categories = ["Accommodation", "Activities", "Transport", "Meals", "Permits", "Guides", "Other"];
 const bases = Object.keys(packageCostBasisLabels) as PackageCostTemplate["basis"][];
+
+type RoomRateOption = {
+  id: string; accommodationName: string; roomTypeName: string; maximumOccupancy: number;
+  occupancyGuests: number; mealPlan: string; amount: string; currencyCode: string;
+  startDate: string; endDate: string | null;
+};
+type SupplierOption = { id: string; name: string; roomRates: RoomRateOption[] };
 
 export function TourCostForm({
   tourId,
@@ -22,16 +30,21 @@ export function TourCostForm({
   currencies,
   suppliers,
   itineraryDays,
+  tourStartDate,
 }: {
   tourId: string;
   durationDays: number;
   travellers: number;
   costingCurrencyCode: string;
   currencies: { code: string }[];
-  suppliers: { id: string; name: string }[];
+  suppliers: SupplierOption[];
   itineraryDays: { id: string; dayNumber: number; title: string }[];
+  tourStartDate: string;
 }) {
   const [category, setCategory] = useState("Accommodation");
+  const [description, setDescription] = useState("");
+  const [supplierId, setSupplierId] = useState("");
+  const [roomRateId, setRoomRateId] = useState("");
   const [basis, setBasis] = useState<PackageCostTemplate["basis"]>("ACCOMMODATION");
   const [unitCost, setUnitCost] = useState("0");
   const [quantity, setQuantity] = useState("1");
@@ -45,6 +58,23 @@ export function TourCostForm({
   const [commission, setCommission] = useState("0");
   const [currency, setCurrency] = useState(costingCurrencyCode);
 
+  const selectedSupplier = suppliers.find((supplier) => supplier.id === supplierId);
+  const roomRates = (selectedSupplier?.roomRates ?? []).filter((rate) => {
+    const date = new Date(tourStartDate);
+    return new Date(rate.startDate) <= date && (!rate.endDate || new Date(rate.endDate) >= date);
+  });
+  const selectedRoomRate = roomRates.find((rate) => rate.id === roomRateId);
+
+  function selectRoomRate(nextRateId: string) {
+    setRoomRateId(nextRateId);
+    const rate = roomRates.find((entry) => entry.id === nextRateId);
+    if (!rate) return;
+    setBasis("ACCOMMODATION");
+    setUnitCost(rate.amount);
+    setCurrency(rate.currencyCode);
+    setRooms(String(roomsRequired(travellers, rate.occupancyGuests)));
+    setDescription(`${rate.accommodationName} - ${rate.roomTypeName} (${rate.mealPlan})`);
+  }
   const preview = useMemo(() => estimatePackageCost({
     basis,
     unitCost,
@@ -76,15 +106,42 @@ export function TourCostForm({
       </label>
       <label className="text-xs font-medium sm:col-span-2">
         Description
-        <input className={input} name="description" required placeholder="e.g. Two nights at Bwindi Forest Lodge" />
+        <input className={input} name="description" value={description} onChange={(event) => setDescription(event.target.value)} required placeholder="e.g. Two nights at Bwindi Forest Lodge" />
       </label>
       <label className="text-xs font-medium">
         Supplier
-        <select className={input} name="supplierId">
+        <select className={input} name="supplierId" value={supplierId} onChange={(event) => { setSupplierId(event.target.value); setRoomRateId(""); }}>
           <option value="">Direct / not assigned</option>
           {suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}
         </select>
       </label>
+
+      {category === "Accommodation" && supplierId ? (
+        <div className="rounded-xl border bg-white p-4 sm:col-span-2 lg:col-span-4">
+          <label className="text-xs font-medium">
+            Supplier room and rate
+            <select className={input} value={roomRateId} onChange={(event) => selectRoomRate(event.target.value)}>
+              <option value="">Select a room rate</option>
+              {roomRates.map((rate) => (
+                <option key={rate.id} value={rate.id}>
+                  {rate.accommodationName} · {rate.roomTypeName} · {rate.occupancyGuests} guest(s) · {rate.mealPlan} · {rate.currencyCode} {rate.amount} per room/night
+                </option>
+              ))}
+            </select>
+          </label>
+          {selectedRoomRate ? (
+            <div className="mt-3 grid gap-2 rounded-lg bg-[#f2f8f5] p-3 text-xs sm:grid-cols-3">
+              <p><span className="font-semibold">Capacity:</span> {selectedRoomRate.occupancyGuests} guest(s) per room</p>
+              <p><span className="font-semibold">Tour guests:</span> {travellers}</p>
+              <p><span className="font-semibold">Rooms required:</span> {rooms}</p>
+            </div>
+          ) : roomRates.length ? (
+            <p className="mt-2 text-xs text-[#68736e]">Select the contracted room rate to fill the amount, currency and required rooms.</p>
+          ) : (
+            <p className="mt-2 text-xs text-amber-700">This supplier has no accommodation room rate covering the tour start date. Add one under Settings → Catalogue.</p>
+          )}
+        </div>
+      ) : null}
 
       <label className="text-xs font-medium sm:col-span-2">
         How is this charged?

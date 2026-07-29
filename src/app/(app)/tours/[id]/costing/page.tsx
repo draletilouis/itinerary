@@ -153,6 +153,7 @@ export default async function TourCostingPage({ params }: { params: Promise<{ id
             currencies={data.currencies}
             suppliers={data.suppliers}
             itineraryDays={data.itineraryDays}
+            tourStartDate={tour.startDate.toISOString()}
           />
         </details>
       </section>

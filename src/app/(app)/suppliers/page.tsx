@@ -1,4 +1,5 @@
-import { Building2, Plus, Tags } from "lucide-react";
+import Link from "next/link";
+import { BedDouble, Building2, Plus, Tags } from "lucide-react";
 import {
   addSupplierRateAction,
   createSupplierAction,
@@ -43,8 +44,43 @@ export default async function SuppliersPage() {
               <p className="mt-4 text-sm text-[#59635e]">{supplier.contactPerson ?? "No contact person"}{supplier.phone ? ` · ${supplier.phone}` : ""}</p>
               <p className="mt-3 text-xs text-[#7b8580]">{supplier._count.activities} activities / {supplier._count.accommodations} properties / {supplier.rates.length} general rates</p>
               {supplier.rates.length ? <div className="mt-4 space-y-2 border-t pt-4">{supplier.rates.slice(0, 3).map((rate) => <div key={rate.id} className="flex items-start justify-between gap-3 text-xs"><div><p className="font-medium">{rate.service}</p><p className="text-[#7b8580]">per {rate.unit} / from {rate.startDate.toLocaleDateString("en-UG")}</p></div><span className="font-semibold text-[#176b55]">{formatMoney(rate.amount.toString(), rate.currencyCode)}</span></div>)}</div> : null}
+              {data.accommodations.filter((property) => property.supplierId === supplier.id).length ? (
+                <div className="mt-4 border-t pt-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="flex items-center gap-2 text-xs font-semibold"><BedDouble className="size-4 text-[#176b55]" /> Accommodation rooms</p>
+                    <Link href="/settings/catalogue" className="text-[11px] font-semibold text-[#176b55]">Manage rooms and rates</Link>
+                  </div>
+                  <div className="mt-3 space-y-3">
+                    {data.accommodations.filter((property) => property.supplierId === supplier.id).map((property) => (
+                      <div key={property.id} className="rounded-xl bg-[#f8faf9] p-3">
+                        <p className="text-xs font-semibold">{property.name}</p>
+                        <div className="mt-2 space-y-2">
+                          {property.roomTypes.map((room) => {
+                            const rates = property.rates.filter((rate) => rate.roomTypeId === room.id);
+                            return (
+                              <div key={room.id} className="text-[11px] text-[#59635e]">
+                                <p><span className="font-medium">{room.name}</span> · maximum {room.maximumOccupancy} guests</p>
+                                {rates.length ? rates.map((rate) => (
+                                  <p key={rate.id} className="mt-1 text-[#176b55]">
+                                    {formatMoney(rate.amount.toString(), rate.currencyCode)} per room/night · {rate.occupancyGuests} guest(s) · {rate.mealPlan}
+                                  </p>
+                                )) : <p className="mt-1 text-amber-700">No structured room rate yet</p>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               <details className="mt-4 border-t pt-4">
-                <summary className="cursor-pointer text-xs font-semibold text-[#176b55]">Add service rate</summary>
+                <summary className="cursor-pointer text-xs font-semibold text-[#176b55]">Add general service rate</summary>
+                {data.accommodations.some((property) => property.supplierId === supplier.id) ? (
+                  <p className="mt-2 text-[11px] text-amber-700">
+                    Room rates must be recorded under Manage rooms and rates so room occupancy is captured.
+                  </p>
+                ) : null}
                 <form action={addSupplierRateAction} className="mt-3 grid gap-3">
                   <input type="hidden" name="supplierId" value={supplier.id} />
                   <input className={input} name="service" required placeholder="Service, e.g. airport transfer" />

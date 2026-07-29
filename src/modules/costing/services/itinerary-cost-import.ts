@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
 import type { CalculationBasis } from "../types";
+import { roomsRequired } from "../presentation/rooms";
 
 type RateCandidate = {
   amount: Prisma.Decimal;
@@ -180,7 +181,7 @@ export async function getItineraryCostSuggestions(
           supplierName: item.supplier?.name,
           rateLabel: `${rate.service} - ${rate.unit}`,
           nights: basis === "ACCOMMODATION" ? "1" : "0",
-          rooms: basis === "ACCOMMODATION" ? String(Math.ceil(travellers / Math.max(1, item.guestsPerRoom ?? item.roomType?.maximumOccupancy ?? 2))) : "0",
+          rooms: basis === "ACCOMMODATION" ? String(roomsRequired(travellers, item.guestsPerRoom ?? item.roomType?.maximumOccupancy ?? 2)) : "0",
           vehicles: basis === "VEHICLE" ? "1" : "0",
           eligibleTravellers: basis === "PER_PERSON" ? String(travellers) : "0",
         };
@@ -222,7 +223,7 @@ export async function getItineraryCostSuggestions(
           isRateEffective(rate, rateDate) && (!item.roomTypeId || rate.roomTypeId === item.roomTypeId),
         );
         const occupancyRates = item.guestsPerRoom
-          ? effectiveRates.filter((rate) => occupancyCount(rate.occupancy) === item.guestsPerRoom)
+          ? effectiveRates.filter((rate) => rate.occupancyGuests === item.guestsPerRoom)
           : [];
         const rates = occupancyRates.length ? occupancyRates : effectiveRates;
         if (!rates.length) {
@@ -253,7 +254,7 @@ export async function getItineraryCostSuggestions(
           supplierName: rate.supplier?.name ?? item.supplier?.name,
           rateLabel: `${rate.roomType.name} - ${rate.mealPlan} - ${rate.occupancy}`,
           nights: "1",
-          rooms: String(Math.ceil(travellers / Math.max(1, item.guestsPerRoom ?? rate.roomType.maximumOccupancy))),
+          rooms: String(roomsRequired(travellers, item.guestsPerRoom ?? rate.roomType.maximumOccupancy)),
         });
         continue;
       }
