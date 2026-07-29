@@ -46,7 +46,7 @@ export default async function CataloguePage() {
             {data.destinations.map((item) => (
               <div key={item.id} className="py-3">
                 <p className="text-sm font-medium">{item.name}</p>
-                <p className="mt-1 text-xs text-[#7b8580]">{item.country} · {item._count.activities} activities · {item._count.accommodations} stays</p>
+                <p className="mt-1 text-xs text-[#7b8580]">{item.country} - {item._count.activities} activities - {item._count.accommodations} stays</p>
               </div>
             ))}
           </div>
@@ -77,7 +77,7 @@ export default async function CataloguePage() {
             {data.activities.map((item) => (
               <div key={item.id} className="py-3">
                 <p className="text-sm font-medium">{item.name}</p>
-                <p className="mt-1 text-xs text-[#7b8580]">{item.destination.name} · {item.category}</p>
+                <p className="mt-1 text-xs text-[#7b8580]">{item.destination.name} - {item.category}</p>
                 {item.rates[0] ? <p className="mt-1 text-xs font-semibold text-[#176b55]">From {formatMoney(item.rates[0].amount.toString(), item.rates[0].currencyCode)}</p> : null}
               </div>
             ))}
@@ -105,7 +105,7 @@ export default async function CataloguePage() {
             {data.accommodations.map((item) => (
               <div key={item.id} className="py-3">
                 <p className="text-sm font-medium">{item.name}</p>
-                <p className="mt-1 text-xs text-[#7b8580]">{item.destination.name} · {item.type} · {item.roomTypes.length} room types</p>
+                <p className="mt-1 text-xs text-[#7b8580]">{item.destination.name} - {item.type} - {item.roomTypes.length} room types</p>
                 {item.rates[0] ? <p className="mt-1 text-xs font-semibold text-[#176b55]">From {formatMoney(item.rates[0].amount.toString(), item.rates[0].currencyCode)}</p> : null}
               </div>
             ))}
@@ -152,9 +152,9 @@ export default async function CataloguePage() {
           <details className="rounded-xl border p-4">
             <summary className="cursor-pointer text-sm font-semibold">Add accommodation rate</summary>
             <form action={addAccommodationRateAction} className="mt-4 space-y-3">
-              <select className={input} name="accommodationId" required>{data.accommodations.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-              <select className={input} name="roomTypeId" required>{roomTypes.map((item) => <option key={item.id} value={item.id}>{item.accommodationName} · {item.name}</option>)}</select>
-              <div className="grid grid-cols-2 gap-3"><input className={input} name="mealPlan" required placeholder="Full board" /><input className={input} name="occupancyGuests" type="number" min={1} required placeholder="People per room" /></div>
+              <label className="block text-xs">Room type and capacity<select className={input} name="roomTypeId" required>{roomTypes.map((item) => <option key={item.id} value={item.id}>{item.accommodationName} - {item.name} - up to {item.maximumOccupancy} guest(s)</option>)}</select></label>
+              <p className="rounded-lg bg-[#f2f8f5] px-3 py-2 text-[11px] text-[#59635e]">Occupancy and accommodation are taken automatically from the selected room type.</p>
+              <input className={input} name="mealPlan" required placeholder="Meal plan, e.g. Full board" />
               <div className="grid grid-cols-2 gap-3"><input className={input} name="amount" required placeholder="Amount" /><select className={input} name="currencyCode">{data.currencies.map((item) => <option key={item.code}>{item.code}</option>)}</select></div>
               <div className="grid grid-cols-2 gap-3"><input className={input} name="startDate" type="date" required /><input className={input} name="endDate" type="date" /></div>
               <label className="flex items-center gap-2 text-xs"><input name="taxIncluded" type="checkbox" /> Tax included</label>
