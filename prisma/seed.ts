@@ -10,8 +10,8 @@ const prisma = new PrismaClient();
 const currencies = [
   { code: "UGX", name: "Ugandan Shilling", symbol: "USh", decimalPlaces: 0 },
   { code: "USD", name: "United States Dollar", symbol: "$", decimalPlaces: 2 },
-  { code: "EUR", name: "Euro", symbol: "€", decimalPlaces: 2 },
-  { code: "GBP", name: "British Pound", symbol: "£", decimalPlaces: 2 },
+  { code: "EUR", name: "Euro", symbol: "\u20AC", decimalPlaces: 2 },
+  { code: "GBP", name: "British Pound", symbol: "\u00A3", decimalPlaces: 2 },
   { code: "KES", name: "Kenyan Shilling", symbol: "KSh", decimalPlaces: 2 },
   { code: "TZS", name: "Tanzanian Shilling", symbol: "TSh", decimalPlaces: 0 },
   { code: "RWF", name: "Rwandan Franc", symbol: "FRw", decimalPlaces: 0 },

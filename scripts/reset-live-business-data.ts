@@ -32,6 +32,15 @@ async function main() {
     ORDER BY table_name
   `;
   const quotedTables = tables.map(({ table_name }) => `"${table_name.replaceAll('"', '""')}"`);
+  const populatedTables: Array<{ table: string; rows: number }> = [];
+  for (const quotedTable of quotedTables) {
+    const [{ count }] = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+      `SELECT COUNT(*)::bigint AS count FROM ${quotedTable}`,
+    );
+    if (count > 0n) {
+      populatedTables.push({ table: quotedTable.slice(1, -1), rows: Number(count) });
+    }
+  }
   if (quotedTables.length === 0) {
     throw new Error("No business tables were found; refusing to continue.");
   }
@@ -54,7 +63,8 @@ async function main() {
   console.log(
     JSON.stringify({
       truncatedBusinessTables: tables.length,
-      preservedUsers: usersAfter.map(({ email }) => email),
+      populatedTablesBeforeReset: populatedTables,
+      preservedUserCount: usersAfter.length,
       preservedSessions: sessionsAfter,
     }),
   );
