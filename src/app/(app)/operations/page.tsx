@@ -119,7 +119,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
                 <section>
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="font-semibold">Readiness controls</h3>
-                    <form action={refreshTourReadinessAction}><input type="hidden" name="tourId" value={tour.id} /><button className="rounded-xl border px-3 py-2 text-xs font-semibold">Recalculate status</button></form>
+                    {["IN_PROGRESS", "COMPLETED"].includes(tour.status) ? <span className="rounded-xl bg-[#f1f3ef] px-3 py-2 text-xs font-semibold text-[#68736e]">{tour.status === "COMPLETED" ? "Readiness locked - tour completed" : "Readiness locked - tour started"}</span> : <form action={refreshTourReadinessAction}><input type="hidden" name="tourId" value={tour.id} /><button className="rounded-xl border px-3 py-2 text-xs font-semibold">Recalculate status</button></form>}
                   </div>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {tour.readiness.checks.map((check) => {
