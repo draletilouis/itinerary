@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateOperationalReadiness } from "./readiness";
+import { calculateOperationalReadiness, nextOperationalStatus } from "./readiness";
 
 const start = new Date("2026-08-01T00:00:00.000Z");
 const end = new Date("2026-08-10T00:00:00.000Z");
@@ -67,5 +67,10 @@ describe("operational readiness", () => {
     const result = calculateOperationalReadiness(readyInput());
     expect(result.checks.some((check) => check.key === "suppliers")).toBe(false);
     expect(result.ready).toBe(true);
+  });
+  it("keeps active and completed tours stable when readiness is recalculated", () => {
+    expect(nextOperationalStatus("IN_PROGRESS", false)).toBe("IN_PROGRESS");
+    expect(nextOperationalStatus("COMPLETED", false)).toBe("COMPLETED");
+    expect(nextOperationalStatus("OPERATIONAL_PREPARATION", true)).toBe("READY");
   });
 });

@@ -11,6 +11,7 @@ const categoryName = `E2E Category ${runId}`;
 async function assertHealthyPage(page: Page) {
   await expect(page.locator("body")).not.toContainText("Internal Server Error");
   await expect(page.locator("body")).not.toContainText("Application error");
+  await expect(page.locator("body")).not.toContainText("A server-side exception has occurred");
 }
 
 async function login(page: Page) {
@@ -60,7 +61,7 @@ test.describe.serial("Hineni complete operational journey", () => {
     await expect(page.getByRole("heading", { name: supplierName })).toBeVisible();
 
     const card = page.locator("article").filter({ hasText: supplierName });
-    await card.getByText("Add service rate").click();
+    await card.getByText("Add general service rate").click();
     await card.locator('[name="service"]').fill("E2E airport transfer");
     await card.locator('[name="unit"]').fill("vehicle");
     await card.locator('[name="amount"]').fill("75");
@@ -125,9 +126,9 @@ test.describe.serial("Hineni complete operational journey", () => {
     await page.getByLabel("Currency").selectOption("USD");
     await page.getByRole("button", { name: "Add cost item" }).click();
     await expect(page.getByText("E2E ground services")).toBeVisible();
-    await page.getByLabel("Markup method").selectOption("PERCENTAGE");
-    await page.getByLabel("Markup or target value").fill("20");
-    await page.getByRole("button", { name: "Save pricing revision" }).click();
+    await page.getByLabel("How do you want to set the selling price?").selectOption("PERCENTAGE");
+    await page.getByLabel("Markup %").fill("20");
+    await page.getByRole("button", { name: "Calculate and save price" }).click();
 
     await page.goto(`/tours/${tourId}/quotation`);
     await page.getByRole("button", { name: "Generate immutable quotation" }).click();
@@ -140,9 +141,51 @@ test.describe.serial("Hineni complete operational journey", () => {
 
   test("all operational and reporting workspaces render", async ({ page }) => {
     await login(page);
-    for (const route of ["/dashboard", "/operations", "/resources", "/documents", "/finance", "/reports", "/notifications", "/settings/audit"]) {
+    const serverErrors: string[] = [];
+    page.on("response", (response) => {
+      if (response.status() >= 500) {
+        serverErrors.push(`${response.status()} ${response.url()}`);
+      }
+    });
+    page.on("pageerror", (error) => serverErrors.push(error.message));
+
+    for (const route of [
+      "/dashboard",
+      "/enquiries",
+      "/customers",
+      "/tours",
+      "/packages",
+      "/itineraries",
+      "/quotations",
+      "/bookings",
+      "/operations",
+      "/suppliers",
+      "/resources",
+      "/documents",
+      "/finance",
+      "/reports",
+      "/notifications",
+      "/settings",
+      "/settings/catalogue",
+      "/settings/audit",
+    ]) {
       await page.goto(route);
       await expect(page).not.toHaveURL(/\/login/);
+      await assertHealthyPage(page);
+    }
+
+    expect(serverErrors, serverErrors.join("\n")).toEqual([]);
+  });
+
+  test("readiness recalculation is safe for every tour state", async ({ page }) => {
+    await login(page);
+    await page.goto("/operations");
+
+    const buttons = page.getByRole("button", { name: "Recalculate status" });
+    const count = await buttons.count();
+    for (let index = 0; index < count; index += 1) {
+      await buttons.nth(index).click();
+      await page.waitForLoadState("domcontentloaded");
       await assertHealthyPage(page);
     }
   });

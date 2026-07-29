@@ -7,7 +7,7 @@ import { prisma } from "@/server/db/prisma";
 import { requireCurrentUser } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
 import { nextReference } from "@/modules/settings/services/reference-number";
-import { calculateOperationalReadiness } from "../services/readiness";
+import { calculateOperationalReadiness, nextOperationalStatus } from "../services/readiness";
 import { initializeTourOperations } from "../services/initialize-operations";
 
 const optionalText = z.string().trim().optional().default("");
@@ -348,9 +348,6 @@ export async function refreshTourReadinessAction(formData: FormData) {
         incidents: true,
       },
     });
-    if (["IN_PROGRESS", "COMPLETED", "CANCELLED", "ARCHIVED"].includes(tour.status)) {
-      throw new Error("Readiness can only change a tour before operation starts.");
-    }
     const readiness = calculateOperationalReadiness({
       bookingStatus: tour.booking?.status ?? null,
       acceptedItineraryVersionId:
@@ -362,7 +359,7 @@ export async function refreshTourReadinessAction(formData: FormData) {
       tasks: tour.operationalTasks,
       incidents: tour.incidents,
     });
-    const nextStatus = readiness.ready ? "READY" : "OPERATIONAL_PREPARATION";
+    const nextStatus = nextOperationalStatus(tour.status, readiness.ready);
     if (tour.status !== nextStatus) {
       await tx.tour.update({
         where: { id: tour.id },

@@ -5,7 +5,15 @@ import type {
   OperationalTaskStatus,
   ResourceAssignmentStatus,
   ResourceType,
+  TourStatus,
 } from "@prisma/client";
+
+export function nextOperationalStatus(current: TourStatus, ready: boolean): TourStatus {
+  if (["IN_PROGRESS", "COMPLETED", "CANCELLED", "ARCHIVED"].includes(current)) {
+    return current;
+  }
+  return ready ? "READY" : "OPERATIONAL_PREPARATION";
+}
 
 type ReadinessInput = {
   bookingStatus: BookingStatus | null;
