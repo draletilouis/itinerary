@@ -71,7 +71,7 @@ export default async function BookingDetailPage({
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">{booking.tour.name}</h1>
           <p className="mt-2 text-sm text-[#68736e]">
-            {booking.customer.fullName} · booked{" "}
+            {booking.customer.fullName}  -  booked{" "}
             {booking.bookingDate.toLocaleDateString("en-UG")}
           </p>
         </div>
@@ -254,7 +254,7 @@ export default async function BookingDetailPage({
         </div>
 
         <div className="space-y-6">
-          <section className="overflow-hidden rounded-2xl border bg-white">
+          <section id="travellers" className="scroll-mt-6 overflow-hidden rounded-2xl border bg-white">
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div>
                 <h2 className="font-semibold">Travellers</h2>
@@ -279,7 +279,7 @@ export default async function BookingDetailPage({
                     <p className="mt-1 text-xs text-[#7b8580]">
                       {[item.traveller.relationship, item.traveller.nationality]
                         .filter(Boolean)
-                        .join(" · ") || "Guest profile"}
+                        .join("  -  ") || "Guest profile"}
                     </p>
                   </div>
                   {canManageTravellers ? (

@@ -33,12 +33,13 @@ function resourceName(entry: {
   equipment?: { name: string } | null;
 }) {
   if (entry.vehicle) {
-    return `${entry.vehicle.registration}${entry.vehicle.make ? ` · ${entry.vehicle.make} ${entry.vehicle.model ?? ""}` : ""}`;
+    return `${entry.vehicle.registration}${entry.vehicle.make ? `  -  ${entry.vehicle.make} ${entry.vehicle.model ?? ""}` : ""}`;
   }
   return entry.driver?.fullName ?? entry.guide?.fullName ?? entry.equipment?.name ?? "Unknown";
 }
 
-export default async function ResourcesPage() {
+export default async function ResourcesPage({ searchParams }: { searchParams: Promise<{ tour?: string }> }) {
+  const query = await searchParams;
   const data = await getResourcesWorkspace();
   const resourceOptions = [
     ...data.vehicles
@@ -46,7 +47,7 @@ export default async function ResourcesPage() {
       .map((entry) => ({
         type: "VEHICLE" as const,
         id: entry.id,
-        label: `${entry.registration} · ${entry.make} ${entry.model}`,
+        label: `${entry.registration}  -  ${entry.make} ${entry.model}`,
       })),
     ...data.drivers
       .filter((entry) => entry.status === "ACTIVE")
@@ -62,7 +63,7 @@ export default async function ResourcesPage() {
   return (
     <div className="mx-auto max-w-7xl">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#176b55]">
-        Phase 9 · Resource control
+        Phase 9  -  Resource control
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Resources</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[#68736e]">
@@ -169,7 +170,9 @@ export default async function ResourcesPage() {
       </section>
 
       <section className="mt-6 space-y-4">
+        <div id="assign-resources" className="scroll-mt-6">
         <BulkResourceAssignmentForm
+          initialTourId={query.tour}
           tours={data.tours.map((tour) => ({
             id: tour.id,
             reference: tour.reference,
@@ -179,6 +182,7 @@ export default async function ResourcesPage() {
           }))}
           resources={resourceOptions}
         />
+        </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
         <details className="rounded-2xl border bg-white">
@@ -201,7 +205,7 @@ export default async function ResourcesPage() {
             Schedule vehicle maintenance
           </summary>
           <form action={createVehicleMaintenanceAction} className="grid gap-4 border-t p-5 sm:grid-cols-2">
-            <label className="text-xs sm:col-span-2">Vehicle<select className={input} name="vehicleId" required defaultValue=""><option value="" disabled>Select vehicle</option>{data.vehicles.filter((vehicle) => vehicle.status === "ACTIVE").map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.registration} · {vehicle.make} {vehicle.model}</option>)}</select></label>
+            <label className="text-xs sm:col-span-2">Vehicle<select className={input} name="vehicleId" required defaultValue=""><option value="" disabled>Select vehicle</option>{data.vehicles.filter((vehicle) => vehicle.status === "ACTIVE").map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.registration}  -  {vehicle.make} {vehicle.model}</option>)}</select></label>
             <label className="text-xs sm:col-span-2">Description<input className={input} name="description" required /></label>
             <label className="text-xs">From<input className={input} name="startDate" type="date" required defaultValue={today} /></label>
             <label className="text-xs">To<input className={input} name="endDate" type="date" required defaultValue={today} /></label>
@@ -230,8 +234,8 @@ export default async function ResourcesPage() {
               {data.assignments.map((assignment) => (
                 <tr key={assignment.id}>
                   <td className="px-5 py-4"><p className="font-semibold">{resourceName(assignment)}</p><p className="text-xs text-[#7b8580]">{assignment.resourceType.toLowerCase()}</p>{assignment.conflictOverrideReason ? <p className="mt-1 flex items-center gap-1 text-xs text-amber-700"><AlertTriangle className="size-3" /> Override: {assignment.conflictOverrideReason}</p> : null}</td>
-                  <td className="px-5 py-4">{assignment.tour.reference} · {assignment.tour.name}</td>
-                  <td className="px-5 py-4">{assignment.startDate.toLocaleDateString("en-UG")} – {assignment.endDate.toLocaleDateString("en-UG")}</td>
+                  <td className="px-5 py-4">{assignment.tour.reference}  -  {assignment.tour.name}</td>
+                  <td className="px-5 py-4">{assignment.startDate.toLocaleDateString("en-UG")} - {assignment.endDate.toLocaleDateString("en-UG")}</td>
                   <td className="px-5 py-4 capitalize">{assignment.status.toLowerCase()}</td>
                   <td className="px-5 py-4">
                     {!["CANCELLED","COMPLETED"].includes(assignment.status) ? (
@@ -253,10 +257,10 @@ export default async function ResourcesPage() {
       <section className="mt-6 grid gap-6 xl:grid-cols-2">
         <div className="space-y-3">
           <h2 className="font-semibold">Fleet and people</h2>
-          {[...data.vehicles.map((entry) => ({ id: entry.id, type: "VEHICLE", title: `${entry.registration} · ${entry.make} ${entry.model}`, detail: `${entry.vehicleType} · ${entry.capacity} seats · ${entry.ownership}`, status: entry.status })),
-            ...data.drivers.map((entry) => ({ id: entry.id, type: "DRIVER", title: entry.fullName, detail: `${entry.phone} · licence ${entry.licenceNumber}`, status: entry.status })),
-            ...data.guides.map((entry) => ({ id: entry.id, type: "GUIDE", title: entry.fullName, detail: `${entry.phone} · ${entry.languages.join(", ") || "Languages not recorded"}`, status: entry.status })),
-            ...data.equipment.map((entry) => ({ id: entry.id, type: "EQUIPMENT", title: entry.name, detail: `${entry.category} · quantity ${entry.quantity}`, status: entry.status }))].map((resource) => (
+          {[...data.vehicles.map((entry) => ({ id: entry.id, type: "VEHICLE", title: `${entry.registration}  -  ${entry.make} ${entry.model}`, detail: `${entry.vehicleType}  -  ${entry.capacity} seats  -  ${entry.ownership}`, status: entry.status })),
+            ...data.drivers.map((entry) => ({ id: entry.id, type: "DRIVER", title: entry.fullName, detail: `${entry.phone}  -  licence ${entry.licenceNumber}`, status: entry.status })),
+            ...data.guides.map((entry) => ({ id: entry.id, type: "GUIDE", title: entry.fullName, detail: `${entry.phone}  -  ${entry.languages.join(", ") || "Languages not recorded"}`, status: entry.status })),
+            ...data.equipment.map((entry) => ({ id: entry.id, type: "EQUIPMENT", title: entry.name, detail: `${entry.category}  -  quantity ${entry.quantity}`, status: entry.status }))].map((resource) => (
               <article key={`${resource.type}-${resource.id}`} className="rounded-2xl border bg-white p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div><p className="font-semibold">{resource.title}</p><p className="mt-1 text-xs text-[#7b8580]">{resource.detail}</p></div>
@@ -269,12 +273,12 @@ export default async function ResourcesPage() {
         <div className="space-y-6">
           <div className="space-y-3">
             <h2 className="font-semibold">Upcoming availability blocks</h2>
-            {data.availability.map((entry) => <article key={entry.id} className="rounded-2xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{resourceName(entry)}</p><p className="mt-1 text-xs text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")} – {entry.endDate.toLocaleDateString("en-UG")} · {entry.reason ?? "No reason"}</p></div><span className="text-xs capitalize">{entry.type.toLowerCase()}</span></div></article>)}
+            {data.availability.map((entry) => <article key={entry.id} className="rounded-2xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{resourceName(entry)}</p><p className="mt-1 text-xs text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")} - {entry.endDate.toLocaleDateString("en-UG")}  -  {entry.reason ?? "No reason"}</p></div><span className="text-xs capitalize">{entry.type.toLowerCase()}</span></div></article>)}
             {!data.availability.length ? <p className="rounded-2xl border bg-white p-5 text-sm text-[#7b8580]">No future availability blocks.</p> : null}
           </div>
           <div className="space-y-3">
             <h2 className="font-semibold">Vehicle maintenance</h2>
-            {data.maintenance.map((entry) => <article key={entry.id} className="rounded-2xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{entry.vehicle.registration} · {entry.description}</p><p className="mt-1 text-xs text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")} – {entry.endDate.toLocaleDateString("en-UG")} · {entry.serviceProvider ?? "Provider not set"}</p></div><div className="text-right"><p className="font-semibold">{formatMoney(entry.cost.toString(),entry.currencyCode)}</p><p className="text-xs capitalize text-[#7b8580]">{entry.status.toLowerCase().replaceAll("_"," ")}</p></div></div></article>)}
+            {data.maintenance.map((entry) => <article key={entry.id} className="rounded-2xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{entry.vehicle.registration}  -  {entry.description}</p><p className="mt-1 text-xs text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")} - {entry.endDate.toLocaleDateString("en-UG")}  -  {entry.serviceProvider ?? "Provider not set"}</p></div><div className="text-right"><p className="font-semibold">{formatMoney(entry.cost.toString(),entry.currencyCode)}</p><p className="text-xs capitalize text-[#7b8580]">{entry.status.toLowerCase().replaceAll("_"," ")}</p></div></div></article>)}
             {!data.maintenance.length ? <p className="rounded-2xl border bg-white p-5 text-sm text-[#7b8580]">No upcoming maintenance.</p> : null}
           </div>
         </div>

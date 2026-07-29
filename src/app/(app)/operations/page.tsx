@@ -40,6 +40,14 @@ function resourceName(entry: {
   return entry.driver?.fullName ?? entry.guide?.fullName ?? entry.equipment?.name ?? "Unknown";
 }
 
+function readinessActionHref(tourId: string, bookingId: string | undefined, key: string) {
+  if (key === "travellers" && bookingId) return `/bookings/${bookingId}#travellers`;
+  if (["vehicle", "driver", "guide"].includes(key)) {
+    return `/resources?tour=${tourId}#resource-row-${key}`;
+  }
+  return null;
+}
+
 export default async function OperationsPage({ searchParams }: { searchParams: Promise<{ tour?: string; prepared?: string; tasks?: string; suppliers?: string }> }) {
   const query = await searchParams;
   const selectedTourId = query.tour ?? "";
@@ -114,7 +122,11 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
                     <form action={refreshTourReadinessAction}><input type="hidden" name="tourId" value={tour.id} /><button className="rounded-xl border px-3 py-2 text-xs font-semibold">Recalculate status</button></form>
                   </div>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    {tour.readiness.checks.map((check) => <div key={check.key} className={`rounded-xl border p-3 ${check.passed ? "bg-[#f2f8f5]" : "bg-amber-50"}`}><div className="flex gap-2"><CheckCircle2 className={`mt-0.5 size-4 shrink-0 ${check.passed ? "text-[#176b55]" : "text-amber-700"}`} /><div><p className="text-xs font-semibold">{check.label}</p><p className="mt-1 text-[11px] leading-4 text-[#7b8580]">{check.detail}</p></div></div></div>)}
+                    {tour.readiness.checks.map((check) => {
+                      const href = check.passed ? null : readinessActionHref(tour.id, tour.booking?.id, check.key);
+                      const card = <div className={`rounded-xl border p-3 ${check.passed ? "bg-[#f2f8f5]" : "bg-amber-50"}`}><div className="flex gap-2"><CheckCircle2 className={`mt-0.5 size-4 shrink-0 ${check.passed ? "text-[#176b55]" : "text-amber-700"}`} /><div><p className="text-xs font-semibold">{check.label}</p><p className="mt-1 text-[11px] leading-4 text-[#7b8580]">{check.detail}</p>{href ? <p className="mt-2 text-[11px] font-semibold text-[#176b55]">Click to fix</p> : null}</div></div></div>;
+                      return href ? <Link key={check.key} href={href} className="block rounded-xl outline-none transition hover:-translate-y-0.5 hover:shadow-sm focus:ring-2 focus:ring-[#176b55]">{card}</Link> : <div key={check.key}>{card}</div>;
+                    })}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {!tour.operationalTasks.length ? <form action={initializeTourOperationsAction}><input type="hidden" name="tourId" value={tour.id} /><button className="rounded-xl bg-[#176b55] px-4 py-2 text-xs font-semibold text-white">Initialize operations checklist</button></form> : null}

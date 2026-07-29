@@ -60,16 +60,25 @@ function initialRows() {
 export function BulkResourceAssignmentForm({
   tours,
   resources,
+  initialTourId = "",
 }: {
   tours: readonly TourOption[];
   resources: readonly ResourceOption[];
+  initialTourId?: string;
 }) {
   const [state, formAction, pending] = useActionState(
     assignResourcesBulkAction,
     initialBulkResourceAssignmentState,
   );
-  const [tourId, setTourId] = useState("");
-  const [rows, setRows] = useState<BulkResourceAssignmentRow[]>(initialRows);
+  const initialTour = tours.find((entry) => entry.id === initialTourId);
+  const [tourId, setTourId] = useState(initialTour?.id ?? "");
+  const [rows, setRows] = useState<BulkResourceAssignmentRow[]>(() =>
+    initialRows().map((row) => ({
+      ...row,
+      startDate: initialTour?.startDate ?? "",
+      endDate: initialTour?.endDate ?? "",
+    })),
+  );
   const lastSuccess = useRef<string | undefined>(undefined);
   const nextRowId = useRef(0);
 
@@ -182,7 +191,7 @@ export function BulkResourceAssignmentForm({
             </option>
             {tours.map((tour) => (
               <option key={tour.id} value={tour.id}>
-                {tour.reference} · {tour.name} · {tour.startDate}–{tour.endDate}
+                {tour.reference}  -  {tour.name}  -  {tour.startDate}-{tour.endDate}
               </option>
             ))}
           </select>
@@ -211,6 +220,7 @@ export function BulkResourceAssignmentForm({
             const availableResources = resourcesByType[row.resourceType];
             return (
               <article
+                id={row.id}
                 key={row.id}
                 className={`rounded-2xl border p-4 ${
                   rowErrors.length ? "border-red-300 bg-red-50/40" : "bg-[#fafaf7]"
@@ -335,7 +345,7 @@ export function BulkResourceAssignmentForm({
                 {rowErrors.length ? (
                   <ul className="mt-3 space-y-1 text-xs text-red-700">
                     {rowErrors.map((error) => (
-                      <li key={error}>• {error}</li>
+                      <li key={error}>* {error}</li>
                     ))}
                   </ul>
                 ) : null}
@@ -362,7 +372,7 @@ export function BulkResourceAssignmentForm({
               <CheckCircle2 className="size-4" />
             )}
             {pending
-              ? "Checking resources…"
+              ? "Checking resources..."
               : `Check and assign ${rows.length} resource${rows.length === 1 ? "" : "s"}`}
           </button>
         </div>

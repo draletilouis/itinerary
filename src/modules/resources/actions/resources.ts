@@ -567,6 +567,7 @@ export async function assignResourcesBulkAction(
               ...resourceForeignKey(row.resourceType, row.resourceId),
               startDate: row.startDateValue,
               endDate: row.endDateValue,
+              status: "CONFIRMED",
               notes: row.notes || null,
               conflictOverrideReason: row.conflicts.length
                 ? row.conflictOverrideReason
