@@ -61,6 +61,15 @@ test.describe.serial("Hineni complete operational journey", () => {
     await expect(page.getByRole("heading", { name: supplierName })).toBeVisible();
 
     const card = page.locator("article").filter({ hasText: supplierName });
+    await card.getByText("Edit supplier").click();
+    const editForm = card.locator("form").filter({ has: page.getByRole("button", { name: "Save supplier changes" }) });
+    await editForm.locator('[name="contactPerson"]').fill("E2E Reservations Manager");
+    await editForm.locator('[name="phone"]').fill("+256700000998");
+    await editForm.locator('[name="paymentTerms"]').fill("Payment due within 14 days");
+    await editForm.getByRole("button", { name: "Save supplier changes" }).click();
+    await expect(card.getByText("E2E Reservations Manager", { exact: false })).toBeVisible();
+    await expect(card.getByText("+256700000998", { exact: false })).toBeVisible();
+
     await card.getByText("Add general service rate").click();
     await card.locator('[name="service"]').fill("E2E airport transfer");
     await card.locator('[name="unit"]').fill("vehicle");
