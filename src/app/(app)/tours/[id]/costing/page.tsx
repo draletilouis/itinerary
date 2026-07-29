@@ -72,6 +72,7 @@ export default async function TourCostingPage({ params }: { params: Promise<{ id
                           {item.basis === "ACCOMMODATION" ? ` · ${item.rooms} room(s) × ${item.nights} night` : ""}
                           {item.basis === "PER_PERSON" ? ` · ${item.eligibleTravellers} traveller(s)` : ""}
                           {item.basis === "VEHICLE" ? ` · ${item.vehicles} vehicle(s) × ${item.days} day` : ""}
+                          {item.estimatedTotal ? ` · Line total ${item.currencyCode} ${item.estimatedTotal}` : ""}
                         </span>
                       ) : (
                         <span className={`mt-1 block text-xs ${item.status === "IMPORTED" ? "text-emerald-700" : "text-amber-700"}`}>{item.reason}</span>

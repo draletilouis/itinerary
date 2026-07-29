@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { basisFromRateUnit, isRateEffective } from "./itinerary-cost-import";
+import { basisFromRateUnit, estimateSuggestionTotal, isRateEffective } from "./itinerary-cost-import";
 
 describe("itinerary cost import helpers", () => {
   it("maps supplier rate units to costing bases", () => {
@@ -26,5 +26,15 @@ describe("itinerary cost import helpers", () => {
         new Date("2027-01-01T00:00:00.000Z"),
       ),
     ).toBe(true);
+  });
+  it("factors four travellers into person and accommodation totals", () => {
+    expect(estimateSuggestionTotal({
+      basis: "PER_PERSON", unitCost: "120", quantity: "1", days: "1",
+      nights: "0", rooms: "0", vehicles: "0", eligibleTravellers: "4",
+    })).toBe("480");
+    expect(estimateSuggestionTotal({
+      basis: "ACCOMMODATION", unitCost: "85", quantity: "1", days: "1",
+      nights: "1", rooms: "2", vehicles: "0", eligibleTravellers: "0",
+    })).toBe("170");
   });
 });

@@ -22,6 +22,7 @@ export type ItineraryCostSuggestion = {
   category: string;
   basis?: CalculationBasis;
   unitCost?: string;
+  estimatedTotal?: string;
   currencyCode?: string;
   supplierId?: string;
   supplierName?: string;
@@ -49,6 +50,28 @@ export function basisFromRateUnit(value: string): CalculationBasis {
   return "STANDARD";
 }
 
+export function estimateSuggestionTotal(input: {
+  basis: CalculationBasis;
+  unitCost: string;
+  quantity: string;
+  days: string;
+  nights: string;
+  rooms: string;
+  vehicles: string;
+  eligibleTravellers: string;
+}) {
+  const unitCost = new Prisma.Decimal(input.unitCost);
+  switch (input.basis) {
+    case "ACCOMMODATION":
+      return unitCost.mul(input.rooms).mul(input.nights).toString();
+    case "PER_PERSON":
+      return unitCost.mul(input.eligibleTravellers).toString();
+    case "VEHICLE":
+      return unitCost.mul(input.vehicles).mul(input.days).toString();
+    default:
+      return unitCost.mul(input.quantity).mul(input.days).toString();
+  }
+}
 export async function getItineraryCostSuggestions(
   tourId: string,
 ): Promise<{ tourId: string; suggestions: ItineraryCostSuggestion[] }> {
@@ -130,7 +153,7 @@ export async function getItineraryCostSuggestions(
       const supplierFallback = (): ItineraryCostSuggestion | null => {
         if (!supplierRates.length) return null;
         const rate = supplierRates[0];
-        const basis = basisFromRateUnit(rate.unit);
+        const basis = basisFromRateUnit(`${rate.service} ${rate.unit}`);
         return {
           ...common,
           status: "READY",
@@ -229,7 +252,14 @@ export async function getItineraryCostSuggestions(
       }
     }
   }
-  return { tourId, suggestions };
+  return {
+    tourId,
+    suggestions: suggestions.map((item) =>
+      item.status === "READY" && item.basis && item.unitCost
+        ? { ...item, estimatedTotal: estimateSuggestionTotal({ ...item, basis: item.basis, unitCost: item.unitCost }) }
+        : item,
+    ),
+  };
 }
 
 function categoryForType(type: string) {
