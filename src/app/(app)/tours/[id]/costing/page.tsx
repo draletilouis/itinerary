@@ -2,16 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calculator, Coins, Trash2, TrendingUp } from "lucide-react";
 import { TourWorkspaceNav } from "@/components/tour-workspace-nav";
+import { TourPricingForm } from "@/components/tour-pricing-form";
 import { TourCostForm } from "@/components/tour-cost-form";
 import { archiveTourCostItemAction } from "@/modules/costing/actions/cost-items";
-import { saveTourPricingAction } from "@/modules/costing/actions/tour-costing";
 import { importItineraryCostsAction } from "@/modules/costing/actions/itinerary-cost-import";
 import { getTourCosting } from "@/modules/costing/queries/tour-costing";
 import { costItemDisplay } from "@/modules/costing/presentation/cost-item";
 import { formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
 
 export default async function TourCostingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -69,11 +68,11 @@ export default async function TourCostingPage({ params }: { params: Promise<{ id
                       </span>
                       {item.status === "READY" ? (
                         <span className="mt-1 block text-xs text-[#59635e]">
-                          {item.currencyCode} {item.unitCost} · {item.rateLabel} · {item.supplierName ?? "Direct supplier"}
-                          {item.basis === "ACCOMMODATION" ? ` · ${item.rooms} room(s) × ${item.nights} night` : ""}
-                          {item.basis === "PER_PERSON" ? ` · ${item.eligibleTravellers} traveller(s)` : ""}
-                          {item.basis === "VEHICLE" ? ` · ${item.vehicles} vehicle(s) × ${item.days} day` : ""}
-                          {item.estimatedTotal ? ` · Line total ${item.currencyCode} ${item.estimatedTotal}` : ""}
+                          {item.currencyCode} {item.unitCost} Â· {item.rateLabel} Â· {item.supplierName ?? "Direct supplier"}
+                          {item.basis === "ACCOMMODATION" ? ` Â· ${item.rooms} room(s) Ã— ${item.nights} night` : ""}
+                          {item.basis === "PER_PERSON" ? ` Â· ${item.eligibleTravellers} traveller(s)` : ""}
+                          {item.basis === "VEHICLE" ? ` Â· ${item.vehicles} vehicle(s) Ã— ${item.days} day` : ""}
+                          {item.estimatedTotal ? ` Â· Line total ${item.currencyCode} ${item.estimatedTotal}` : ""}
                         </span>
                       ) : (
                         <span className={`mt-1 block text-xs ${item.status === "IMPORTED" ? "text-emerald-700" : "text-amber-700"}`}>{item.reason}</span>
@@ -121,7 +120,7 @@ export default async function TourCostingPage({ params }: { params: Promise<{ id
                     <td className="px-5 py-4 font-medium">{formatMoney(item.originalTotal.toString(), item.originalCurrencyCode)}</td>
                     <td className="px-5 py-4">
                       <p className={display.sameCurrency ? "font-medium text-[#68736e]" : "font-medium"}>{display.conversionLabel}</p>
-                      <p className="mt-1 text-[11px] text-[#8b948f]">{display.conversionDetail} · {item.exchangeRateDate.toLocaleDateString("en-UG")}</p>
+                      <p className="mt-1 text-[11px] text-[#8b948f]">{display.conversionDetail} Â· {item.exchangeRateDate.toLocaleDateString("en-UG")}</p>
                     </td>
                     <td className="px-5 py-4 text-base font-semibold">{formatMoney(item.convertedTotal.toString(), item.convertedCurrencyCode)}</td>
                     <td className="px-5 py-4 text-[#68736e]">{item.supplier?.name ?? "Direct / internal"}</td>
@@ -160,19 +159,18 @@ export default async function TourCostingPage({ params }: { params: Promise<{ id
 
       <section className="mt-6 rounded-2xl border bg-white p-5">
         <h2 className="font-semibold">Tour pricing</h2><p className="mt-1 text-xs text-[#7b8580]">Each save creates an immutable pricing revision. A minimum margin applies only to this tour.</p>
-        <form action={saveTourPricingAction} className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><input type="hidden" name="tourId" value={tour.id} />
-          <label className="text-xs">Contingency method<select className={input} name="contingencyMethod">{["NONE","PERCENTAGE","FIXED","PER_PERSON","PER_DAY"].map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label className="text-xs">Contingency value<input className={input} name="contingencyValue" /></label>
-          <label className="text-xs">Markup method<select className={input} name="markupMethod">{["PERCENTAGE","FIXED","PER_PERSON","TARGET_PRICE","TARGET_MARGIN"].map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label className="text-xs">Markup or target value<input className={input} name="markupValue" required /></label>
-          <label className="text-xs">Tax method<select className={input} name="taxMethod">{["NONE","PERCENTAGE","FIXED"].map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label className="text-xs">Tax value<input className={input} name="taxValue" /></label>
-          <label className="text-xs">Discount method<select className={input} name="discountMethod">{["NONE","PERCENTAGE","FIXED","PER_PERSON"].map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label className="text-xs">Discount value<input className={input} name="discountValue" /></label>
-          <label className="text-xs">Minimum margin %<input className={input} name="minimumMargin" defaultValue={tour.marginSetting?.minimumMargin?.toString() ?? ""} /></label>
-          <label className="text-xs lg:col-span-2">Below-minimum reason<input className={input} name="belowMinimumReason" placeholder="Required only when calculated margin is below the selected minimum" /></label>
-          <div className="lg:col-span-4"><button disabled={!tour.costItems.length} className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white disabled:opacity-50">Save pricing revision</button></div>
-        </form>
+        <TourPricingForm
+          tourId={tour.id}
+          disabled={!tour.costItems.length}
+          defaults={{
+            markupMethod: latest?.markupMethod ?? "PERCENTAGE",
+            markupValue: latest?.markupValue.toString() ?? "25",
+            contingencyValue: latest?.contingency.toString() ?? "0",
+            taxValue: latest?.tax.toString() ?? "0",
+            discountValue: latest?.discount.toString() ?? "0",
+            minimumMargin: tour.marginSetting?.minimumMargin?.toString() ?? "",
+          }}
+        />
         {latest ? <div className="mt-6 grid gap-3 rounded-xl bg-[#f8f8f5] p-4 sm:grid-cols-4"><div><p className="text-xs text-[#7b8580]">Revision</p><p className="mt-1 font-semibold">#{latest.revision}</p></div><div><p className="text-xs text-[#7b8580]">Selling price</p><p className="mt-1 font-semibold">{formatMoney(latest.sellingPrice.toString(), latest.currencyCode)}</p></div><div><p className="text-xs text-[#7b8580]">Profit</p><p className="mt-1 font-semibold">{formatMoney(latest.estimatedProfit.toString(), latest.currencyCode)}</p></div><div><p className="text-xs text-[#7b8580]">Margin</p><p className="mt-1 font-semibold">{latest.estimatedMargin.toFixed(2)}%</p></div></div> : null}
       </section>
     </div>
