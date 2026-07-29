@@ -128,6 +128,103 @@ export async function createSupplierAction(formData: FormData) {
   revalidatePath("/settings/catalogue");
 }
 
+export async function updateSupplierAction(formData: FormData) {
+  const actor = await requireCurrentUser();
+  const parsed = z
+    .object({
+      supplierId: z.string().uuid(),
+      name: z.string().trim().min(2, "Supplier name is required."),
+      categoryId: z.string().uuid(),
+      status: z.enum(["ACTIVE", "INACTIVE", "ARCHIVED"]),
+      contactPerson: optional,
+      phone: optional,
+      email: z.string().trim().email("Enter a valid email address.").or(z.literal("")),
+      address: optional,
+      taxIdentifier: optional,
+      paymentTerms: optional,
+      preferredCurrencyCode: optional,
+      bankDetails: optional,
+      contractStart: optional,
+      contractEnd: optional,
+      notes: optional,
+    })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid supplier details.");
+  }
+  const data = parsed.data;
+  if (data.contractEnd && data.contractStart && new Date(data.contractEnd) < new Date(data.contractStart)) {
+    throw new Error("Contract end date cannot be before its start date.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const [previous, category, currency] = await Promise.all([
+      tx.supplier.findUniqueOrThrow({ where: { id: data.supplierId } }),
+      tx.supplierCategory.findFirst({
+        where: { id: data.categoryId, status: "ACTIVE" },
+        select: { id: true },
+      }),
+      data.preferredCurrencyCode
+        ? tx.currency.findFirst({
+            where: { code: data.preferredCurrencyCode, active: true },
+            select: { code: true },
+          })
+        : Promise.resolve(null),
+    ]);
+    if (!category) throw new Error("Select an active supplier category.");
+    if (data.preferredCurrencyCode && !currency) {
+      throw new Error("Select an active preferred currency.");
+    }
+
+    const updated = await tx.supplier.update({
+      where: { id: data.supplierId },
+      data: {
+        name: data.name,
+        categoryId: data.categoryId,
+        status: data.status,
+        archivedAt: data.status === "ARCHIVED" ? previous.archivedAt ?? new Date() : null,
+        contactPerson: data.contactPerson || null,
+        phone: data.phone || null,
+        email: data.email || null,
+        address: data.address || null,
+        taxIdentifier: data.taxIdentifier || null,
+        paymentTerms: data.paymentTerms || null,
+        preferredCurrencyCode: data.preferredCurrencyCode || null,
+        bankDetails: data.bankDetails || null,
+        contractStart: data.contractStart ? new Date(data.contractStart) : null,
+        contractEnd: data.contractEnd ? new Date(data.contractEnd) : null,
+        notes: data.notes || null,
+      },
+    });
+    await writeAuditEvent(tx, {
+      actorId: actor.id,
+      action: "supplier.updated",
+      entityType: "Supplier",
+      entityId: updated.id,
+      previous: {
+        name: previous.name,
+        categoryId: previous.categoryId,
+        status: previous.status,
+        contactPerson: previous.contactPerson,
+        phone: previous.phone,
+        email: previous.email,
+        preferredCurrencyCode: previous.preferredCurrencyCode,
+      },
+      next: {
+        name: updated.name,
+        categoryId: updated.categoryId,
+        status: updated.status,
+        contactPerson: updated.contactPerson,
+        phone: updated.phone,
+        email: updated.email,
+        preferredCurrencyCode: updated.preferredCurrencyCode,
+      },
+    });
+  });
+
+  revalidatePath("/suppliers");
+  revalidatePath("/settings/catalogue");
+}
 export async function addSupplierRateAction(formData: FormData) {
   const actor = await requireCurrentUser();
   const data = z.object({

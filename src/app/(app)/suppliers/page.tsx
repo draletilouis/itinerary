@@ -4,6 +4,7 @@ import {
   addSupplierRateAction,
   createSupplierAction,
   createSupplierCategoryAction,
+  updateSupplierAction,
 } from "@/modules/catalogue/actions/catalogue";
 import { getCatalogue } from "@/modules/catalogue/queries/catalogue";
 import { formatMoney } from "@/lib/utils";
@@ -74,6 +75,27 @@ export default async function SuppliersPage() {
                   </div>
                 </div>
               ) : null}
+              <details className="mt-4 border-t pt-4">
+                <summary className="cursor-pointer text-xs font-semibold text-[#176b55]">Edit supplier</summary>
+                <form action={updateSupplierAction} className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <input type="hidden" name="supplierId" value={supplier.id} />
+                  <label className="text-[11px] sm:col-span-2">Supplier name<input className={input} name="name" required defaultValue={supplier.name} /></label>
+                  <label className="text-[11px]">Category<select className={input} name="categoryId" required defaultValue={supplier.categoryId}>{data.supplierCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
+                  <label className="text-[11px]">Status<select className={input} name="status" defaultValue={supplier.status}><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option><option value="ARCHIVED">Archived</option></select></label>
+                  <label className="text-[11px]">Contact person<input className={input} name="contactPerson" defaultValue={supplier.contactPerson ?? ""} /></label>
+                  <label className="text-[11px]">Phone<input className={input} name="phone" defaultValue={supplier.phone ?? ""} /></label>
+                  <label className="text-[11px]">Email<input className={input} name="email" type="email" defaultValue={supplier.email ?? ""} /></label>
+                  <label className="text-[11px]">Preferred currency<select className={input} name="preferredCurrencyCode" defaultValue={supplier.preferredCurrencyCode ?? ""}><option value="">Not set</option>{data.currencies.map((currency) => <option key={currency.code} value={currency.code}>{currency.code}</option>)}</select></label>
+                  <label className="text-[11px] sm:col-span-2">Address<input className={input} name="address" defaultValue={supplier.address ?? ""} /></label>
+                  <label className="text-[11px]">Tax identifier<input className={input} name="taxIdentifier" defaultValue={supplier.taxIdentifier ?? ""} /></label>
+                  <label className="text-[11px]">Payment terms<input className={input} name="paymentTerms" defaultValue={supplier.paymentTerms ?? ""} /></label>
+                  <label className="text-[11px]">Contract starts<input className={input} name="contractStart" type="date" defaultValue={supplier.contractStart?.toISOString().slice(0, 10) ?? ""} /></label>
+                  <label className="text-[11px]">Contract ends<input className={input} name="contractEnd" type="date" defaultValue={supplier.contractEnd?.toISOString().slice(0, 10) ?? ""} /></label>
+                  <label className="text-[11px] sm:col-span-2">Bank details<textarea className="mt-2 min-h-20 w-full rounded-xl border bg-white px-3 py-2 text-sm" name="bankDetails" defaultValue={supplier.bankDetails ?? ""} /></label>
+                  <label className="text-[11px] sm:col-span-2">Notes<textarea className="mt-2 min-h-20 w-full rounded-xl border bg-white px-3 py-2 text-sm" name="notes" defaultValue={supplier.notes ?? ""} /></label>
+                  <button className="h-10 rounded-xl bg-[#176b55] px-4 text-xs font-semibold text-white sm:col-span-2">Save supplier changes</button>
+                </form>
+              </details>
               <details className="mt-4 border-t pt-4">
                 <summary className="cursor-pointer text-xs font-semibold text-[#176b55]">Add general service rate</summary>
                 {data.accommodations.some((property) => property.supplierId === supplier.id) ? (
