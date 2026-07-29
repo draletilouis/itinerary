@@ -124,6 +124,28 @@ export async function getItineraryCostSuggestions(
         vehicles: "0",
         eligibleTravellers: "0",
       };
+      const supplierRates = (item.supplier?.rates ?? []).filter((rate) =>
+        isRateEffective(rate, rateDate),
+      );
+      const supplierFallback = (): ItineraryCostSuggestion | null => {
+        if (!supplierRates.length) return null;
+        const rate = supplierRates[0];
+        const basis = basisFromRateUnit(rate.unit);
+        return {
+          ...common,
+          status: "READY",
+          basis,
+          unitCost: rate.amount.toString(),
+          currencyCode: rate.currencyCode,
+          supplierId: item.supplierId ?? undefined,
+          supplierName: item.supplier?.name,
+          rateLabel: `${rate.service} - ${rate.unit}`,
+          nights: basis === "ACCOMMODATION" ? "1" : "0",
+          rooms: basis === "ACCOMMODATION" ? String(Math.ceil(travellers / 2)) : "0",
+          vehicles: basis === "VEHICLE" ? "1" : "0",
+          eligibleTravellers: basis === "PER_PERSON" ? String(travellers) : "0",
+        };
+      };
       if (item.importedCostItem && !item.importedCostItem.archivedAt) {
         suggestions.push({ ...common, status: "IMPORTED", reason: "Already imported" });
         continue;
@@ -133,7 +155,12 @@ export async function getItineraryCostSuggestions(
         const rates = item.activity.rates.filter((rate) => isRateEffective(rate, rateDate));
         const rate = rates[0];
         if (!rate) {
-          suggestions.push({ ...common, status: "UNMATCHED", reason: "No active activity rate for this date" });
+          const fallback = supplierFallback();
+          suggestions.push(fallback ?? {
+            ...common,
+            status: "UNMATCHED",
+            reason: "No active activity or supplier rate for this date",
+          });
           continue;
         }
         const basis = basisFromRateUnit(rate.rateType);
@@ -153,13 +180,20 @@ export async function getItineraryCostSuggestions(
 
       if (item.type === "ACCOMMODATION" && item.accommodation) {
         const rates = item.accommodation.rates.filter((rate) => isRateEffective(rate, rateDate));
-        if (rates.length !== 1) {
+        if (!rates.length) {
+          const fallback = supplierFallback();
+          suggestions.push(fallback ?? {
+            ...common,
+            status: "UNMATCHED",
+            reason: "No active accommodation or supplier rate for this date",
+          });
+          continue;
+        }
+        if (rates.length > 1) {
           suggestions.push({
             ...common,
             status: "UNMATCHED",
-            reason: rates.length
-              ? "Multiple room rates apply; select the correct room rate manually"
-              : "No active accommodation rate for this date",
+            reason: "Multiple room rates apply; select the correct room rate manually",
           });
           continue;
         }
@@ -172,29 +206,16 @@ export async function getItineraryCostSuggestions(
           currencyCode: rate.currencyCode,
           supplierId: rate.supplierId ?? item.supplierId ?? undefined,
           supplierName: rate.supplier?.name ?? item.supplier?.name,
-          rateLabel: `${rate.roomType.name} · ${rate.mealPlan} · ${rate.occupancy}`,
+          rateLabel: `${rate.roomType.name} - ${rate.mealPlan} - ${rate.occupancy}`,
           nights: "1",
           rooms: String(Math.ceil(travellers / Math.max(1, rate.roomType.maximumOccupancy))),
         });
         continue;
       }
 
-      const supplierRates = (item.supplier?.rates ?? []).filter((rate) => isRateEffective(rate, rateDate));
-      if (supplierRates.length === 1) {
-        const rate = supplierRates[0];
-        const basis = basisFromRateUnit(rate.unit);
-        suggestions.push({
-          ...common,
-          status: "READY",
-          basis,
-          unitCost: rate.amount.toString(),
-          currencyCode: rate.currencyCode,
-          supplierId: item.supplierId ?? undefined,
-          supplierName: item.supplier?.name,
-          rateLabel: `${rate.service} · ${rate.unit}`,
-          vehicles: basis === "VEHICLE" ? "1" : "0",
-          eligibleTravellers: basis === "PER_PERSON" ? String(travellers) : "0",
-        });
+      const fallback = supplierFallback();
+      if (fallback) {
+        suggestions.push(fallback);
       } else {
         suggestions.push({
           ...common,
