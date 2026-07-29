@@ -39,7 +39,11 @@ export async function getPackageOptions() {
       prisma.currency.findMany({ where: { active: true }, orderBy: { code: "asc" } }),
       prisma.destination.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
       prisma.activity.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
-      prisma.accommodation.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
+      prisma.accommodation.findMany({
+        where: { status: "ACTIVE" },
+        orderBy: { name: "asc" },
+        include: { roomTypes: { where: { status: "ACTIVE" }, orderBy: { name: "asc" } } },
+      }),
       prisma.supplier.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
     ]);
   return { currencies, destinations, activities, accommodations, suppliers };

@@ -391,6 +391,8 @@ export async function addPackageItemAction(formData: FormData) {
       clientDescription: z.string().trim().optional().default(""),
       activityId: z.string().optional().default(""),
       accommodationId: z.string().optional().default(""),
+      roomTypeId: z.string().optional().default(""),
+      guestsPerRoom: z.coerce.number().int().positive().optional(),
       supplierId: z.string().optional().default(""),
     })
     .parse(Object.fromEntries(formData));
@@ -400,6 +402,18 @@ export async function addPackageItemAction(formData: FormData) {
     const days = packageDays(entry.itineraryTemplate);
     const day = days.find((item) => item.dayNumber === data.dayNumber);
     if (!day) throw new Error("Package day not found.");
+    if (data.type === "ACCOMMODATION") {
+      if (!data.accommodationId || !data.roomTypeId || !data.guestsPerRoom) {
+        throw new Error("Accommodation items require a property, room type and people per room.");
+      }
+      const roomType = await tx.roomType.findFirst({
+        where: { id: data.roomTypeId, accommodationId: data.accommodationId, status: "ACTIVE" },
+        select: { maximumOccupancy: true },
+      });
+      if (!roomType || data.guestsPerRoom > roomType.maximumOccupancy) {
+        throw new Error("The selected room occupancy is invalid.");
+      }
+    }
     day.items.push({
       type: data.type,
       title: data.title,
@@ -408,6 +422,8 @@ export async function addPackageItemAction(formData: FormData) {
       clientDescription: data.clientDescription || undefined,
       activityId: data.activityId || undefined,
       accommodationId: data.accommodationId || undefined,
+      roomTypeId: data.roomTypeId || undefined,
+      guestsPerRoom: data.guestsPerRoom,
       supplierId: data.supplierId || undefined,
     });
     await tx.tourPackage.update({

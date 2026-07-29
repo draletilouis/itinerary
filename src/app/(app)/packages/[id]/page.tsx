@@ -456,7 +456,20 @@ export default async function PackageDetailPage({
                             </option>
                           ))}
                         </select>
-                        <select className={input} name="supplierId">
+                        <select className={input} name="roomTypeId">
+                          <option value="">Room type (for accommodation)</option>
+                          {options.accommodations.flatMap((accommodation) =>
+                            accommodation.roomTypes.map((room) => (
+                              <option key={room.id} value={room.id}>
+                                {accommodation.name} · {room.name} · max {room.maximumOccupancy}
+                              </option>
+                            )),
+                          )}
+                        </select>
+                        <label className="text-xs font-medium">
+                          People per room
+                          <input className={input} name="guestsPerRoom" type="number" min="1" placeholder="e.g. 2" />
+                        </label>                        <select className={input} name="supplierId">
                           <option value="">No supplier link</option>
                           {options.suppliers.map((supplier) => (
                             <option key={supplier.id} value={supplier.id}>

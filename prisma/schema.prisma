@@ -946,6 +946,7 @@ model RoomType {
   description      String?
   status           RecordStatus        @default(ACTIVE)
   rates            AccommodationRate[]
+  itineraryItems   ItineraryItem[]
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
 
@@ -1079,6 +1080,9 @@ model ItineraryItem {
   activity          Activity?         @relation(fields: [activityId], references: [id])
   accommodationId   String?           @db.Uuid
   accommodation     Accommodation?    @relation(fields: [accommodationId], references: [id])
+  roomTypeId         String?           @db.Uuid
+  roomType           RoomType?         @relation(fields: [roomTypeId], references: [id])
+  guestsPerRoom      Int?
   supplierId        String?           @db.Uuid
   supplier          Supplier?         @relation(fields: [supplierId], references: [id])
   importedCostItem  TourCostItem?
@@ -1087,6 +1091,7 @@ model ItineraryItem {
 
   @@unique([dayId, sortOrder])
   @@index([dayId, sortOrder])
+  @@index([roomTypeId])
 }
 
 model TourCostItem {

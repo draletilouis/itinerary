@@ -89,7 +89,7 @@ export default async function ItineraryDetailPage({
               ) : <p className="text-sm leading-7 text-[#59635e]">{day.clientNarrative ?? "No client narrative."}</p>}
 
               <div className="mt-5 divide-y rounded-xl border">
-                {day.items.map((item) => <div key={item.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[90px_1fr_auto]"><span className="text-xs font-semibold text-[#176b55]">{item.startTime ?? "Any time"}</span><div><p className="text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-[#7b8580]">{item.clientDescription ?? item.type.toLowerCase()}</p></div><span className="text-[11px] capitalize text-[#8b948f]">{item.type.toLowerCase()}</span></div>)}
+                {day.items.map((item) => <div key={item.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[90px_1fr_auto]"><span className="text-xs font-semibold text-[#176b55]">{item.startTime ?? "Any time"}</span><div><p className="text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-[#7b8580]">{item.clientDescription ?? item.type.toLowerCase()}</p>{item.type === "ACCOMMODATION" && item.roomType ? <p className="mt-1 text-xs font-medium text-[#176b55]">{item.roomType.name} · {item.guestsPerRoom ?? item.roomType.maximumOccupancy ?? 2} people per room</p> : null}</div><span className="text-[11px] capitalize text-[#8b948f]">{item.type.toLowerCase()}</span></div>)}
                 {!day.items.length ? <p className="px-4 py-6 text-center text-xs text-[#8b948f]">No timed items yet.</p> : null}
               </div>
 

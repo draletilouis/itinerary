@@ -262,6 +262,8 @@ export async function createTourFromWizardAction(formData: FormData) {
             clientDescription: item.clientDescription ?? null,
             activityId: item.activityId ?? null,
             accommodationId: item.accommodationId ?? null,
+            roomTypeId: item.roomTypeId ?? null,
+            guestsPerRoom: item.guestsPerRoom ?? null,
             supplierId: item.supplierId ?? null,
           },
         });

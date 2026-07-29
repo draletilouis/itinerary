@@ -8,6 +8,8 @@ export const packageItemSchema = z.object({
   clientDescription: z.string().optional(),
   activityId: z.string().uuid().optional(),
   accommodationId: z.string().uuid().optional(),
+  roomTypeId: z.string().uuid().optional(),
+  guestsPerRoom: z.number().int().positive().optional(),
   supplierId: z.string().uuid().optional(),
 });
 

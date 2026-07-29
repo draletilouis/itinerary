@@ -50,6 +50,16 @@ export function basisFromRateUnit(value: string): CalculationBasis {
   return "STANDARD";
 }
 
+export function occupancyCount(value: string) {
+  const normalized = value.trim().toLowerCase();
+  const numeric = normalized.match(/\d+/)?.[0];
+  if (numeric) return Number(numeric);
+  if (normalized.includes("single")) return 1;
+  if (normalized.includes("double") || normalized.includes("twin")) return 2;
+  if (normalized.includes("triple")) return 3;
+  if (normalized.includes("quad")) return 4;
+  return null;
+}
 export function estimateSuggestionTotal(input: {
   basis: CalculationBasis;
   unitCost: string;
@@ -108,6 +118,7 @@ export async function getItineraryCostSuggestions(
             orderBy: { sortOrder: "asc" },
             include: {
               supplier: { select: { id: true, name: true, rates: { where: { status: "ACTIVE" }, orderBy: { startDate: "desc" } } } },
+              roomType: { select: { id: true, name: true, maximumOccupancy: true } },
               activity: { include: { rates: { where: { status: "ACTIVE" }, orderBy: { startDate: "desc" } } } },
               accommodation: {
                 include: {
@@ -152,8 +163,13 @@ export async function getItineraryCostSuggestions(
       );
       const supplierFallback = (): ItineraryCostSuggestion | null => {
         if (!supplierRates.length) return null;
-        const rate = supplierRates[0];
-        const basis = basisFromRateUnit(`${rate.service} ${rate.unit}`);
+        const roomMatchedRates = item.roomType
+          ? supplierRates.filter((rate) => rate.service.toLowerCase().includes(item.roomType!.name.toLowerCase()))
+          : [];
+        const rate = roomMatchedRates[0] ?? supplierRates[0];
+        const basis = item.type === "ACCOMMODATION"
+          ? "ACCOMMODATION"
+          : basisFromRateUnit(`${rate.service} ${rate.unit}`);
         return {
           ...common,
           status: "READY",
@@ -164,7 +180,7 @@ export async function getItineraryCostSuggestions(
           supplierName: item.supplier?.name,
           rateLabel: `${rate.service} - ${rate.unit}`,
           nights: basis === "ACCOMMODATION" ? "1" : "0",
-          rooms: basis === "ACCOMMODATION" ? String(Math.ceil(travellers / 2)) : "0",
+          rooms: basis === "ACCOMMODATION" ? String(Math.ceil(travellers / Math.max(1, item.guestsPerRoom ?? item.roomType?.maximumOccupancy ?? 2))) : "0",
           vehicles: basis === "VEHICLE" ? "1" : "0",
           eligibleTravellers: basis === "PER_PERSON" ? String(travellers) : "0",
         };
@@ -202,7 +218,13 @@ export async function getItineraryCostSuggestions(
       }
 
       if (item.type === "ACCOMMODATION" && item.accommodation) {
-        const rates = item.accommodation.rates.filter((rate) => isRateEffective(rate, rateDate));
+        const effectiveRates = item.accommodation.rates.filter((rate) =>
+          isRateEffective(rate, rateDate) && (!item.roomTypeId || rate.roomTypeId === item.roomTypeId),
+        );
+        const occupancyRates = item.guestsPerRoom
+          ? effectiveRates.filter((rate) => occupancyCount(rate.occupancy) === item.guestsPerRoom)
+          : [];
+        const rates = occupancyRates.length ? occupancyRates : effectiveRates;
         if (!rates.length) {
           const fallback = supplierFallback();
           suggestions.push(fallback ?? {
@@ -231,7 +253,7 @@ export async function getItineraryCostSuggestions(
           supplierName: rate.supplier?.name ?? item.supplier?.name,
           rateLabel: `${rate.roomType.name} - ${rate.mealPlan} - ${rate.occupancy}`,
           nights: "1",
-          rooms: String(Math.ceil(travellers / Math.max(1, rate.roomType.maximumOccupancy))),
+          rooms: String(Math.ceil(travellers / Math.max(1, item.guestsPerRoom ?? rate.roomType.maximumOccupancy))),
         });
         continue;
       }

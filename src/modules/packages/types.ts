@@ -6,6 +6,8 @@ export type PackageItineraryItemTemplate = {
   clientDescription?: string;
   activityId?: string;
   accommodationId?: string;
+  roomTypeId?: string;
+  guestsPerRoom?: number;
   supplierId?: string;
 };
 

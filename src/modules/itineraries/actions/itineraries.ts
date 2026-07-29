@@ -189,6 +189,8 @@ export async function addItineraryItemAction(formData: FormData) {
       clientDescription: z.string().trim().optional().default(""),
       activityId: z.string().uuid().optional(),
       accommodationId: z.string().uuid().optional(),
+      roomTypeId: z.string().uuid().optional(),
+      guestsPerRoom: z.coerce.number().int().positive().optional(),
     })
     .parse(Object.fromEntries(formData));
 
@@ -205,6 +207,8 @@ export async function addItineraryItemAction(formData: FormData) {
     let title = data.title;
     let activityId: string | null = null;
     let accommodationId: string | null = null;
+    let roomTypeId: string | null = null;
+    let guestsPerRoom: number | null = null;
     let supplierId: string | null = null;
 
     if (data.type === "ACTIVITY") {
@@ -235,7 +239,19 @@ export async function addItineraryItemAction(formData: FormData) {
         throw new Error("The accommodation must belong to this day’s destination.");
       }
       title = accommodation.name;
+      if (!data.roomTypeId || !data.guestsPerRoom) {
+        throw new Error("Select a room type and people per room.");
+      }
+      const roomType = await tx.roomType.findFirst({
+        where: { id: data.roomTypeId, accommodationId: accommodation.id, status: "ACTIVE" },
+        select: { id: true, maximumOccupancy: true },
+      });
+      if (!roomType || data.guestsPerRoom > roomType.maximumOccupancy) {
+        throw new Error("The selected room occupancy is not valid for this accommodation.");
+      }
       accommodationId = accommodation.id;
+      roomTypeId = roomType.id;
+      guestsPerRoom = data.guestsPerRoom;
       supplierId = accommodation.supplierId;
     } else if (data.activityId || data.accommodationId) {
       throw new Error("Catalogue links are not valid for this item type.");
@@ -257,6 +273,8 @@ export async function addItineraryItemAction(formData: FormData) {
         clientDescription: data.clientDescription || null,
         activityId,
         accommodationId,
+        roomTypeId,
+        guestsPerRoom,
         supplierId,
       },
     });
@@ -314,6 +332,8 @@ export async function duplicateItineraryDayAction(formData: FormData) {
           clientDescription: item.clientDescription,
           activityId: item.activityId,
           accommodationId: item.accommodationId,
+          roomTypeId: item.roomTypeId,
+          guestsPerRoom: item.guestsPerRoom,
           supplierId: item.supplierId,
         },
       });
@@ -416,6 +436,8 @@ export async function createItineraryRevisionAction(formData: FormData) {
             clientDescription: item.clientDescription,
             activityId: item.activityId,
             accommodationId: item.accommodationId,
+            roomTypeId: item.roomTypeId,
+            guestsPerRoom: item.guestsPerRoom,
             supplierId: item.supplierId,
           },
         });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { basisFromRateUnit, estimateSuggestionTotal, isRateEffective } from "./itinerary-cost-import";
+import { basisFromRateUnit, estimateSuggestionTotal, isRateEffective, occupancyCount } from "./itinerary-cost-import";
 
 describe("itinerary cost import helpers", () => {
   it("maps supplier rate units to costing bases", () => {
@@ -36,5 +36,11 @@ describe("itinerary cost import helpers", () => {
       basis: "ACCOMMODATION", unitCost: "85", quantity: "1", days: "1",
       nights: "1", rooms: "2", vehicles: "0", eligibleTravellers: "0",
     })).toBe("170");
+  });
+  it("understands room occupancy labels", () => {
+    expect(occupancyCount("Single occupancy")).toBe(1);
+    expect(occupancyCount("Double / Twin")).toBe(2);
+    expect(occupancyCount("Triple Room")).toBe(3);
+    expect(occupancyCount("4 guests")).toBe(4);
   });
 });

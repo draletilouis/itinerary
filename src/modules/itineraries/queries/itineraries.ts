@@ -31,6 +31,7 @@ export async function getItinerary(id: string) {
                 include: {
                   activity: { select: { name: true } },
                   accommodation: { select: { name: true } },
+                  roomType: { select: { name: true, maximumOccupancy: true } },
                 },
               },
             },
@@ -74,6 +75,11 @@ export async function getItineraryOptions(destinationIds?: string[]) {
         name: true,
         destinationId: true,
         type: true,
+        roomTypes: {
+          where: { status: "ACTIVE" },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true, maximumOccupancy: true },
+        },
       },
     }),
   ]);

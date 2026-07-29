@@ -25,6 +25,7 @@ type AccommodationOption = {
   name: string;
   destinationId: string;
   type: string;
+  roomTypes: { id: string; name: string; maximumOccupancy: number }[];
 };
 
 const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
@@ -50,6 +51,8 @@ export function ItineraryItemForm({
   const [type, setType] = useState<ItemType>("ACTIVITY");
   const [activityId, setActivityId] = useState("");
   const [accommodationId, setAccommodationId] = useState("");
+  const [roomTypeId, setRoomTypeId] = useState("");
+  const [guestsPerRoom, setGuestsPerRoom] = useState("2");
 
   const dayActivities = useMemo(
     () =>
@@ -69,6 +72,7 @@ export function ItineraryItemForm({
   const selectedAccommodation = dayAccommodations.find(
     (item) => item.id === accommodationId,
   );
+  const selectedRoomType = selectedAccommodation?.roomTypes.find((item) => item.id === roomTypeId);
   const catalogueTitle =
     type === "ACTIVITY"
       ? selectedActivity?.name ?? ""
@@ -77,7 +81,7 @@ export function ItineraryItemForm({
         : "";
   const needsCatalogue =
     (type === "ACTIVITY" && !selectedActivity) ||
-    (type === "ACCOMMODATION" && !selectedAccommodation);
+    (type === "ACCOMMODATION" && (!selectedAccommodation || !selectedRoomType));
   const showBothTimes = ["ACTIVITY", "TRANSPORT", "OTHER"].includes(type);
   const showStartTime = !["NOTE"].includes(type);
 
@@ -151,7 +155,10 @@ export function ItineraryItemForm({
               className={input}
               name="accommodationId"
               value={accommodationId}
-              onChange={(event) => setAccommodationId(event.target.value)}
+              onChange={(event) => {
+                setAccommodationId(event.target.value);
+                setRoomTypeId("");
+              }}
               required
               disabled={!dayAccommodations.length}
             >
@@ -174,6 +181,50 @@ export function ItineraryItemForm({
           </label>
         ) : null}
 
+        {type === "ACCOMMODATION" && selectedAccommodation ? (
+          <div className="grid gap-4 rounded-xl border bg-white p-4 sm:col-span-2 sm:grid-cols-2">
+            <label className="text-xs font-medium">
+              Room type
+              <select
+                className={input}
+                name="roomTypeId"
+                value={roomTypeId}
+                onChange={(event) => {
+                  const nextRoomTypeId = event.target.value;
+                  setRoomTypeId(nextRoomTypeId);
+                  const room = selectedAccommodation.roomTypes.find((item) => item.id === nextRoomTypeId);
+                  setGuestsPerRoom(String(Math.min(2, room?.maximumOccupancy ?? 2)));
+                }}
+                required
+              >
+                <option value="">Select room type</option>
+                {selectedAccommodation.roomTypes.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.name} · up to {room.maximumOccupancy} guests
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-xs font-medium">
+              People in each room
+              <select
+                className={input}
+                name="guestsPerRoom"
+                value={guestsPerRoom}
+                onChange={(event) => setGuestsPerRoom(event.target.value)}
+                required
+                disabled={!selectedRoomType}
+              >
+                {Array.from({ length: selectedRoomType?.maximumOccupancy ?? 0 }, (_, index) => index + 1).map((count) => (
+                  <option key={count} value={count}>{count} {count === 1 ? "person" : "people"} per room</option>
+                ))}
+              </select>
+              <span className="mt-1 block text-[11px] text-[#7b8580]">
+                Costing will calculate how many rooms the tour group needs.
+              </span>
+            </label>
+          </div>
+        ) : null}
         {["ACTIVITY", "ACCOMMODATION"].includes(type) ? (
           <input type="hidden" name="title" value={catalogueTitle} />
         ) : (
