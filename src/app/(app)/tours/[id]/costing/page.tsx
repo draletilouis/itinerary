@@ -7,6 +7,7 @@ import { archiveTourCostItemAction } from "@/modules/costing/actions/cost-items"
 import { saveTourPricingAction } from "@/modules/costing/actions/tour-costing";
 import { importItineraryCostsAction } from "@/modules/costing/actions/itinerary-cost-import";
 import { getTourCosting } from "@/modules/costing/queries/tour-costing";
+import { costItemDisplay } from "@/modules/costing/presentation/cost-item";
 import { formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -91,7 +92,57 @@ export default async function TourCostingPage({ params }: { params: Promise<{ id
           ) : (
             <p className="mt-4 rounded-xl border border-dashed bg-white p-4 text-sm text-[#68736e]">No itinerary items are available in the current itinerary version.</p>
           )}
-        </div>        <div className="overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead className="bg-[#f8f8f5] text-xs uppercase text-[#7b8580]"><tr><th className="px-5 py-3">Item</th><th className="px-5 py-3">Basis</th><th className="px-5 py-3">Original</th><th className="px-5 py-3">Rate</th><th className="px-5 py-3">Converted</th><th className="px-5 py-3">Supplier</th><th className="px-5 py-3">Control</th></tr></thead><tbody className="divide-y">{tour.costItems.map((item) => <tr key={item.id}><td className="px-5 py-4"><p className="font-medium">{item.description}</p><p className="mt-1 text-xs text-[#7b8580]">{item.category}</p></td><td className="px-5 py-4 capitalize">{item.basis.toLowerCase().replaceAll("_"," ")}</td><td className="px-5 py-4">{formatMoney(item.originalTotal.toString(), item.originalCurrencyCode)}</td><td className="px-5 py-4">{item.exchangeRate.toString()}<p className="text-[11px] text-[#8b948f]">{item.exchangeRateDate.toLocaleDateString("en-UG")}</p></td><td className="px-5 py-4 font-semibold">{formatMoney(item.convertedTotal.toString(), item.convertedCurrencyCode)}</td><td className="px-5 py-4 text-[#68736e]">{item.supplier?.name ?? "Direct"}</td><td className="px-5 py-4"><details><summary className="cursor-pointer text-xs font-semibold text-red-700">Remove</summary><form action={archiveTourCostItemAction} className="mt-2 flex min-w-64 gap-2"><input type="hidden" name="tourId" value={tour.id} /><input type="hidden" name="costItemId" value={item.id} /><input className="h-9 flex-1 rounded-lg border px-2 text-xs" name="reason" required placeholder="Correction reason" /><button aria-label={`Remove ${item.description}`} className="grid size-9 place-items-center rounded-lg border text-red-700"><Trash2 className="size-4" /></button></form></details></td></tr>)}{!tour.costItems.length ? <tr><td colSpan={7} className="px-5 py-10 text-center text-[#7b8580]">No cost items yet.</td></tr> : null}</tbody></table></div>
+        </div>        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1180px] text-left text-sm">
+            <thead className="bg-[#f8f8f5] text-xs uppercase text-[#7b8580]">
+              <tr>
+                <th className="px-5 py-3">Item</th>
+                <th className="px-5 py-3">How it is calculated</th>
+                <th className="px-5 py-3">Supplier total</th>
+                <th className="px-5 py-3">Currency conversion</th>
+                <th className="px-5 py-3">Tour cost ({tour.costingCurrencyCode})</th>
+                <th className="px-5 py-3">Supplier</th>
+                <th className="px-5 py-3">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {tour.costItems.map((item) => {
+                const display = costItemDisplay(item);
+                return (
+                  <tr key={item.id}>
+                    <td className="px-5 py-4">
+                      <p className="font-medium">{item.description}</p>
+                      <p className="mt-1 text-xs text-[#7b8580]">{item.category}</p>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="rounded-full bg-[#eef3f1] px-2 py-1 text-[10px] font-semibold uppercase text-[#176b55]">{display.basisLabel}</span>
+                      <p className="mt-2 whitespace-nowrap text-xs text-[#59635e]">{display.formula}</p>
+                    </td>
+                    <td className="px-5 py-4 font-medium">{formatMoney(item.originalTotal.toString(), item.originalCurrencyCode)}</td>
+                    <td className="px-5 py-4">
+                      <p className={display.sameCurrency ? "font-medium text-[#68736e]" : "font-medium"}>{display.conversionLabel}</p>
+                      <p className="mt-1 text-[11px] text-[#8b948f]">{display.conversionDetail} · {item.exchangeRateDate.toLocaleDateString("en-UG")}</p>
+                    </td>
+                    <td className="px-5 py-4 text-base font-semibold">{formatMoney(item.convertedTotal.toString(), item.convertedCurrencyCode)}</td>
+                    <td className="px-5 py-4 text-[#68736e]">{item.supplier?.name ?? "Direct / internal"}</td>
+                    <td className="px-5 py-4">
+                      <details>
+                        <summary className="cursor-pointer text-xs font-semibold text-red-700">Remove</summary>
+                        <form action={archiveTourCostItemAction} className="mt-2 flex min-w-64 gap-2">
+                          <input type="hidden" name="tourId" value={tour.id} />
+                          <input type="hidden" name="costItemId" value={item.id} />
+                          <input className="h-9 flex-1 rounded-lg border px-2 text-xs" name="reason" required placeholder="Correction reason" />
+                          <button aria-label={`Remove ${item.description}`} className="grid size-9 place-items-center rounded-lg border text-red-700"><Trash2 className="size-4" /></button>
+                        </form>
+                      </details>
+                    </td>
+                  </tr>
+                );
+              })}
+              {!tour.costItems.length ? <tr><td colSpan={7} className="px-5 py-10 text-center text-[#7b8580]">No cost items yet.</td></tr> : null}
+            </tbody>
+          </table>
+        </div>
         <details className="border-t bg-[#fafaf7]">
           <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-[#176b55]">Add cost item</summary>
           <TourCostForm
