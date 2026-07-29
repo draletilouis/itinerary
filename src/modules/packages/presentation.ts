@@ -19,6 +19,15 @@ export function suggestedCostBasis(category: string): PackageCostTemplate["basis
   return "STANDARD";
 }
 
+export function supplierRateBasis(unit: string, category: string): PackageCostTemplate["basis"] {
+  const normalized = unit.toLowerCase().replace(/[^a-z]+/g, " ").trim();
+  if (normalized.includes("room") || normalized.includes("night")) return "ACCOMMODATION";
+  if (normalized.includes("vehicle") || normalized.includes("car") || normalized.includes("bus")) return "VEHICLE";
+  if (normalized.includes("person") || normalized.includes("traveller") || normalized.includes("pax")) return "PER_PERSON";
+  return suggestedCostBasis(category);
+}
+
+
 const numeric = (value: string | number | undefined) => {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -47,15 +56,15 @@ export function estimatePackageCost(
   switch (cost.basis) {
     case "ACCOMMODATION":
       subtotal = unitCost * numeric(cost.rooms) * numeric(cost.nights);
-      formula = `${unitCost} × ${numeric(cost.rooms)} rooms × ${numeric(cost.nights)} nights`;
+      formula = `${unitCost} x ${numeric(cost.rooms)} rooms x ${numeric(cost.nights)} nights`;
       break;
     case "PER_PERSON":
       subtotal = unitCost * numeric(cost.eligibleTravellers);
-      formula = `${unitCost} × ${numeric(cost.eligibleTravellers)} travellers`;
+      formula = `${unitCost} x ${numeric(cost.eligibleTravellers)} travellers`;
       break;
     case "VEHICLE":
       subtotal = unitCost * numeric(cost.vehicles) * numeric(cost.days);
-      formula = `${unitCost} × ${numeric(cost.vehicles)} vehicles × ${numeric(cost.days)} days`;
+      formula = `${unitCost} x ${numeric(cost.vehicles)} vehicles x ${numeric(cost.days)} days`;
       break;
     case "OVERRIDE":
       subtotal = numeric(cost.overrideTotal);
@@ -63,7 +72,7 @@ export function estimatePackageCost(
       break;
     default:
       subtotal = unitCost * numeric(cost.quantity) * numeric(cost.days);
-      formula = `${unitCost} × ${numeric(cost.quantity)} units × ${numeric(cost.days)} days`;
+      formula = `${unitCost} x ${numeric(cost.quantity)} units x ${numeric(cost.days)} days`;
   }
 
   const tax = subtotal * (numeric(cost.taxPercentage) / 100);

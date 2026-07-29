@@ -22,6 +22,10 @@ export async function getTourCosting(tourId: string) {
       where: { status: "ACTIVE" },
       orderBy: { name: "asc" },
       include: {
+        rates: {
+          where: { status: "ACTIVE" },
+          orderBy: [{ startDate: "desc" }, { service: "asc" }],
+        },
         accommodations: {
           where: { status: "ACTIVE" },
           orderBy: { name: "asc" },
@@ -46,6 +50,17 @@ export async function getTourCosting(tourId: string) {
   const supplierOptions = suppliers.map((supplier) => ({
     id: supplier.id,
     name: supplier.name,
+    serviceRates: supplier.rates.map((rate) => ({
+      id: rate.id,
+      service: rate.service,
+      unit: rate.unit,
+      amount: rate.amount.toString(),
+      currencyCode: rate.currencyCode,
+      startDate: rate.startDate.toISOString(),
+      endDate: rate.endDate?.toISOString() ?? null,
+      notes: rate.notes,
+    })),
+
     roomRates: supplier.accommodations.flatMap((accommodation) =>
       accommodation.rates.map((rate) => ({
         id: rate.id,

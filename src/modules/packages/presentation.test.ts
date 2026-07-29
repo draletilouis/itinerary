@@ -3,6 +3,7 @@ import {
   estimatePackageCost,
   packageNights,
   suggestedCostBasis,
+  supplierRateBasis,
 } from "./presentation";
 
 describe("package presentation helpers", () => {
@@ -16,6 +17,13 @@ describe("package presentation helpers", () => {
     expect(suggestedCostBasis("Transport")).toBe("VEHICLE");
     expect(suggestedCostBasis("Guides")).toBe("STANDARD");
   });
+
+  it("derives a costing basis from supplier rate units", () => {
+    expect(supplierRateBasis("vehicle / day", "Transport")).toBe("VEHICLE");
+    expect(supplierRateBasis("per person", "Activities")).toBe("PER_PERSON");
+    expect(supplierRateBasis("room / night", "Accommodation")).toBe("ACCOMMODATION");
+  });
+
 
   it("previews accommodation with tax and commission", () => {
     const result = estimatePackageCost({
