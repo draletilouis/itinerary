@@ -8,6 +8,7 @@ import { requireCurrentUser } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
 import { nextReference } from "@/modules/settings/services/reference-number";
 import { calculateOperationalReadiness } from "../services/readiness";
+import { initializeTourOperations } from "../services/initialize-operations";
 
 const optionalText = z.string().trim().optional().default("");
 const documentTypes = [
@@ -37,24 +38,11 @@ function resourceName(entry: {
   equipment?: { name: string } | null;
 }) {
   if (entry.vehicle) {
-    return `${entry.vehicle.registration} · ${entry.vehicle.make} ${entry.vehicle.model}`;
+    return `${entry.vehicle.registration} - ${entry.vehicle.make} ${entry.vehicle.model}`;
   }
   return entry.driver?.fullName ?? entry.guide?.fullName ?? entry.equipment?.name ?? "Unknown";
 }
 
-const defaultTasks = [
-  "Confirm accommodation suppliers",
-  "Confirm activity suppliers",
-  "Confirm transport suppliers",
-  "Assign vehicle",
-  "Assign driver",
-  "Assign guide",
-  "Collect traveller documents",
-  "Prepare operational vouchers",
-  "Verify required customer payments",
-  "Inspect assigned vehicle",
-  "Brief guide and driver",
-];
 
 export async function initializeTourOperationsAction(formData: FormData) {
   const actor = await requireCurrentUser();
@@ -63,44 +51,16 @@ export async function initializeTourOperationsAction(formData: FormData) {
     .parse(Object.fromEntries(formData));
 
   await prisma.$transaction(async (tx) => {
-    const tour = await tx.tour.findUniqueOrThrow({
-      where: { id: data.tourId },
-      select: { id: true, startDate: true, status: true },
+    const result = await initializeTourOperations(tx, {
+      tourId: data.tourId,
+      actorId: actor.id,
     });
-    if (["CANCELLED", "ARCHIVED"].includes(tour.status)) {
-      throw new Error("A closed tour cannot be prepared for operations.");
-    }
-    const existing = await tx.operationalTask.findMany({
-      where: { tourId: tour.id, title: { in: defaultTasks } },
-      select: { title: true },
-    });
-    const existingTitles = new Set(existing.map((entry) => entry.title));
-    const dueDate = new Date(tour.startDate);
-    dueDate.setUTCDate(dueDate.getUTCDate() - 3);
-    const missing = defaultTasks.filter((title) => !existingTitles.has(title));
-    if (missing.length) {
-      await tx.operationalTask.createMany({
-        data: missing.map((title) => ({
-          tourId: tour.id,
-          title,
-          dueDate,
-          mandatory: true,
-          createdById: actor.id,
-        })),
-      });
-    }
-    if (["CONFIRMED", "READY"].includes(tour.status)) {
-      await tx.tour.update({
-        where: { id: tour.id },
-        data: { status: "OPERATIONAL_PREPARATION" },
-      });
-    }
     await writeAuditEvent(tx, {
       actorId: actor.id,
       action: "operations.initialized",
       entityType: "Tour",
-      entityId: tour.id,
-      next: { tasksCreated: missing.length },
+      entityId: data.tourId,
+      next: result,
     });
   });
 

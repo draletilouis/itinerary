@@ -36,17 +36,19 @@ function resourceName(entry: {
   guide?: { fullName: string } | null;
   equipment?: { name: string } | null;
 }) {
-  if (entry.vehicle) return `${entry.vehicle.registration} · ${entry.vehicle.make} ${entry.vehicle.model}`;
+  if (entry.vehicle) return `${entry.vehicle.registration}  -  ${entry.vehicle.make} ${entry.vehicle.model}`;
   return entry.driver?.fullName ?? entry.guide?.fullName ?? entry.equipment?.name ?? "Unknown";
 }
 
-export default async function OperationsPage() {
+export default async function OperationsPage({ searchParams }: { searchParams: Promise<{ tour?: string; prepared?: string; tasks?: string; suppliers?: string }> }) {
+  const query = await searchParams;
+  const selectedTourId = query.tour ?? "";
   const data = await getOperationsWorkspace();
 
   return (
     <div className="mx-auto max-w-7xl">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#176b55]">
-        Phase 10 · Operational control
+        Phase 10  -  Operational control
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Tour operations</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[#68736e]">
@@ -58,6 +60,20 @@ export default async function OperationsPage() {
         <Link href="/suppliers" className="h-10 rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Suppliers</Link>
         <Link href="/documents" className="h-10 rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Documents</Link>
       </div>
+
+      {query.prepared === "1" ? (
+        <section className="mt-7 rounded-2xl border border-[#b8cfc7] bg-[#f2f8f5] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#176b55]">Booking confirmed - preparation created</p>
+          <h2 className="mt-2 text-lg font-semibold">Continue with the highlighted tour below</h2>
+          <p className="mt-1 text-sm text-[#59635e]">Created automatically: {query.suppliers ?? "0"} supplier service(s) and {query.tasks ?? "0"} preparation task(s).</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl bg-white p-3"><p className="text-xs font-semibold">1. Confirm services</p><p className="mt-1 text-[11px] text-[#68736e]">Record supplier references and confirmations.</p></div>
+            <div className="rounded-xl bg-white p-3"><p className="text-xs font-semibold">2. Prepare departure</p><p className="mt-1 text-[11px] text-[#68736e]">Assign resources, travellers and documents.</p></div>
+            <div className="rounded-xl bg-white p-3"><p className="text-xs font-semibold">3. Ready to start</p><p className="mt-1 text-[11px] text-[#68736e]">Clear readiness blockers and start the tour.</p></div>
+          </div>
+        </section>
+      ) : null}
+
 
       <section className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
@@ -74,13 +90,13 @@ export default async function OperationsPage() {
 
       <section className="mt-6 space-y-5">
         {data.tours.map((tour) => (
-          <article key={tour.id} className="overflow-hidden rounded-2xl border bg-white">
+          <article id={`tour-${tour.id}`} key={tour.id} className={`scroll-mt-6 overflow-hidden rounded-2xl border bg-white ${selectedTourId === tour.id ? "ring-2 ring-[#176b55] ring-offset-2" : ""}`}>
             <div className="border-b bg-[#123d32] px-6 py-5 text-white">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#eac58f]">{tour.reference} · {tour.status.toLowerCase().replaceAll("_"," ")}</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-[#eac58f]">{tour.reference}  -  {tour.status.toLowerCase().replaceAll("_"," ")}</p>
                   <h2 className="mt-2 text-xl font-semibold">{tour.name}</h2>
-                  <p className="mt-1 text-sm text-white/65">{tour.customer.fullName} · {tour.startDate.toLocaleDateString("en-UG")} – {tour.endDate.toLocaleDateString("en-UG")}</p>
+                  <p className="mt-1 text-sm text-white/65">{tour.customer.fullName}  -  {tour.startDate.toLocaleDateString("en-UG")}  -  {tour.endDate.toLocaleDateString("en-UG")}</p>
                 </div>
                 <div className="min-w-56 rounded-xl bg-white/10 p-4">
                   <div className="flex items-center justify-between"><span className="text-xs">Operational readiness</span><span className="font-semibold">{tour.readiness.score}%</span></div>
@@ -110,7 +126,7 @@ export default async function OperationsPage() {
                 <section>
                   <h3 className="font-semibold">Resources</h3>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    {tour.resourceAssignments.map((entry) => <div key={entry.id} className="rounded-xl bg-[#f8f8f5] p-3"><p className="text-xs font-semibold">{entry.resourceType} · {resourceName(entry)}</p><p className="mt-1 text-[11px] text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")} – {entry.endDate.toLocaleDateString("en-UG")} · {entry.status.toLowerCase()}</p></div>)}
+                    {tour.resourceAssignments.map((entry) => <div key={entry.id} className="rounded-xl bg-[#f8f8f5] p-3"><p className="text-xs font-semibold">{entry.resourceType}  -  {resourceName(entry)}</p><p className="mt-1 text-[11px] text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")}  -  {entry.endDate.toLocaleDateString("en-UG")}  -  {entry.status.toLowerCase()}</p></div>)}
                     {!tour.resourceAssignments.length ? <p className="text-sm text-[#7b8580]">No resources assigned.</p> : null}
                   </div>
                 </section>
@@ -118,7 +134,7 @@ export default async function OperationsPage() {
                 <section>
                   <div className="flex items-center justify-between"><h3 className="font-semibold">Operational tasks</h3><span className="text-xs text-[#7b8580]">{tour.operationalTasks.length} tasks</span></div>
                   <div className="mt-3 space-y-2">
-                    {tour.operationalTasks.map((task) => <div key={task.id} className="rounded-xl border p-3"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-semibold">{task.title}{task.mandatory ? <span className="ml-2 text-[10px] uppercase text-red-700">Required</span> : null}</p><p className="mt-1 text-xs text-[#7b8580]">{task.dueDate ? `Due ${task.dueDate.toLocaleDateString("en-UG")}` : "No due date"} · {task.status.toLowerCase().replaceAll("_"," ")}</p>{task.waivedReason ? <p className="mt-1 text-xs text-amber-700">Waived: {task.waivedReason}</p> : null}</div>{!["COMPLETED","WAIVED"].includes(task.status) ? <form action={setOperationalTaskStatusAction} className="flex gap-2"><input type="hidden" name="taskId" value={task.id} /><input className="h-8 rounded-lg border px-2 text-xs" name="reason" placeholder="Waiver reason" /><button name="status" value="COMPLETED" className="rounded-lg border px-2 text-xs">Complete</button><button name="status" value="WAIVED" className="rounded-lg border px-2 text-xs text-amber-700">Waive</button></form> : null}</div></div>)}
+                    {tour.operationalTasks.map((task) => <div key={task.id} className="rounded-xl border p-3"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-semibold">{task.title}{task.mandatory ? <span className="ml-2 text-[10px] uppercase text-red-700">Required</span> : null}</p><p className="mt-1 text-xs text-[#7b8580]">{task.dueDate ? `Due ${task.dueDate.toLocaleDateString("en-UG")}` : "No due date"}  -  {task.status.toLowerCase().replaceAll("_"," ")}</p>{task.waivedReason ? <p className="mt-1 text-xs text-amber-700">Waived: {task.waivedReason}</p> : null}</div>{!["COMPLETED","WAIVED"].includes(task.status) ? <form action={setOperationalTaskStatusAction} className="flex gap-2"><input type="hidden" name="taskId" value={task.id} /><input className="h-8 rounded-lg border px-2 text-xs" name="reason" placeholder="Waiver reason" /><button name="status" value="COMPLETED" className="rounded-lg border px-2 text-xs">Complete</button><button name="status" value="WAIVED" className="rounded-lg border px-2 text-xs text-amber-700">Waive</button></form> : null}</div></div>)}
                   </div>
                   <details className="mt-3"><summary className="cursor-pointer text-xs font-semibold text-[#176b55]">Add task</summary><form action={createOperationalTaskAction} className="mt-3 grid gap-3 rounded-xl bg-[#f8f8f5] p-4 sm:grid-cols-2"><input type="hidden" name="tourId" value={tour.id} /><label className="text-xs">Title<input className={input} name="title" required /></label><label className="text-xs">Due date<input className={input} name="dueDate" type="date" /></label><label className="text-xs sm:col-span-2">Description<input className={input} name="description" /></label><label className="flex items-center gap-2 text-xs"><input name="mandatory" type="checkbox" defaultChecked /> Mandatory</label><button className="h-10 rounded-xl border px-3 text-xs font-semibold">Add task</button></form></details>
                 </section>
@@ -128,7 +144,7 @@ export default async function OperationsPage() {
                 <section>
                   <h3 className="font-semibold">Supplier confirmations</h3>
                   <div className="mt-3 space-y-2">
-                    {tour.supplierConfirmations.map((confirmation) => <div key={confirmation.id} className="rounded-xl border p-3"><div className="flex justify-between gap-3"><div><p className="text-sm font-semibold">{confirmation.supplier.name}</p><p className="mt-1 text-xs text-[#7b8580]">{confirmation.service} · {confirmation.serviceDate?.toLocaleDateString("en-UG") ?? "Date not set"}</p></div><span className="text-xs capitalize">{confirmation.status.toLowerCase()}</span></div>{confirmation.status !== "CONFIRMED" && confirmation.status !== "CANCELLED" ? <form action={setSupplierConfirmationStatusAction} className="mt-3 grid gap-2 sm:grid-cols-2"><input type="hidden" name="confirmationId" value={confirmation.id} /><input className="h-8 rounded-lg border px-2 text-xs" name="confirmedByName" placeholder="Confirmed by" /><input className="h-8 rounded-lg border px-2 text-xs" name="externalReference" placeholder="Reference" /><input className="h-8 rounded-lg border px-2 text-xs sm:col-span-2" name="notes" placeholder="Notes" /><div className="flex gap-2 sm:col-span-2"><button name="status" value="REQUESTED" className="rounded-lg border px-2 py-1 text-xs">Mark requested</button><button name="status" value="CONFIRMED" className="rounded-lg bg-[#176b55] px-2 py-1 text-xs text-white">Confirm</button><button name="status" value="DECLINED" className="rounded-lg border px-2 py-1 text-xs text-red-700">Declined</button></div></form> : null}</div>)}
+                    {tour.supplierConfirmations.map((confirmation) => <div key={confirmation.id} className="rounded-xl border p-3"><div className="flex justify-between gap-3"><div><p className="text-sm font-semibold">{confirmation.supplier.name}</p><p className="mt-1 text-xs text-[#7b8580]">{confirmation.service}  -  {confirmation.serviceDate?.toLocaleDateString("en-UG") ?? "Date not set"}</p></div><span className="text-xs capitalize">{confirmation.status.toLowerCase()}</span></div>{confirmation.status !== "CONFIRMED" && confirmation.status !== "CANCELLED" ? <form action={setSupplierConfirmationStatusAction} className="mt-3 grid gap-2 sm:grid-cols-2"><input type="hidden" name="confirmationId" value={confirmation.id} /><input className="h-8 rounded-lg border px-2 text-xs" name="confirmedByName" placeholder="Confirmed by" /><input className="h-8 rounded-lg border px-2 text-xs" name="externalReference" placeholder="Reference" /><input className="h-8 rounded-lg border px-2 text-xs sm:col-span-2" name="notes" placeholder="Notes" /><div className="flex gap-2 sm:col-span-2"><button name="status" value="REQUESTED" className="rounded-lg border px-2 py-1 text-xs">Mark requested</button><button name="status" value="CONFIRMED" className="rounded-lg bg-[#176b55] px-2 py-1 text-xs text-white">Confirm</button><button name="status" value="DECLINED" className="rounded-lg border px-2 py-1 text-xs text-red-700">Declined</button></div></form> : null}</div>)}
                   </div>
                   <details className="mt-3"><summary className="cursor-pointer text-xs font-semibold text-[#176b55]">Add supplier service</summary><form action={createSupplierConfirmationAction} className="mt-3 grid gap-3 rounded-xl bg-[#f8f8f5] p-4 sm:grid-cols-2"><input type="hidden" name="tourId" value={tour.id} /><label className="text-xs sm:col-span-2">Supplier<select className={input} name="supplierId" required defaultValue=""><option value="" disabled>Select supplier</option>{data.suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name} / {supplier.category.name}</option>)}</select></label><label className="text-xs">Service<input className={input} name="service" required /></label><label className="text-xs">Service date<input className={input} name="serviceDate" type="date" /></label><label className="text-xs">External reference<input className={input} name="externalReference" /></label><label className="text-xs">Notes<input className={input} name="notes" /></label><button className="h-10 rounded-xl border px-3 text-xs font-semibold sm:col-span-2">Add confirmation</button></form></details>
                 </section>
@@ -136,7 +152,7 @@ export default async function OperationsPage() {
                 <section>
                   <div className="flex items-center justify-between"><h3 className="font-semibold">Incidents</h3><span className="text-xs text-[#7b8580]">{tour.incidents.length}</span></div>
                   <div className="mt-3 space-y-2">
-                    {tour.incidents.map((incident) => <div key={incident.id} className={`rounded-xl border p-3 ${["HIGH","CRITICAL"].includes(incident.severity) && !["RESOLVED","CLOSED"].includes(incident.status) ? "border-red-300 bg-red-50" : ""}`}><p className="text-sm font-semibold">{incident.reference} · {incident.title}</p><p className="mt-1 text-xs text-[#7b8580]">{incident.severity.toLowerCase()} · {incident.status.toLowerCase()} · {incident.occurredAt.toLocaleString("en-UG")}</p><p className="mt-2 text-xs leading-5">{incident.description}</p>{incident.resolution ? <p className="mt-2 text-xs text-[#176b55]">Resolution: {incident.resolution}</p> : null}{!["RESOLVED","CLOSED"].includes(incident.status) ? <form action={resolveTourIncidentAction} className="mt-3 flex gap-2"><input type="hidden" name="incidentId" value={incident.id} /><input className="h-8 flex-1 rounded-lg border px-2 text-xs" name="resolution" required placeholder="Resolution" /><button name="status" value="RESOLVED" className="rounded-lg border px-2 text-xs">Resolve</button></form> : null}</div>)}
+                    {tour.incidents.map((incident) => <div key={incident.id} className={`rounded-xl border p-3 ${["HIGH","CRITICAL"].includes(incident.severity) && !["RESOLVED","CLOSED"].includes(incident.status) ? "border-red-300 bg-red-50" : ""}`}><p className="text-sm font-semibold">{incident.reference}  -  {incident.title}</p><p className="mt-1 text-xs text-[#7b8580]">{incident.severity.toLowerCase()}  -  {incident.status.toLowerCase()}  -  {incident.occurredAt.toLocaleString("en-UG")}</p><p className="mt-2 text-xs leading-5">{incident.description}</p>{incident.resolution ? <p className="mt-2 text-xs text-[#176b55]">Resolution: {incident.resolution}</p> : null}{!["RESOLVED","CLOSED"].includes(incident.status) ? <form action={resolveTourIncidentAction} className="mt-3 flex gap-2"><input type="hidden" name="incidentId" value={incident.id} /><input className="h-8 flex-1 rounded-lg border px-2 text-xs" name="resolution" required placeholder="Resolution" /><button name="status" value="RESOLVED" className="rounded-lg border px-2 text-xs">Resolve</button></form> : null}</div>)}
                   </div>
                   <details className="mt-3"><summary className="cursor-pointer text-xs font-semibold text-red-700">Report incident</summary><form action={reportTourIncidentAction} className="mt-3 grid gap-3 rounded-xl bg-red-50 p-4 sm:grid-cols-2"><input type="hidden" name="tourId" value={tour.id} /><label className="text-xs">Title<input className={input} name="title" required /></label><label className="text-xs">Severity<select className={input} name="severity" defaultValue="MEDIUM"><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label><label className="text-xs">Occurred at<input className={input} name="occurredAt" type="datetime-local" required defaultValue={nowLocal} /></label><label className="text-xs">Location<input className={input} name="location" /></label><label className="text-xs sm:col-span-2">People involved<input className={input} name="peopleInvolved" /></label><label className="text-xs sm:col-span-2">Description<textarea className={area} name="description" required /></label><button className="h-10 rounded-xl bg-red-700 px-3 text-xs font-semibold text-white sm:col-span-2">Report incident</button></form></details>
                 </section>
@@ -144,7 +160,7 @@ export default async function OperationsPage() {
                 <section>
                   <h3 className="font-semibold">Operational documents</h3>
                   <form action={generateOperationalDocumentAction} className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]"><input type="hidden" name="tourId" value={tour.id} /><select className="h-10 rounded-xl border px-3 text-xs" name="documentType" defaultValue="FULL_OPERATIONS_PACK"><option>FULL_OPERATIONS_PACK</option><option>GUIDE_BRIEF</option><option>ROOMING_LIST</option><option>SUPPLIER_VOUCHER</option><option>VEHICLE_ALLOCATION</option><option>DAILY_OPERATIONS_SHEET</option></select><button className="h-10 rounded-xl bg-[#123d32] px-3 text-xs font-semibold text-white">Generate frozen PDF</button></form>
-                  <div className="mt-3 space-y-2">{tour.operationalDocuments.map((document) => <a key={document.id} href={`/api/operations/documents/${document.id}/pdf`} className="flex items-center justify-between rounded-xl border p-3 text-xs"><span><strong>{document.reference}</strong> · {document.title}<span className="ml-2 text-[#7b8580]">{document.createdAt.toLocaleString("en-UG")}</span></span><FileDown className="size-4 text-[#176b55]" /></a>)}</div>
+                  <div className="mt-3 space-y-2">{tour.operationalDocuments.map((document) => <a key={document.id} href={`/api/operations/documents/${document.id}/pdf`} className="flex items-center justify-between rounded-xl border p-3 text-xs"><span><strong>{document.reference}</strong>  -  {document.title}<span className="ml-2 text-[#7b8580]">{document.createdAt.toLocaleString("en-UG")}</span></span><FileDown className="size-4 text-[#176b55]" /></a>)}</div>
                 </section>
               </div>
             </div>

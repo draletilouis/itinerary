@@ -2,11 +2,13 @@
 
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/server/db/prisma";
 import { requireCurrentUser } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
 import { buildDepositSchedule } from "../services/schedule";
+import { initializeTourOperations } from "@/modules/operations/services/initialize-operations";
 
 const money = z.string().regex(/^\d+(\.\d{1,4})?$/, "Enter a valid amount.");
 const optionalMoney = z
@@ -279,7 +281,7 @@ export async function removeBookingTravellerAction(formData: FormData) {
 export async function confirmBookingAction(formData: FormData) {
   const actor = await requireCurrentUser();
   const bookingId = z.string().uuid().parse(formData.get("bookingId"));
-  await prisma.$transaction(async (tx) => {
+  const preparation = await prisma.$transaction(async (tx) => {
     const booking = await tx.booking.findUniqueOrThrow({ where: { id: bookingId } });
     if (!["PROVISIONAL", "AWAITING_DEPOSIT"].includes(booking.status)) {
       throw new Error("Only a provisional booking can be confirmed.");
@@ -295,15 +297,23 @@ export async function confirmBookingAction(formData: FormData) {
       where: { id: booking.tourId },
       data: { bookingStatus: "CONFIRMED", status: "CONFIRMED" },
     });
+    const initialized = await initializeTourOperations(tx, {
+      tourId: booking.tourId,
+      actorId: actor.id,
+    });
     await writeAuditEvent(tx, {
       actorId: actor.id,
       action: "booking.confirmed",
       entityType: "Booking",
       entityId: booking.id,
-      next: { status: "CONFIRMED" },
+      next: { status: "CONFIRMED", ...initialized },
     });
+    return { tourId: booking.tourId, ...initialized };
   });
   revalidatePath(`/bookings/${bookingId}`);
+  revalidatePath(`/tours/${preparation.tourId}`);
+  revalidatePath("/operations");
+  redirect(`/operations?tour=${preparation.tourId}&prepared=1&tasks=${preparation.tasksCreated}&suppliers=${preparation.supplierConfirmationsCreated}#tour-${preparation.tourId}`);
 }
 
 export async function cancelBookingAction(formData: FormData) {
