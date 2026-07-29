@@ -14,6 +14,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { getDashboardData } from "@/modules/dashboard/queries/get-dashboard";
+import { dashboardCurrencyTotals } from "@/modules/dashboard/presentation";
 import { formatMoney } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
@@ -24,6 +25,17 @@ const statusLabels: Record<string, string> = {
   IN_PROGRESS: "In progress",
   AWAITING_CONFIRMATION: "Awaiting confirmation",
 };
+
+function currencyTotals(values: Array<{ currencyCode: string; amount: string }>) {
+  const totals = dashboardCurrencyTotals(values);
+  return (
+    <span className="flex flex-col gap-1">
+      {totals.map((entry) => (
+        <span key={entry.currencyCode}>{formatMoney(entry.amount, entry.currencyCode)}</span>
+      ))}
+    </span>
+  );
+}
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
@@ -54,21 +66,21 @@ export default async function DashboardPage() {
     },
     {
       label: "Revenue This Month",
-      value: formatMoney(data.metrics.revenueThisMonth),
+      value: currencyTotals(data.metrics.revenueThisMonth),
       icon: CircleDollarSign,
-      detail: "recorded tour revenue",
+      detail: "kept in each tour currency",
     },
     {
       label: "Outstanding Payments",
-      value: formatMoney(data.metrics.outstandingPayments),
+      value: currencyTotals(data.metrics.outstandingPayments),
       icon: WalletCards,
-      detail: "customer balances due",
+      detail: "kept in each booking currency",
     },
     {
       label: "Estimated Tour Profit",
-      value: formatMoney(data.metrics.estimatedProfit),
+      value: currencyTotals(data.metrics.estimatedProfit),
       icon: TrendingUp,
-      detail: "across open tours",
+      detail: "kept in each quotation currency",
     },
     {
       label: "Scheduling Conflicts",
@@ -215,7 +227,7 @@ export default async function DashboardPage() {
                       Follow up with {enquiry.customer.fullName}
                     </span>
                     <span className="mt-1 block text-xs text-[#7b8580]">
-                      {enquiry.reference} · due{" "}
+                      {enquiry.reference}  -  due{" "}
                       {enquiry.followUpAt?.toLocaleDateString("en-UG")}
                     </span>
                   </span>

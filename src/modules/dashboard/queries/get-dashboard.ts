@@ -50,17 +50,23 @@ async function loadDashboardData() {
         },
       },
     }),
-    prisma.tour.aggregate({
+    prisma.tour.groupBy({
+      by: ["costingCurrencyCode"],
       where: { startDate: { gte: monthStart }, status: { not: "CANCELLED" } },
       _sum: { actualRevenue: true },
+      orderBy: { costingCurrencyCode: "asc" },
     }),
-    prisma.booking.aggregate({
+    prisma.booking.groupBy({
+      by: ["currencyCode"],
       where: { balanceDue: { gt: 0 }, status: { not: "CANCELLED" } },
       _sum: { balanceDue: true },
+      orderBy: { currencyCode: "asc" },
     }),
-    prisma.tour.aggregate({
+    prisma.tour.groupBy({
+      by: ["quotationCurrencyCode"],
       where: { status: { notIn: ["CANCELLED", "ARCHIVED"] } },
       _sum: { estimatedProfit: true },
+      orderBy: { quotationCurrencyCode: "asc" },
     }),
     prisma.tour.findMany({
       where: {
@@ -105,9 +111,9 @@ async function loadDashboardData() {
       upcomingTours,
       openEnquiries,
       confirmedBookings,
-      revenueThisMonth: revenue._sum.actualRevenue?.toString() ?? "0",
-      outstandingPayments: outstanding._sum.balanceDue?.toString() ?? "0",
-      estimatedProfit: estimatedProfit._sum.estimatedProfit?.toString() ?? "0",
+      revenueThisMonth: revenue.map((entry) => ({ currencyCode: entry.costingCurrencyCode, amount: entry._sum.actualRevenue?.toString() ?? "0" })),
+      outstandingPayments: outstanding.map((entry) => ({ currencyCode: entry.currencyCode, amount: entry._sum.balanceDue?.toString() ?? "0" })),
+      estimatedProfit: estimatedProfit.map((entry) => ({ currencyCode: entry.quotationCurrencyCode, amount: entry._sum.estimatedProfit?.toString() ?? "0" })),
       schedulingConflicts: 0,
     },
     timeline,
@@ -126,9 +132,9 @@ export async function getDashboardData() {
         upcomingTours: 0,
         openEnquiries: 0,
         confirmedBookings: 0,
-        revenueThisMonth: "0",
-        outstandingPayments: "0",
-        estimatedProfit: "0",
+        revenueThisMonth: [],
+        outstandingPayments: [],
+        estimatedProfit: [],
         schedulingConflicts: 0,
       },
       timeline: [],
