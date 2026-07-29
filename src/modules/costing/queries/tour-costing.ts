@@ -1,7 +1,8 @@
 import { prisma } from "@/server/db/prisma";
+import { getItineraryCostSuggestions } from "../services/itinerary-cost-import";
 
 export async function getTourCosting(tourId: string) {
-  const [tour, suppliers, currencies, itineraryDays] = await Promise.all([
+  const [tour, suppliers, currencies, itineraryDays, itineraryCostReview] = await Promise.all([
     prisma.tour.findUnique({
       where: { id: tourId },
       include: {
@@ -24,6 +25,7 @@ export async function getTourCosting(tourId: string) {
       orderBy: { dayNumber: "asc" },
       select: { id: true, dayNumber: true, title: true },
     }),
+    getItineraryCostSuggestions(tourId),
   ]);
-  return { tour, suppliers, currencies, itineraryDays };
+  return { tour, suppliers, currencies, itineraryDays, itineraryCostReview };
 }

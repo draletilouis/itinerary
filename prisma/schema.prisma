@@ -1081,6 +1081,7 @@ model ItineraryItem {
   accommodation     Accommodation?    @relation(fields: [accommodationId], references: [id])
   supplierId        String?           @db.Uuid
   supplier          Supplier?         @relation(fields: [supplierId], references: [id])
+  importedCostItem  TourCostItem?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -1094,6 +1095,8 @@ model TourCostItem {
   tour                  Tour                 @relation(fields: [tourId], references: [id])
   itineraryDayId        String?              @db.Uuid
   itineraryDay          ItineraryDay?        @relation(fields: [itineraryDayId], references: [id])
+  sourceItineraryItemId String?              @unique @db.Uuid
+  sourceItineraryItem   ItineraryItem?       @relation(fields: [sourceItineraryItemId], references: [id])
   supplierId            String?              @db.Uuid
   supplier              Supplier?            @relation(fields: [supplierId], references: [id])
   category              String

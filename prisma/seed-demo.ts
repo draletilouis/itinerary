@@ -1,5 +1,9 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 
+if (process.env.DATABASE_PUBLIC_URL) {
+  process.env.DATABASE_URL = process.env.DATABASE_PUBLIC_URL;
+}
+
 const prisma = new PrismaClient();
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 const addDays = (date: Date, days: number) =>

@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../src/server/auth/password";
 
+if (process.env.DATABASE_PUBLIC_URL) {
+  process.env.DATABASE_URL = process.env.DATABASE_PUBLIC_URL;
+}
+
 const prisma = new PrismaClient();
 
 const currencies = [

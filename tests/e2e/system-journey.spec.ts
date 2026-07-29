@@ -119,9 +119,10 @@ test.describe.serial("Hineni complete operational journey", () => {
     await page.goto(`/tours/${tourId}/costing`);
     await page.getByText("Add cost item").click();
     await page.getByLabel("Description").fill("E2E ground services");
-    await page.getByLabel("Unit cost").fill("1000");
-    await page.locator('[name="quantity"]').fill("1");
-    await page.getByLabel("Original currency").selectOption("USD");
+    await page.getByLabel("Rate per room/night").fill("1000");
+    await page.getByLabel("Rooms").fill("1");
+    await page.getByLabel("Nights").fill("1");
+    await page.getByLabel("Currency").selectOption("USD");
     await page.getByRole("button", { name: "Add cost item" }).click();
     await expect(page.getByText("E2E ground services")).toBeVisible();
     await page.getByLabel("Markup method").selectOption("PERCENTAGE");
