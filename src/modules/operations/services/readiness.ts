@@ -5,7 +5,6 @@ import type {
   OperationalTaskStatus,
   ResourceAssignmentStatus,
   ResourceType,
-  SupplierConfirmationStatus,
 } from "@prisma/client";
 
 type ReadinessInput = {
@@ -21,7 +20,6 @@ type ReadinessInput = {
     endDate: Date;
   }>;
   tasks: Array<{ mandatory: boolean; status: OperationalTaskStatus }>;
-  confirmations: Array<{ status: SupplierConfirmationStatus }>;
   incidents: Array<{ severity: IncidentSeverity; status: IncidentStatus }>;
 };
 
@@ -51,9 +49,6 @@ export function calculateOperationalReadiness(input: ReadinessInput): ReadinessR
   const incompleteMandatoryTasks = input.tasks.filter(
     (task) =>
       task.mandatory && !["COMPLETED", "WAIVED"].includes(task.status),
-  ).length;
-  const unconfirmedSuppliers = input.confirmations.filter(
-    (confirmation) => confirmation.status !== "CONFIRMED",
   ).length;
   const seriousIncidents = input.incidents.filter(
     (incident) =>
@@ -102,12 +97,6 @@ export function calculateOperationalReadiness(input: ReadinessInput): ReadinessR
       label: "Mandatory operational tasks complete",
       passed: incompleteMandatoryTasks === 0,
       detail: `${incompleteMandatoryTasks} mandatory task${incompleteMandatoryTasks === 1 ? "" : "s"} incomplete.`,
-    },
-    {
-      key: "suppliers",
-      label: "Supplier services confirmed",
-      passed: unconfirmedSuppliers === 0,
-      detail: `${unconfirmedSuppliers} supplier confirmation${unconfirmedSuppliers === 1 ? "" : "s"} outstanding.`,
     },
     {
       key: "incidents",

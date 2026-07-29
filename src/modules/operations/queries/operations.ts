@@ -80,9 +80,6 @@ export async function getOperationsWorkspace() {
         mandatory: entry.mandatory,
         status: entry.status,
       })),
-      confirmations: tour.supplierConfirmations.map((entry) => ({
-        status: entry.status,
-      })),
       incidents: tour.incidents.map((entry) => ({
         severity: entry.severity,
         status: entry.status,

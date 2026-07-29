@@ -14,6 +14,12 @@ export const defaultOperationalTasks = [
   "Brief guide and driver",
 ] as const;
 
+const optionalOperationalTasks = new Set<string>([
+  "Confirm accommodation suppliers",
+  "Confirm activity suppliers",
+  "Confirm transport suppliers",
+]);
+
 type InitializeOperationsResult = {
   tasksCreated: number;
   supplierConfirmationsCreated: number;
@@ -65,13 +71,17 @@ export async function initializeTourOperations(
   const dueDate = new Date(tour.startDate);
   dueDate.setUTCDate(dueDate.getUTCDate() - 3);
   const missingTasks = defaultOperationalTasks.filter((title) => !existingTitles.has(title));
+  await tx.operationalTask.updateMany({
+    where: { tourId: tour.id, title: { in: [...optionalOperationalTasks] } },
+    data: { mandatory: false },
+  });
   if (missingTasks.length) {
     await tx.operationalTask.createMany({
       data: missingTasks.map((title) => ({
         tourId: tour.id,
         title,
         dueDate,
-        mandatory: true,
+        mandatory: !optionalOperationalTasks.has(title),
         createdById: input.actorId,
       })),
     });

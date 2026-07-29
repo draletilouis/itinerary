@@ -20,7 +20,6 @@ function readyInput() {
       }),
     ),
     tasks: [{ mandatory: true, status: "COMPLETED" as const }],
-    confirmations: [{ status: "CONFIRMED" as const }],
     incidents: [],
   };
 }
@@ -61,6 +60,12 @@ describe("operational readiness", () => {
       ...readyInput(),
       tasks: [{ mandatory: true, status: "WAIVED" }],
     });
+    expect(result.ready).toBe(true);
+  });
+
+  it("does not require supplier confirmations", () => {
+    const result = calculateOperationalReadiness(readyInput());
+    expect(result.checks.some((check) => check.key === "suppliers")).toBe(false);
     expect(result.ready).toBe(true);
   });
 });

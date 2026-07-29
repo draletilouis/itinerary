@@ -360,7 +360,6 @@ export async function refreshTourReadinessAction(formData: FormData) {
       tourEndDate: tour.endDate,
       assignments: tour.resourceAssignments,
       tasks: tour.operationalTasks,
-      confirmations: tour.supplierConfirmations,
       incidents: tour.incidents,
     });
     const nextStatus = readiness.ready ? "READY" : "OPERATIONAL_PREPARATION";

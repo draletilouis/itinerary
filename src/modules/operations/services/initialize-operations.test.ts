@@ -28,6 +28,7 @@ function transaction(overrides: {
       findMany: vi.fn().mockResolvedValue(
         (overrides.existingTasks ?? []).map((title) => ({ title })),
       ),
+      updateMany: vi.fn(),
       createMany: operationalTaskCreateMany,
     },
     itineraryItem: {
