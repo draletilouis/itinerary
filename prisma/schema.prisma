@@ -196,6 +196,11 @@ enum QuotationStatus {
   CANCELLED
   SUPERSEDED
 }
+enum QuotationPresentationMode {
+  ITEMIZED
+  PER_TRAVELLER
+  BOTH
+}
 
 model User {
   id                            String                 @id @default(uuid()) @db.Uuid
@@ -1220,6 +1225,10 @@ model QuotationVersion {
   tax                   Decimal                         @db.Decimal(18, 4)
   discount              Decimal                         @db.Decimal(18, 4)
   total                 Decimal                         @db.Decimal(18, 4)
+  presentationMode      QuotationPresentationMode       @default(BOTH)
+  adultUnitPrice        Decimal?                        @db.Decimal(18, 4)
+  childUnitPrice        Decimal?                        @db.Decimal(18, 4)
+  travellerAdjustment   Decimal                         @default(0) @db.Decimal(18, 4)
   internalCost          Decimal                         @db.Decimal(18, 4)
   estimatedProfit       Decimal                         @db.Decimal(18, 4)
   estimatedMargin       Decimal                         @db.Decimal(9, 4)

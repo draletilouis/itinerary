@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
 import { getCurrentUser } from "@/server/auth/session";
 import { formatMoney } from "@/lib/utils";
+import { getTravellerPricingRows } from "@/modules/quotations/services/presentation";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,10 @@ export async function GET(
           tax: true,
           discount: true,
           total: true,
+          presentationMode: true,
+          adultUnitPrice: true,
+          childUnitPrice: true,
+          travellerAdjustment: true,
           customerNotes: true,
           terms: true,
           lines: { orderBy: { sortOrder: "asc" }, select: { description: true, details: true, total: true } },
@@ -95,6 +100,16 @@ export async function GET(
   if (!quotation || !version) {
     return NextResponse.json({ error: "Quotation not found." }, { status: 404 });
   }
+  const showItemized = version.presentationMode !== "PER_TRAVELLER";
+  const showPerTraveller = version.presentationMode !== "ITEMIZED";
+  const travellerRows = getTravellerPricingRows({
+      total: version.total,
+    adults: quotation.tour.adults,
+    children: quotation.tour.children,
+    adultUnitPrice: version.adultUnitPrice,
+    childUnitPrice: version.childUnitPrice,
+    adjustment: version.travellerAdjustment,
+  });
 
   const pdf = await PDFDocument.create();
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
@@ -136,28 +151,38 @@ export async function GET(
   drawWrapped(`Quotation: ${quotation.reference}-V${version.versionNumber}`, { font: bold, color: green });
   drawWrapped(`Travel dates: ${quotation.tour.startDate.toLocaleDateString("en-UG")} to ${quotation.tour.endDate.toLocaleDateString("en-UG")}  |  Guests: ${quotation.tour.adults + quotation.tour.children}`, { gap: 12 });
 
-  page.drawText("Quotation", { x: margin, y, size: 16, font: bold, color: green });
-  y -= 26;
-  for (const line of version.lines) {
-    ensure(54);
-    page.drawText(line.description, { x: margin, y, size: 10, font: bold, color: rgb(0.1, 0.13, 0.12) });
-    page.drawText(formatMoney(line.total.toString(), version.currencyCode), { x: width - margin - 120, y, size: 10, font: bold, color: green });
-    y -= 15;
-    if (line.details) drawWrapped(line.details, { size: 8, gap: 7 });
-  }
-  y -= 6;
-  for (const [label, amount] of [
-    ["Subtotal", version.subtotal],
-    ["Tax", version.tax],
-    ["Discount", version.discount.negated()],
-    ["Total", version.total],
-  ] as const) {
-    ensure(22);
-    page.drawText(label, { x: width - margin - 210, y, size: label === "Total" ? 12 : 9, font: label === "Total" ? bold : regular, color: label === "Total" ? green : grey });
-    page.drawText(formatMoney(amount.toString(), version.currencyCode), { x: width - margin - 120, y, size: label === "Total" ? 12 : 9, font: label === "Total" ? bold : regular, color: label === "Total" ? green : grey });
-    y -= label === "Total" ? 28 : 18;
+  if (showItemized) {
+    page.drawText("Price by itinerary item", { x: margin, y, size: 16, font: bold, color: green });
+    y -= 26;
+    for (const line of version.lines) {
+      ensure(54);
+      page.drawText(line.description, { x: margin, y, size: 10, font: bold, color: rgb(0.1, 0.13, 0.12) });
+      const amount = line.total.isZero() ? "Included" : formatMoney(line.total.toString(), version.currencyCode);
+      page.drawText(amount, { x: width - margin - 120, y, size: 10, font: bold, color: line.total.isZero() ? grey : green });
+      y -= 15;
+      if (line.details) drawWrapped(line.details, { size: 8, gap: 7 });
+    }
   }
 
+  if (showPerTraveller) {
+    ensure(44);
+    page.drawText("Price per traveller", { x: margin, y, size: 16, font: bold, color: green });
+    y -= 26;
+    for (const row of travellerRows) {
+      ensure(38);
+      page.drawText(row.label, { x: margin, y, size: 10, font: bold, color: rgb(0.1, 0.13, 0.12) });
+      page.drawText(formatMoney(row.total.toString(), version.currencyCode), { x: width - margin - 120, y, size: 10, font: bold, color: green });
+      y -= 15;
+      const detail = `${row.quantity} x ${formatMoney(row.unitPrice.toString(), version.currencyCode)}${row.adjustment.isZero() ? "" : ` plus ${formatMoney(row.adjustment.toString(), version.currencyCode)} rounding balance`}`;
+      drawWrapped(detail, { size: 8, gap: 7 });
+    }
+  }
+
+  ensure(34);
+  y -= 4;
+  page.drawText("Quotation total", { x: width - margin - 230, y, size: 12, font: bold, color: green });
+  page.drawText(formatMoney(version.total.toString(), version.currencyCode), { x: width - margin - 120, y, size: 12, font: bold, color: green });
+  y -= 34;
   if (version.itineraryVersion) {
     ensure(50);
     page.drawText("Day-by-day itinerary", { x: margin, y, size: 16, font: bold, color: green });

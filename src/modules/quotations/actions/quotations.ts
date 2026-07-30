@@ -14,12 +14,20 @@ import {
   parseFutureValidityDate,
 } from "../services/lifecycle";
 import { calculateQuotationRevision } from "../services/totals";
+import {
+  allocateQuotationAmount,
+  buildItineraryQuotationLines,
+  buildTravellerPricing,
+} from "../services/presentation";
 
 export async function generateQuotationAction(formData: FormData) {
   const actor = await requireCurrentUser();
   const data = z.object({
     tourId: z.string().uuid(),
     validUntil: z.string().min(1),
+    presentationMode: z.enum(["ITEMIZED", "PER_TRAVELLER", "BOTH"]),
+    adultUnitPrice: z.union([z.literal(""), z.string().trim().regex(/^\d+(\.\d{1,2})?$/)]).optional().default(""),
+    childUnitPrice: z.union([z.literal(""), z.string().trim().regex(/^\d+(\.\d{1,2})?$/)]).optional().default(""),
     customerNotes: z.string().trim().optional().default(""),
     terms: z.string().trim().optional().default(""),
   }).parse(Object.fromEntries(formData));
@@ -38,6 +46,12 @@ export async function generateQuotationAction(formData: FormData) {
               where: { status: "PUBLISHED" },
               orderBy: { versionNumber: "desc" },
               take: 1,
+              include: {
+                days: {
+                  orderBy: { dayNumber: "asc" },
+                  include: { items: { orderBy: { sortOrder: "asc" } } },
+                },
+              },
             },
           },
           orderBy: { updatedAt: "desc" },
@@ -51,6 +65,35 @@ export async function generateQuotationAction(formData: FormData) {
     if (!itineraryVersion) {
       throw new Error("Publish an itinerary version before generating a quotation.");
     }
+    const linkedCosts = new Map<string, import("@prisma/client").Prisma.Decimal>();
+    for (const cost of tour.costItems) {
+      if (!cost.sourceItineraryItemId) continue;
+      linkedCosts.set(
+        cost.sourceItineraryItemId,
+        (linkedCosts.get(cost.sourceItineraryItemId) ?? cost.convertedTotal.mul(0)).plus(cost.convertedTotal),
+      );
+    }
+    const quotationLines = buildItineraryQuotationLines({
+      total: pricing.sellingPrice,
+      fallbackTitle: tour.name,
+      items: itineraryVersion.days.flatMap((day) =>
+        day.items.map((item) => ({
+          id: item.id,
+          dayNumber: day.dayNumber,
+          sortOrder: item.sortOrder,
+          type: item.type,
+          title: item.title,
+          linkedCost: linkedCosts.get(item.id) ?? 0,
+        })),
+      ),
+    });
+    const travellerPricing = buildTravellerPricing({
+      total: pricing.sellingPrice,
+      adults: tour.adults,
+      children: tour.children,
+      adultUnitPrice: data.adultUnitPrice || null,
+      childUnitPrice: data.childUnitPrice || null,
+    });
     const reference = await nextReference(tx, "quotation", "QUO");
     const created = await tx.quotation.create({
       data: {
@@ -76,6 +119,10 @@ export async function generateQuotationAction(formData: FormData) {
         tax: pricing.tax,
         discount: pricing.discount,
         total: pricing.sellingPrice,
+        presentationMode: data.presentationMode,
+        adultUnitPrice: travellerPricing.adultUnitPrice,
+        childUnitPrice: travellerPricing.childUnitPrice,
+        travellerAdjustment: travellerPricing.adjustment,
         internalCost: pricing.internalCost,
         estimatedProfit: pricing.estimatedProfit,
         estimatedMargin: pricing.estimatedMargin,
@@ -85,16 +132,8 @@ export async function generateQuotationAction(formData: FormData) {
         createdById: actor.id,
       },
     });
-    await tx.quotationLine.create({
-      data: {
-        versionId: version.id,
-        sortOrder: 1,
-        description: tour.name,
-        details: `${tour.adults + tour.children} travellers · ${tour.startDate.toLocaleDateString("en-UG")} to ${tour.endDate.toLocaleDateString("en-UG")}`,
-        quantity: 1,
-        unitPrice: subtotal,
-        total: subtotal,
-      },
+    await tx.quotationLine.createMany({
+      data: quotationLines.map((line) => ({ ...line, versionId: version.id })),
     });
     for (const item of tour.costItems) {
       await tx.quotationCostSnapshot.create({
@@ -144,6 +183,7 @@ export async function generateQuotationAction(formData: FormData) {
         pricingId: pricing.id,
         itineraryVersionId: itineraryVersion.id,
         total: pricing.sellingPrice.toString(),
+        presentationMode: data.presentationMode,
       },
     });
     return created;
@@ -159,6 +199,9 @@ export async function reviseQuotationAction(formData: FormData) {
     tax: z.string().regex(/^\d+(\.\d+)?$/),
     discount: z.string().regex(/^\d+(\.\d+)?$/),
     validUntil: z.string().min(1),
+    presentationMode: z.enum(["ITEMIZED", "PER_TRAVELLER", "BOTH"]),
+    adultUnitPrice: z.union([z.literal(""), z.string().trim().regex(/^\d+(\.\d{1,2})?$/)]).optional().default(""),
+    childUnitPrice: z.union([z.literal(""), z.string().trim().regex(/^\d+(\.\d{1,2})?$/)]).optional().default(""),
     customerNotes: z.string().trim().optional().default(""),
     terms: z.string().trim().optional().default(""),
     revisionReason: z.string().trim().min(2),
@@ -170,6 +213,7 @@ export async function reviseQuotationAction(formData: FormData) {
     const quotation = await tx.quotation.findUniqueOrThrow({
       where: { id: data.quotationId },
       include: {
+        tour: { select: { adults: true, children: true } },
         versions: {
           orderBy: { versionNumber: "desc" },
           take: 1,
@@ -197,6 +241,21 @@ export async function reviseQuotationAction(formData: FormData) {
     if (minimum && totals.estimatedMargin.lessThan(minimum) && !data.belowMinimumReason) {
       throw new Error("Enter a reason to continue below the tour minimum margin.");
     }
+    const travellerPricing = buildTravellerPricing({
+      total: totals.total,
+      adults: quotation.tour.adults,
+      children: quotation.tour.children,
+      adultUnitPrice: data.adultUnitPrice || null,
+      childUnitPrice: data.childUnitPrice || null,
+    });
+    const pricedSourceLines = source.lines.filter((line) => line.total.greaterThan(0));
+    const revisedAllocations = allocateQuotationAmount(
+      totals.total,
+      pricedSourceLines.map((line) => line.total),
+    );
+    const revisedTotalByLineId = new Map(
+      pricedSourceLines.map((line, index) => [line.id, revisedAllocations[index]]),
+    );
     await tx.quotationVersion.update({
       where: { id: source.id },
       data: { status: "SUPERSEDED" },
@@ -212,6 +271,10 @@ export async function reviseQuotationAction(formData: FormData) {
         validUntil,
         currencyCode: source.currencyCode,
         ...totals,
+        presentationMode: data.presentationMode,
+        adultUnitPrice: travellerPricing.adultUnitPrice,
+        childUnitPrice: travellerPricing.childUnitPrice,
+        travellerAdjustment: travellerPricing.adjustment,
         customerNotes: data.customerNotes || source.customerNotes,
         terms: data.terms || source.terms,
         revisionReason: `${data.revisionReason}${data.belowMinimumReason ? `; Below minimum: ${data.belowMinimumReason}` : ""}`,
@@ -227,8 +290,8 @@ export async function reviseQuotationAction(formData: FormData) {
           description: line.description,
           details: line.details,
           quantity: line.quantity,
-          unitPrice: line.sortOrder === 1 ? totals.subtotal : line.unitPrice,
-          total: line.sortOrder === 1 ? totals.subtotal : line.total,
+          unitPrice: revisedTotalByLineId.get(line.id) ?? line.total.mul(0),
+          total: revisedTotalByLineId.get(line.id) ?? line.total.mul(0),
         },
       });
     }
@@ -273,6 +336,7 @@ export async function reviseQuotationAction(formData: FormData) {
         version: version.versionNumber,
         total: version.total.toString(),
         revisionReason: data.revisionReason,
+        presentationMode: data.presentationMode,
       },
     });
   });
