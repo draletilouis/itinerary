@@ -43,7 +43,7 @@ async function getSettings() {
 }
 
 const inputClass =
-  "mt-2 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 h-11 w-full rounded-lg border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 
 export default async function SettingsPage() {
   const data = await getSettings();
@@ -51,50 +51,50 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#176b55]">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#011478]">
         Configuration
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Settings</h1>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68736e]">
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4b5563]">
         Set the company identity and the currencies used for costing, quotations,
         payments, and management reporting.
       </p>
       <Link
         href="/settings/catalogue"
-        className="mt-5 inline-flex h-11 items-center rounded-xl border bg-white px-4 text-sm font-semibold text-[#176b55]"
+        className="mt-5 inline-flex h-11 items-center rounded-lg border bg-white px-4 text-sm font-semibold text-[#011478]"
       >
         Open tour catalogue
       </Link>
       <Link
         href="/settings/audit"
-        className="ml-2 mt-5 inline-flex h-11 items-center rounded-xl border bg-white px-4 text-sm font-semibold text-[#176b55]"
+        className="ml-2 mt-5 inline-flex h-11 items-center rounded-lg border bg-white px-4 text-sm font-semibold text-[#011478]"
       >
         View audit history
       </Link>
 
       {!data.connected ? (
-        <div className="mt-6 rounded-2xl border border-[#e7c98f] bg-[#fff8e8] px-5 py-4 text-sm text-[#745521]">
+        <div className="mt-6 rounded-xl border border-[#e7c98f] bg-[#fff8e8] px-5 py-4 text-sm text-[#745521]">
           Configure PostgreSQL and apply the database migration before editing
           company settings.
         </div>
       ) : null}
 
       {data.connected && !currenciesConfigured ? (
-        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
           Core currencies are missing. Apply the latest production migration before
           saving company settings or exchange rates.
         </div>
       ) : null}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-        <section className="rounded-2xl border bg-white">
+        <section className="rounded-xl border bg-white">
           <div className="flex items-center gap-3 border-b px-6 py-5">
-            <span className="grid size-10 place-items-center rounded-xl bg-[#edf5f1] text-[#176b55]">
+            <span className="grid size-10 place-items-center rounded-lg bg-[#eff3ff] text-[#011478]">
               <Building2 className="size-5" />
             </span>
             <div>
               <h2 className="font-semibold">Company profile</h2>
-              <p className="mt-1 text-xs text-[#7b8580]">
+              <p className="mt-1 text-xs text-[#6b7280]">
                 Used on quotations, invoices, receipts, and proposals
               </p>
             </div>
@@ -159,7 +159,7 @@ export default async function SettingsPage() {
             <div className="sm:col-span-2">
               <button
                 disabled={!data.connected || !currenciesConfigured}
-                className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save company profile
               </button>
@@ -167,14 +167,14 @@ export default async function SettingsPage() {
           </form>
         </section>
 
-        <section className="rounded-2xl border bg-white">
+        <section className="rounded-xl border bg-white">
           <div className="flex items-center gap-3 border-b px-6 py-5">
-            <span className="grid size-10 place-items-center rounded-xl bg-[#fff4df] text-[#b66f16]">
+            <span className="grid size-10 place-items-center rounded-lg bg-[#fff4df] text-[#b66f16]">
               <RefreshCw className="size-5" />
             </span>
             <div>
               <h2 className="font-semibold">Add exchange rate</h2>
-              <p className="mt-1 text-xs text-[#7b8580]">
+              <p className="mt-1 text-xs text-[#6b7280]">
                 Historical rates are preserved by effective date
               </p>
             </div>
@@ -231,7 +231,7 @@ export default async function SettingsPage() {
             <div className="sm:col-span-2">
               <button
                 disabled={!data.connected || !currenciesConfigured}
-                className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save exchange rate
               </button>
@@ -240,19 +240,19 @@ export default async function SettingsPage() {
         </section>
       </div>
 
-      <section className="mt-6 overflow-hidden rounded-2xl border bg-white">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-white">
         <div className="flex items-center gap-3 border-b px-6 py-5">
-          <Coins className="size-5 text-[#176b55]" />
+          <Coins className="size-5 text-[#011478]" />
           <div>
             <h2 className="font-semibold">Recent exchange rates</h2>
-            <p className="mt-1 text-xs text-[#7b8580]">
+            <p className="mt-1 text-xs text-[#6b7280]">
               Rates remain immutable when locked into a quotation
             </p>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="bg-[#f8f8f5] text-xs uppercase tracking-wide text-[#7b8580]">
+            <thead className="bg-[#f9fafb] text-xs uppercase tracking-wide text-[#6b7280]">
               <tr>
                 <th className="px-6 py-3 font-medium">Pair</th>
                 <th className="px-6 py-3 font-medium">Rate</th>
@@ -271,11 +271,11 @@ export default async function SettingsPage() {
                   <td className="px-6 py-4">
                     {rate.effectiveAt.toLocaleDateString("en-UG")}
                   </td>
-                  <td className="px-6 py-4 text-[#68736e]">
+                  <td className="px-6 py-4 text-[#4b5563]">
                     {rate.sourceReference ?? rate.source.toLowerCase()}
                   </td>
                   <td className="px-6 py-4">
-                    <span className="rounded-full bg-[#edf5f1] px-2.5 py-1 text-xs font-semibold text-[#176b55]">
+                    <span className="rounded-full bg-[#eff3ff] px-2.5 py-1 text-xs font-semibold text-[#011478]">
                       {rate.lockedAt ? "Locked" : "Available"}
                     </span>
                   </td>
@@ -283,7 +283,7 @@ export default async function SettingsPage() {
               ))}
               {!data.rates.length ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-[#7b8580]">
+                  <td colSpan={5} className="px-6 py-10 text-center text-[#6b7280]">
                     No exchange rates have been recorded yet.
                   </td>
                 </tr>
@@ -293,14 +293,14 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <section className="mt-6 rounded-2xl border bg-white">
+      <section className="mt-6 rounded-xl border bg-white">
         <div className="flex items-center gap-3 border-b px-6 py-5">
-          <span className="grid size-10 place-items-center rounded-xl bg-[#edf5f1] text-[#176b55]">
+          <span className="grid size-10 place-items-center rounded-lg bg-[#eff3ff] text-[#011478]">
             <Users className="size-5" />
           </span>
           <div>
             <h2 className="font-semibold">Internal users</h2>
-            <p className="mt-1 text-xs text-[#7b8580]">
+            <p className="mt-1 text-xs text-[#6b7280]">
               Every active user has the same application access
             </p>
           </div>
@@ -308,7 +308,7 @@ export default async function SettingsPage() {
         <div className="grid xl:grid-cols-[1fr_0.8fr]">
           <div className="overflow-x-auto border-b xl:border-b-0 xl:border-r">
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="bg-[#f8f8f5] text-xs uppercase tracking-wide text-[#7b8580]">
+              <thead className="bg-[#f9fafb] text-xs uppercase tracking-wide text-[#6b7280]">
                 <tr>
                   <th className="px-6 py-3 font-medium">User</th>
                   <th className="px-6 py-3 font-medium">Last login</th>
@@ -321,9 +321,9 @@ export default async function SettingsPage() {
                   <tr key={user.id}>
                     <td className="px-6 py-4">
                       <p className="font-medium">{user.fullName}</p>
-                      <p className="mt-1 text-xs text-[#7b8580]">{user.email}</p>
+                      <p className="mt-1 text-xs text-[#6b7280]">{user.email}</p>
                     </td>
-                    <td className="px-6 py-4 text-[#68736e]">
+                    <td className="px-6 py-4 text-[#4b5563]">
                       {user.lastLoginAt
                         ? user.lastLoginAt.toLocaleString("en-UG")
                         : "Not yet"}
@@ -332,8 +332,8 @@ export default async function SettingsPage() {
                       <span
                         className={
                           user.status === "ACTIVE"
-                            ? "rounded-full bg-[#edf5f1] px-2.5 py-1 text-xs font-semibold text-[#176b55]"
-                            : "rounded-full bg-[#f1f2ef] px-2.5 py-1 text-xs font-semibold text-[#68736e]"
+                            ? "rounded-full bg-[#eff3ff] px-2.5 py-1 text-xs font-semibold text-[#011478]"
+                            : "rounded-full bg-[#f3f4f6] px-2.5 py-1 text-xs font-semibold text-[#4b5563]"
                         }
                       >
                         {user.status === "ACTIVE" ? "Active" : "Inactive"}
@@ -350,7 +350,7 @@ export default async function SettingsPage() {
                           name="status"
                           value={user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"}
                         />
-                        <button className="text-xs font-semibold text-[#176b55]">
+                        <button className="text-xs font-semibold text-[#011478]">
                           {user.status === "ACTIVE" ? "Deactivate" : "Activate"}
                         </button>
                       </form>
@@ -359,7 +359,7 @@ export default async function SettingsPage() {
                 ))}
                 {!data.users.length ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-10 text-center text-[#7b8580]">
+                    <td colSpan={4} className="px-6 py-10 text-center text-[#6b7280]">
                       Seed the bootstrap user to begin managing accounts.
                     </td>
                   </tr>
@@ -369,10 +369,10 @@ export default async function SettingsPage() {
           </div>
           <form action={createUserAction} className="p-6">
             <div className="flex items-center gap-2">
-              <UserRoundPlus className="size-4 text-[#176b55]" />
+              <UserRoundPlus className="size-4 text-[#011478]" />
               <h3 className="font-semibold">Add internal user</h3>
             </div>
-            <p className="mt-2 text-xs leading-5 text-[#7b8580]">
+            <p className="mt-2 text-xs leading-5 text-[#6b7280]">
               The user must change the temporary password at first sign-in.
             </p>
             <label className="mt-5 block">
@@ -395,7 +395,7 @@ export default async function SettingsPage() {
             </label>
             <button
               disabled={!data.connected || !currenciesConfigured}
-              className="mt-5 h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white disabled:opacity-50"
+              className="mt-5 h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white disabled:opacity-50"
             >
               Create user
             </button>

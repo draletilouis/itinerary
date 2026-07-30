@@ -24,7 +24,7 @@ import { getBooking } from "@/modules/bookings/queries/bookings";
 import { issueScheduleInvoiceAction } from "@/modules/finance/actions/finance";
 
 export const dynamic = "force-dynamic";
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
 
 export default async function BookingDetailPage({
   params,
@@ -56,21 +56,21 @@ export default async function BookingDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl">
-      <Link href="/bookings" className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+      <Link href="/bookings" className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
         <ArrowLeft className="size-4" /> Back to bookings
       </Link>
       <div className="mt-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex flex-wrap gap-3">
-            <span className="rounded-full bg-[#edf5f1] px-2.5 py-1 text-xs font-semibold text-[#176b55]">
+            <span className="rounded-full bg-[#eff3ff] px-2.5 py-1 text-xs font-semibold text-[#011478]">
               {booking.reference}
             </span>
-            <span className="rounded-full bg-[#f1f3ef] px-2.5 py-1 text-xs capitalize">
+            <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-xs capitalize">
               {booking.status.toLowerCase().replaceAll("_", " ")}
             </span>
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">{booking.tour.name}</h1>
-          <p className="mt-2 text-sm text-[#68736e]">
+          <p className="mt-2 text-sm text-[#4b5563]">
             {booking.customer.fullName}  -  booked{" "}
             {booking.bookingDate.toLocaleDateString("en-UG")}
           </p>
@@ -78,20 +78,20 @@ export default async function BookingDetailPage({
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/tours/${booking.tourId}`}
-            className="flex h-11 items-center rounded-xl border bg-white px-4 text-sm font-semibold"
+            className="flex h-11 items-center rounded-lg border bg-white px-4 text-sm font-semibold"
           >
             Open tour
           </Link>
           <Link
             href={`/quotations/${booking.acceptedQuotationVersion.quotation.id}?version=${booking.acceptedQuotationVersion.versionNumber}`}
-            className="flex h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold"
+            className="flex h-11 items-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold"
           >
             <FileCheck2 className="size-4" /> Accepted quotation
           </Link>
           {canConfirm ? (
             <form action={confirmBookingAction}>
               <input type="hidden" name="bookingId" value={booking.id} />
-              <button className="flex h-11 items-center gap-2 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white">
+              <button className="flex h-11 items-center gap-2 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white">
                 <Check className="size-4" /> Confirm booking
               </button>
             </form>
@@ -126,9 +126,9 @@ export default async function BookingDetailPage({
         ].map(([Icon, label, value]) => {
           const CardIcon = Icon as typeof CircleDollarSign;
           return (
-            <article key={String(label)} className="rounded-2xl border bg-white p-5">
-              <CardIcon className="size-5 text-[#176b55]" />
-              <p className="mt-4 text-xs text-[#7b8580]">{String(label)}</p>
+            <article key={String(label)} className="rounded-xl border bg-white p-5">
+              <CardIcon className="size-5 text-[#011478]" />
+              <p className="mt-4 text-xs text-[#6b7280]">{String(label)}</p>
               <p className="mt-2 text-xl font-semibold">{String(value)}</p>
             </article>
           );
@@ -137,15 +137,15 @@ export default async function BookingDetailPage({
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-6">
-          <section className="overflow-hidden rounded-2xl border bg-white">
+          <section className="overflow-hidden rounded-xl border bg-white">
             <div className="flex items-center justify-between border-b px-6 py-5">
               <div>
                 <h2 className="font-semibold">Payment schedule</h2>
-                <p className="mt-1 text-xs text-[#7b8580]">
+                <p className="mt-1 text-xs text-[#6b7280]">
                   Milestones always add up to the accepted quotation total.
                 </p>
               </div>
-              <CalendarClock className="size-5 text-[#176b55]" />
+              <CalendarClock className="size-5 text-[#011478]" />
             </div>
             <div className="divide-y">
               {booking.paymentSchedule.map((entry) => (
@@ -155,7 +155,7 @@ export default async function BookingDetailPage({
                 >
                   <div>
                     <p className="text-sm font-medium">{entry.label}</p>
-                    <p className="mt-1 text-xs text-[#7b8580]">
+                    <p className="mt-1 text-xs text-[#6b7280]">
                       Due {entry.dueDate.toLocaleDateString("en-UG")}
                     </p>
                   </div>
@@ -163,7 +163,7 @@ export default async function BookingDetailPage({
                     {formatMoney(entry.amount.toString(), booking.currencyCode)}
                   </p>
                   {entry.invoice ? (
-                    <a href={`/api/invoices/${entry.invoice.id}/pdf`} className="text-xs font-semibold text-[#176b55]">
+                    <a href={`/api/invoices/${entry.invoice.id}/pdf`} className="text-xs font-semibold text-[#011478]">
                       {entry.invoice.reference}
                     </a>
                   ) : booking.status !== "CANCELLED" ? (
@@ -172,7 +172,7 @@ export default async function BookingDetailPage({
                       <button className="rounded-lg border px-3 py-2 text-xs font-semibold">Issue invoice</button>
                     </form>
                   ) : (
-                    <span className="text-xs capitalize text-[#68736e]">{entry.status.toLowerCase()}</span>
+                    <span className="text-xs capitalize text-[#4b5563]">{entry.status.toLowerCase()}</span>
                   )}
                 </div>
               ))}
@@ -180,7 +180,7 @@ export default async function BookingDetailPage({
           </section>
 
           {canEditSchedule ? (
-            <details className="rounded-2xl border bg-white">
+            <details className="rounded-xl border bg-white">
               <summary className="cursor-pointer px-6 py-5 text-sm font-semibold">
                 Configure deposit and instalments
               </summary>
@@ -244,7 +244,7 @@ export default async function BookingDetailPage({
                   />
                 </label>
                 <div className="sm:col-span-2">
-                  <button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white">
+                  <button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white">
                     Save payment schedule
                   </button>
                 </div>
@@ -254,15 +254,15 @@ export default async function BookingDetailPage({
         </div>
 
         <div className="space-y-6">
-          <section id="travellers" className="scroll-mt-6 overflow-hidden rounded-2xl border bg-white">
+          <section id="travellers" className="scroll-mt-6 overflow-hidden rounded-xl border bg-white">
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div>
                 <h2 className="font-semibold">Travellers</h2>
-                <p className="mt-1 text-xs text-[#7b8580]">
+                <p className="mt-1 text-xs text-[#6b7280]">
                   {booking.travellers.length}/{booking.travellerCount} profiles assigned
                 </p>
               </div>
-              <Users className="size-5 text-[#176b55]" />
+              <Users className="size-5 text-[#011478]" />
             </div>
             <div className="divide-y">
               {booking.travellers.map((item) => (
@@ -271,12 +271,12 @@ export default async function BookingDetailPage({
                     <p className="text-sm font-medium">
                       {item.traveller.fullName}
                       {item.isLead ? (
-                        <span className="ml-2 rounded-full bg-[#edf5f1] px-2 py-0.5 text-[10px] text-[#176b55]">
+                        <span className="ml-2 rounded-full bg-[#eff3ff] px-2 py-0.5 text-[10px] text-[#011478]">
                           Lead
                         </span>
                       ) : null}
                     </p>
-                    <p className="mt-1 text-xs text-[#7b8580]">
+                    <p className="mt-1 text-xs text-[#6b7280]">
                       {[item.traveller.relationship, item.traveller.nationality]
                         .filter(Boolean)
                         .join("  -  ") || "Guest profile"}
@@ -294,13 +294,13 @@ export default async function BookingDetailPage({
                 </div>
               ))}
               {!booking.travellers.length ? (
-                <p className="px-5 py-8 text-center text-sm text-[#7b8580]">
+                <p className="px-5 py-8 text-center text-sm text-[#6b7280]">
                   No traveller profiles assigned yet.
                 </p>
               ) : null}
             </div>
             {canManageTravellers ? (
-              <form action={assignBookingTravellerAction} className="space-y-4 border-t bg-[#fafaf7] p-5">
+              <form action={assignBookingTravellerAction} className="space-y-4 border-t bg-[#f9fafb] p-5">
                 <input type="hidden" name="bookingId" value={booking.id} />
                 <label className="block text-xs">
                   Customer traveller
@@ -325,13 +325,13 @@ export default async function BookingDetailPage({
                 <div className="flex flex-wrap gap-2">
                   <button
                     disabled={!availableTravellers.length}
-                    className="flex h-10 items-center gap-2 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white disabled:opacity-50"
+                    className="flex h-10 items-center gap-2 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white disabled:opacity-50"
                   >
                     <UserRoundPlus className="size-4" /> Assign traveller
                   </button>
                   <Link
                     href={`/customers/${booking.customerId}`}
-                    className="flex h-10 items-center rounded-xl border bg-white px-4 text-sm font-semibold"
+                    className="flex h-10 items-center rounded-lg border bg-white px-4 text-sm font-semibold"
                   >
                     Manage profiles
                   </Link>
@@ -340,18 +340,18 @@ export default async function BookingDetailPage({
             ) : null}
           </section>
 
-          <section className="rounded-2xl border bg-white p-5">
+          <section className="rounded-xl border bg-white p-5">
             <h2 className="font-semibold">Frozen booking basis</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-[#7b8580]">Quotation</dt>
+                <dt className="text-[#6b7280]">Quotation</dt>
                 <dd className="font-semibold">
                   {booking.acceptedQuotationVersion.quotation.reference}-V
                   {booking.acceptedQuotationVersion.versionNumber}
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[#7b8580]">Itinerary</dt>
+                <dt className="text-[#6b7280]">Itinerary</dt>
                 <dd className="text-right font-semibold">
                   {booking.acceptedItineraryVersion
                     ? `${booking.acceptedItineraryVersion.itinerary.reference}-V${booking.acceptedItineraryVersion.versionNumber}`
@@ -359,14 +359,14 @@ export default async function BookingDetailPage({
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[#7b8580]">Created by</dt>
+                <dt className="text-[#6b7280]">Created by</dt>
                 <dd className="font-semibold">{booking.createdBy.fullName}</dd>
               </div>
             </dl>
           </section>
 
           {canCancel ? (
-            <details className="rounded-2xl border border-red-200 bg-white">
+            <details className="rounded-xl border border-red-200 bg-white">
               <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-red-700">
                 Cancel booking
               </summary>
@@ -375,12 +375,12 @@ export default async function BookingDetailPage({
                 <label className="text-xs">
                   Cancellation reason
                   <textarea
-                    className="mt-2 min-h-24 w-full rounded-xl border p-3 text-sm"
+                    className="mt-2 min-h-24 w-full rounded-lg border p-3 text-sm"
                     name="reason"
                     required
                   />
                 </label>
-                <button className="mt-4 flex h-10 items-center gap-2 rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-700">
+                <button className="mt-4 flex h-10 items-center gap-2 rounded-lg border border-red-200 px-4 text-sm font-semibold text-red-700">
                   <X className="size-4" /> Confirm cancellation
                 </button>
               </form>

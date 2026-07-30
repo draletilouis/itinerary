@@ -7,9 +7,9 @@ export const metadata = { title: "New enquiry" };
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "mt-2 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 h-11 w-full rounded-lg border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 const textareaClass =
-  "mt-2 min-h-24 w-full rounded-xl border bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 min-h-24 w-full rounded-lg border bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 
 export default async function NewEnquiryPage({
   searchParams,
@@ -21,15 +21,15 @@ export default async function NewEnquiryPage({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <Link href="/enquiries" className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+      <Link href="/enquiries" className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
         <ArrowLeft className="size-4" /> Back to enquiries
       </Link>
       <h1 className="mt-5 text-3xl font-semibold tracking-tight">New enquiry</h1>
-      <p className="mt-2 text-sm text-[#68736e]">
+      <p className="mt-2 text-sm text-[#4b5563]">
         Capture the guest’s request, dates, budget, and next follow-up.
       </p>
 
-      <form action={createEnquiryAction} className="mt-7 rounded-2xl border bg-white p-6">
+      <form action={createEnquiryAction} className="mt-7 rounded-xl border bg-white p-6">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <label className="sm:col-span-2">
             <span className="text-sm font-medium">Customer</span>
@@ -41,7 +41,7 @@ export default async function NewEnquiryPage({
                 </option>
               ))}
             </select>
-            <Link href="/customers/new" className="mt-2 inline-block text-xs font-semibold text-[#176b55]">
+            <Link href="/customers/new" className="mt-2 inline-block text-xs font-semibold text-[#011478]">
               Create a customer first
             </Link>
           </label>
@@ -62,7 +62,7 @@ export default async function NewEnquiryPage({
             <input className={inputClass} name="proposedEndDate" type="date" />
           </label>
           <label className="flex items-end gap-3 pb-3">
-            <input name="flexibleDates" type="checkbox" className="size-4 accent-[#176b55]" />
+            <input name="flexibleDates" type="checkbox" className="size-4 accent-[#011478]" />
             <span className="text-sm font-medium">Dates are flexible</span>
           </label>
           <label>
@@ -103,7 +103,7 @@ export default async function NewEnquiryPage({
           </label>
         </div>
 
-        <details className="mt-6 rounded-xl border bg-[#fafaf7]">
+        <details className="mt-6 rounded-lg border bg-[#f9fafb]">
           <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">More details</summary>
           <div className="grid gap-5 border-t p-4 sm:grid-cols-2">
             {[
@@ -133,10 +133,10 @@ export default async function NewEnquiryPage({
         </details>
 
         <div className="mt-6 flex justify-end gap-3">
-          <Link href="/enquiries" className="grid h-11 place-items-center rounded-xl border px-5 text-sm font-semibold">
+          <Link href="/enquiries" className="grid h-11 place-items-center rounded-lg border px-5 text-sm font-semibold">
             Cancel
           </Link>
-          <button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">
+          <button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">
             Create enquiry
           </button>
         </div>

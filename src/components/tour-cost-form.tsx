@@ -12,7 +12,7 @@ import {
 import type { PackageCostTemplate } from "@/modules/packages/types";
 import { roomsRequired } from "@/modules/costing/presentation/rooms";
 
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
 const categories = ["Accommodation", "Activities", "Transport", "Meals", "Permits", "Guides", "Other"];
 const bases = Object.keys(packageCostBasisLabels) as PackageCostTemplate["basis"][];
 
@@ -153,7 +153,7 @@ export function TourCostForm({
       </label>
 
       {category === "Accommodation" && supplierId ? (
-        <div className="rounded-xl border bg-white p-4 sm:col-span-2 lg:col-span-4">
+        <div className="rounded-lg border bg-white p-4 sm:col-span-2 lg:col-span-4">
           <label className="text-xs font-medium">
             Supplier room and rate
             <select className={input} value={roomRateId} onChange={(event) => selectRoomRate(event.target.value)}>
@@ -166,13 +166,13 @@ export function TourCostForm({
             </select>
           </label>
           {selectedRoomRate ? (
-            <div className="mt-3 grid gap-2 rounded-lg bg-[#f2f8f5] p-3 text-xs sm:grid-cols-3">
+            <div className="mt-3 grid gap-2 rounded-lg bg-[#eff3ff] p-3 text-xs sm:grid-cols-3">
               <p><span className="font-semibold">Capacity:</span> {selectedRoomRate.occupancyGuests} guest(s) per room</p>
               <p><span className="font-semibold">Tour guests:</span> {travellers}</p>
               <p><span className="font-semibold">Rooms required:</span> {rooms}</p>
             </div>
           ) : roomRates.length ? (
-            <p className="mt-2 text-xs text-[#68736e]">Select the contracted room rate to fill the amount, currency and required rooms.</p>
+            <p className="mt-2 text-xs text-[#4b5563]">Select the contracted room rate to fill the amount, currency and required rooms.</p>
           ) : (
             <p className="mt-2 text-xs text-amber-700">This supplier has no accommodation room rate covering the tour start date. Add one under Settings - Catalogue.</p>
           )}
@@ -180,7 +180,7 @@ export function TourCostForm({
       ) : null}
 
       {category !== "Accommodation" && supplierId ? (
-        <div className="rounded-xl border bg-white p-4 sm:col-span-2 lg:col-span-4">
+        <div className="rounded-lg border bg-white p-4 sm:col-span-2 lg:col-span-4">
           <label className="text-xs font-medium">
             Supplier service and rate
             <select className={input} value={serviceRateId} onChange={(event) => selectServiceRate(event.target.value)}>
@@ -193,11 +193,11 @@ export function TourCostForm({
             </select>
           </label>
           {selectedServiceRate ? (
-            <p className="mt-2 text-xs text-[#176b55]">
+            <p className="mt-2 text-xs text-[#011478]">
               Filled from the supplier rate: {selectedServiceRate.currencyCode} {selectedServiceRate.amount} per {selectedServiceRate.unit}.
             </p>
           ) : serviceRates.length ? (
-            <p className="mt-2 text-xs text-[#68736e]">Select a rate to fill the service, charging method, amount and currency.</p>
+            <p className="mt-2 text-xs text-[#4b5563]">Select a rate to fill the service, charging method, amount and currency.</p>
           ) : (
             <p className="mt-2 text-xs text-amber-700">This supplier has no active general service rate covering the tour start date.</p>
           )}
@@ -240,7 +240,7 @@ export function TourCostForm({
         <label className="text-xs font-medium sm:col-span-2">
           People charged
           <input className={input} name="eligibleTravellers" type="number" min={1} step="1" value={people} onChange={(event) => setPeople(event.target.value)} required />
-          <span className="mt-1 block text-[11px] text-[#7b8580]">Filled from this tour&apos;s traveller count.</span>
+          <span className="mt-1 block text-[11px] text-[#6b7280]">Filled from this tour&apos;s traveller count.</span>
         </label>
       ) : null}
       {basis === "VEHICLE" ? (
@@ -259,9 +259,9 @@ export function TourCostForm({
         </>
       ) : null}
 
-      <div className="rounded-xl border border-[#b8cfc7] bg-[#f2f8f5] p-4 sm:col-span-2 lg:col-span-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#176b55]">Cost preview</p>
-        <p className="mt-2 text-sm text-[#59635e]">
+      <div className="rounded-lg border border-[#bfdbfe] bg-[#eff3ff] p-4 sm:col-span-2 lg:col-span-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#011478]">Cost preview</p>
+        <p className="mt-2 text-sm text-[#4b5563]">
           {currency} {preview.formula}
           {preview.tax ? ` + ${tax}% tax` : ""}
           {preview.commission ? ` - ${commission}% commission` : ""}
@@ -271,8 +271,8 @@ export function TourCostForm({
         </p>
       </div>
 
-      <details className="rounded-xl border bg-white sm:col-span-2 lg:col-span-4">
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+      <details className="rounded-lg border bg-white sm:col-span-2 lg:col-span-4">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
           More options: itinerary day, rate date, tax and commission
         </summary>
         <div className="grid gap-4 border-t p-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -293,7 +293,7 @@ export function TourCostForm({
       </details>
 
       <div className="lg:col-span-4">
-        <button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">Add cost item</button>
+        <button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">Add cost item</button>
       </div>
     </form>
   );

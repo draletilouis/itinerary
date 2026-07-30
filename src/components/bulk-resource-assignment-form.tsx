@@ -16,7 +16,7 @@ const resourceTypes: ResourceType[] = [
   "EQUIPMENT",
 ];
 const input =
-  "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 
 type TourOption = {
   id: string;
@@ -162,10 +162,10 @@ export function BulkResourceAssignmentForm({
   }
 
   return (
-    <details open className="rounded-2xl border bg-white">
+    <details open className="rounded-xl border bg-white">
       <summary className="cursor-pointer px-5 py-4">
         <span className="text-sm font-semibold">Assign resources to tour</span>
-        <span className="ml-2 text-xs text-[#7b8580]">
+        <span className="ml-2 text-xs text-[#6b7280]">
           Select the tour once, then add its full team and equipment.
         </span>
       </summary>
@@ -199,7 +199,7 @@ export function BulkResourceAssignmentForm({
 
         {state.message ? (
           <div
-            className={`flex items-start gap-2 rounded-xl border px-4 py-3 text-sm ${
+            className={`flex items-start gap-2 rounded-lg border px-4 py-3 text-sm ${
               state.status === "success"
                 ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                 : "border-red-200 bg-red-50 text-red-800"
@@ -222,8 +222,8 @@ export function BulkResourceAssignmentForm({
               <article
                 id={row.id}
                 key={row.id}
-                className={`rounded-2xl border p-4 ${
-                  rowErrors.length ? "border-red-300 bg-red-50/40" : "bg-[#fafaf7]"
+                className={`rounded-xl border p-4 ${
+                  rowErrors.length ? "border-red-300 bg-red-50/40" : "bg-[#f9fafb]"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -311,8 +311,8 @@ export function BulkResourceAssignmentForm({
                   </label>
                 </div>
 
-                <details className="mt-3 rounded-xl border bg-white">
-                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-[#176b55]">
+                <details className="mt-3 rounded-lg border bg-white">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-[#011478]">
                     Notes and conflict override
                   </summary>
                   <div className="grid gap-3 border-t p-3 md:grid-cols-2">
@@ -358,13 +358,13 @@ export function BulkResourceAssignmentForm({
           <button
             type="button"
             onClick={addRow}
-            className="flex h-10 items-center justify-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold text-[#176b55]"
+            className="flex h-10 items-center justify-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold text-[#011478]"
           >
             <Plus className="size-4" /> Add another resource
           </button>
           <button
             disabled={pending || !tourId || !rows.length}
-            className="flex h-10 items-center justify-center gap-2 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white disabled:opacity-50"
+            className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white disabled:opacity-50"
           >
             {pending ? (
               <Loader2 className="size-4 animate-spin" />
@@ -377,7 +377,7 @@ export function BulkResourceAssignmentForm({
           </button>
         </div>
 
-        <p className="text-xs leading-5 text-[#7b8580]">
+        <p className="text-xs leading-5 text-[#6b7280]">
           All rows are checked together. If any row fails, no assignments are
           saved. Successful assignments begin as provisional and can be confirmed
           in the table below.

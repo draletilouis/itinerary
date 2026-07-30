@@ -28,8 +28,8 @@ type AccommodationOption = {
   roomTypes: { id: string; name: string; maximumOccupancy: number }[];
 };
 
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
-const area = "mt-2 min-h-20 w-full rounded-xl border bg-white p-3 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
+const area = "mt-2 min-h-20 w-full rounded-lg border bg-white p-3 text-sm";
 
 export function ItineraryItemForm({
   itineraryId,
@@ -92,8 +92,8 @@ export function ItineraryItemForm({
   }
 
   return (
-    <details className="rounded-xl bg-[#fafaf7] p-4">
-      <summary className="cursor-pointer text-sm font-semibold text-[#176b55]">
+    <details className="rounded-lg bg-[#f9fafb] p-4">
+      <summary className="cursor-pointer text-sm font-semibold text-[#011478]">
         <Plus className="mr-2 inline size-4" /> Add itinerary item
       </summary>
       <form action={addItineraryItemAction} className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -142,7 +142,7 @@ export function ItineraryItemForm({
                 </option>
               ))}
             </select>
-            <span className="mt-1 block text-[11px] leading-4 text-[#7b8580]">
+            <span className="mt-1 block text-[11px] leading-4 text-[#6b7280]">
               Only activities catalogued under this day’s destination are shown.
             </span>
           </label>
@@ -175,14 +175,14 @@ export function ItineraryItemForm({
                 </option>
               ))}
             </select>
-            <span className="mt-1 block text-[11px] leading-4 text-[#7b8580]">
+            <span className="mt-1 block text-[11px] leading-4 text-[#6b7280]">
               Only properties catalogued under this day’s destination are shown.
             </span>
           </label>
         ) : null}
 
         {type === "ACCOMMODATION" && selectedAccommodation ? (
-          <div className="grid gap-4 rounded-xl border bg-white p-4 sm:col-span-2 sm:grid-cols-2">
+          <div className="grid gap-4 rounded-lg border bg-white p-4 sm:col-span-2 sm:grid-cols-2">
             <label className="text-xs font-medium">
               Room type
               <select
@@ -219,7 +219,7 @@ export function ItineraryItemForm({
                   <option key={count} value={count}>{count} {count === 1 ? "person" : "people"} per room</option>
                 ))}
               </select>
-              <span className="mt-1 block text-[11px] text-[#7b8580]">
+              <span className="mt-1 block text-[11px] text-[#6b7280]">
                 Costing will calculate how many rooms the tour group needs.
               </span>
             </label>
@@ -270,8 +270,8 @@ export function ItineraryItemForm({
           </label>
         ) : null}
 
-        <details className="rounded-xl border bg-white sm:col-span-2">
-          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+        <details className="rounded-lg border bg-white sm:col-span-2">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
             Add customer-facing description
           </summary>
           <div className="border-t p-4">
@@ -285,7 +285,7 @@ export function ItineraryItemForm({
 
         <div className="sm:col-span-2">
           <button
-            className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9eaaa5]"
+            className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9ca3af]"
             disabled={needsCatalogue}
           >
             Add item

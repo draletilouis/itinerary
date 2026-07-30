@@ -22,8 +22,8 @@ import { formatMoney } from "@/lib/utils";
 export const metadata = { title: "Resources" };
 export const dynamic = "force-dynamic";
 
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
-const area = "mt-2 min-h-20 w-full rounded-xl border bg-white px-3 py-2 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
+const area = "mt-2 min-h-20 w-full rounded-lg border bg-white px-3 py-2 text-sm";
 const today = new Date().toISOString().slice(0, 10);
 
 function resourceName(entry: {
@@ -62,16 +62,16 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="mx-auto max-w-7xl">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#176b55]">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#011478]">
         Phase 9  -  Resource control
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Resources</h1>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-[#68736e]">
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4b5563]">
         Vehicles, drivers, guides, equipment, maintenance, availability, and
         conflict-controlled tour assignments.
       </p>
 
-      <a href="/resources/import" className="mt-5 inline-flex h-10 items-center rounded-xl border bg-white px-4 text-sm font-semibold text-[#176b55]">
+      <a href="/resources/import" className="mt-5 inline-flex h-10 items-center rounded-lg border bg-white px-4 text-sm font-semibold text-[#011478]">
         Import vehicles CSV
       </a>
 
@@ -86,9 +86,9 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
         ].map(([Icon, label, value]) => {
           const CardIcon = Icon as typeof CarFront;
           return (
-            <article key={String(label)} className="rounded-2xl border bg-white p-5">
-              <CardIcon className="size-5 text-[#176b55]" />
-              <p className="mt-4 text-xs text-[#7b8580]">{String(label)}</p>
+            <article key={String(label)} className="rounded-xl border bg-white p-5">
+              <CardIcon className="size-5 text-[#011478]" />
+              <p className="mt-4 text-xs text-[#6b7280]">{String(label)}</p>
               <p className="mt-2 text-2xl font-semibold">{String(value)}</p>
             </article>
           );
@@ -96,7 +96,7 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
       </section>
 
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
-        <details className="rounded-2xl border bg-white">
+        <details className="rounded-xl border bg-white">
           <summary className="cursor-pointer px-5 py-4 text-sm font-semibold">
             Register vehicle
           </summary>
@@ -112,11 +112,11 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
             <label className="text-xs">Colour<input className={input} name="colour" /></label>
             <label className="text-xs sm:col-span-2">Supplier<select className={input} name="supplierId" defaultValue=""><option value="">Internal fleet</option>{data.suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}</select></label>
             <label className="text-xs sm:col-span-2">Notes<textarea className={area} name="notes" /></label>
-            <button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white sm:col-span-2">Register vehicle</button>
+            <button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white sm:col-span-2">Register vehicle</button>
           </form>
         </details>
 
-        <details className="rounded-2xl border bg-white">
+        <details className="rounded-xl border bg-white">
           <summary className="cursor-pointer px-5 py-4 text-sm font-semibold">
             Add driver
           </summary>
@@ -131,11 +131,11 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
             <label className="text-xs">Emergency contact<input className={input} name="emergencyContact" /></label>
             <label className="text-xs">Supplier<select className={input} name="supplierId" defaultValue=""><option value="">Internal driver</option>{data.suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}</select></label>
             <label className="text-xs sm:col-span-2">Notes<textarea className={area} name="notes" /></label>
-            <button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white sm:col-span-2">Add driver</button>
+            <button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white sm:col-span-2">Add driver</button>
           </form>
         </details>
 
-        <details className="rounded-2xl border bg-white">
+        <details className="rounded-xl border bg-white">
           <summary className="cursor-pointer px-5 py-4 text-sm font-semibold">
             Add guide
           </summary>
@@ -150,11 +150,11 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
             <label className="text-xs">Certification expiry<input className={input} name="certificationExpiry" type="date" /></label>
             <label className="text-xs">Supplier<select className={input} name="supplierId" defaultValue=""><option value="">Internal guide</option>{data.suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}</select></label>
             <label className="text-xs sm:col-span-2">Notes<textarea className={area} name="notes" /></label>
-            <button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white sm:col-span-2">Add guide</button>
+            <button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white sm:col-span-2">Add guide</button>
           </form>
         </details>
 
-        <details className="rounded-2xl border bg-white">
+        <details className="rounded-xl border bg-white">
           <summary className="cursor-pointer px-5 py-4 text-sm font-semibold">
             Add equipment
           </summary>
@@ -164,7 +164,7 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
             <label className="text-xs">Category<input className={input} name="category" required /></label>
             <label className="text-xs">Quantity<input className={input} name="quantity" type="number" min={1} defaultValue={1} required /></label>
             <label className="text-xs sm:col-span-2">Notes<textarea className={area} name="notes" /></label>
-            <button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white sm:col-span-2">Add equipment</button>
+            <button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white sm:col-span-2">Add equipment</button>
           </form>
         </details>
       </section>
@@ -185,7 +185,7 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
         </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
-        <details className="rounded-2xl border bg-white">
+        <details className="rounded-xl border bg-white">
           <summary className="cursor-pointer px-5 py-4 text-sm font-semibold">
             Record availability
           </summary>
@@ -196,11 +196,11 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
             <label className="text-xs">Reason<input className={input} name="reason" /></label>
             <label className="text-xs">From<input className={input} name="startDate" type="date" required defaultValue={today} /></label>
             <label className="text-xs">To<input className={input} name="endDate" type="date" required defaultValue={today} /></label>
-            <button className="h-10 rounded-xl border px-4 text-sm font-semibold sm:col-span-2">Save availability</button>
+            <button className="h-10 rounded-lg border px-4 text-sm font-semibold sm:col-span-2">Save availability</button>
           </form>
         </details>
 
-        <details className="rounded-2xl border bg-white">
+        <details className="rounded-xl border bg-white">
           <summary className="cursor-pointer px-5 py-4 text-sm font-semibold">
             Schedule vehicle maintenance
           </summary>
@@ -214,26 +214,26 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
             <label className="text-xs">Cost<input className={input} name="cost" defaultValue="0" required /></label>
             <label className="text-xs">Currency<select className={input} name="currencyCode" defaultValue="UGX">{data.currencies.map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
             <label className="text-xs sm:col-span-2">Notes<input className={input} name="notes" /></label>
-            <button className="h-10 rounded-xl border px-4 text-sm font-semibold sm:col-span-2">Schedule maintenance</button>
+            <button className="h-10 rounded-lg border px-4 text-sm font-semibold sm:col-span-2">Schedule maintenance</button>
           </form>
         </details>
         </div>
       </section>
 
-      <section className="mt-6 overflow-hidden rounded-2xl border bg-white">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-white">
         <div className="border-b px-5 py-4">
           <h2 className="font-semibold">Tour assignments</h2>
-          <p className="mt-1 text-xs text-[#7b8580]">Inclusive dates are conflict-checked against assignments, availability blocks, and vehicle maintenance.</p>
+          <p className="mt-1 text-xs text-[#6b7280]">Inclusive dates are conflict-checked against assignments, availability blocks, and vehicle maintenance.</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1000px] text-left text-sm">
-            <thead className="bg-[#f8f8f5] text-xs uppercase text-[#7b8580]">
+            <thead className="bg-[#f9fafb] text-xs uppercase text-[#6b7280]">
               <tr><th className="px-5 py-3">Resource</th><th className="px-5 py-3">Tour</th><th className="px-5 py-3">Dates</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Control</th></tr>
             </thead>
             <tbody className="divide-y">
               {data.assignments.map((assignment) => (
                 <tr key={assignment.id}>
-                  <td className="px-5 py-4"><p className="font-semibold">{resourceName(assignment)}</p><p className="text-xs text-[#7b8580]">{assignment.resourceType.toLowerCase()}</p>{assignment.conflictOverrideReason ? <p className="mt-1 flex items-center gap-1 text-xs text-amber-700"><AlertTriangle className="size-3" /> Override: {assignment.conflictOverrideReason}</p> : null}</td>
+                  <td className="px-5 py-4"><p className="font-semibold">{resourceName(assignment)}</p><p className="text-xs text-[#6b7280]">{assignment.resourceType.toLowerCase()}</p>{assignment.conflictOverrideReason ? <p className="mt-1 flex items-center gap-1 text-xs text-amber-700"><AlertTriangle className="size-3" /> Override: {assignment.conflictOverrideReason}</p> : null}</td>
                   <td className="px-5 py-4">{assignment.tour.reference}  -  {assignment.tour.name}</td>
                   <td className="px-5 py-4">{assignment.startDate.toLocaleDateString("en-UG")} - {assignment.endDate.toLocaleDateString("en-UG")}</td>
                   <td className="px-5 py-4 capitalize">{assignment.status.toLowerCase()}</td>
@@ -248,7 +248,7 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
                   </td>
                 </tr>
               ))}
-              {!data.assignments.length ? <tr><td colSpan={5} className="px-5 py-10 text-center text-[#7b8580]">No resource assignments yet.</td></tr> : null}
+              {!data.assignments.length ? <tr><td colSpan={5} className="px-5 py-10 text-center text-[#6b7280]">No resource assignments yet.</td></tr> : null}
             </tbody>
           </table>
         </div>
@@ -261,31 +261,31 @@ export default async function ResourcesPage({ searchParams }: { searchParams: Pr
             ...data.drivers.map((entry) => ({ id: entry.id, type: "DRIVER", title: entry.fullName, detail: `${entry.phone}  -  licence ${entry.licenceNumber}`, status: entry.status })),
             ...data.guides.map((entry) => ({ id: entry.id, type: "GUIDE", title: entry.fullName, detail: `${entry.phone}  -  ${entry.languages.join(", ") || "Languages not recorded"}`, status: entry.status })),
             ...data.equipment.map((entry) => ({ id: entry.id, type: "EQUIPMENT", title: entry.name, detail: `${entry.category}  -  quantity ${entry.quantity}`, status: entry.status }))].map((resource) => (
-              <article key={`${resource.type}-${resource.id}`} className="rounded-2xl border bg-white p-5">
+              <article key={`${resource.type}-${resource.id}`} className="rounded-xl border bg-white p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div><p className="font-semibold">{resource.title}</p><p className="mt-1 text-xs text-[#7b8580]">{resource.detail}</p></div>
-                  <span className="rounded-full bg-[#edf5f1] px-2.5 py-1 text-xs capitalize">{resource.status.toLowerCase().replaceAll("_"," ")}</span>
+                  <div><p className="font-semibold">{resource.title}</p><p className="mt-1 text-xs text-[#6b7280]">{resource.detail}</p></div>
+                  <span className="rounded-full bg-[#eff3ff] px-2.5 py-1 text-xs capitalize">{resource.status.toLowerCase().replaceAll("_"," ")}</span>
                 </div>
-                {resource.status !== "ARCHIVED" ? <details className="mt-3"><summary className="cursor-pointer text-xs text-[#176b55]">Change status</summary><form action={setResourceStatusAction} className="mt-2 grid gap-2 sm:grid-cols-[140px_1fr_auto]"><input type="hidden" name="resourceType" value={resource.type} /><input type="hidden" name="resourceId" value={resource.id} /><select className="h-9 rounded-lg border px-2 text-xs" name="status" defaultValue={resource.status}><option>ACTIVE</option><option>INACTIVE</option><option>OUT_OF_SERVICE</option><option>ARCHIVED</option></select><input className="h-9 rounded-lg border px-2 text-xs" name="reason" required placeholder="Reason" /><button className="h-9 rounded-lg border px-3 text-xs">Update</button></form></details> : null}
+                {resource.status !== "ARCHIVED" ? <details className="mt-3"><summary className="cursor-pointer text-xs text-[#011478]">Change status</summary><form action={setResourceStatusAction} className="mt-2 grid gap-2 sm:grid-cols-[140px_1fr_auto]"><input type="hidden" name="resourceType" value={resource.type} /><input type="hidden" name="resourceId" value={resource.id} /><select className="h-9 rounded-lg border px-2 text-xs" name="status" defaultValue={resource.status}><option>ACTIVE</option><option>INACTIVE</option><option>OUT_OF_SERVICE</option><option>ARCHIVED</option></select><input className="h-9 rounded-lg border px-2 text-xs" name="reason" required placeholder="Reason" /><button className="h-9 rounded-lg border px-3 text-xs">Update</button></form></details> : null}
               </article>
             ))}
         </div>
         <div className="space-y-6">
           <div className="space-y-3">
             <h2 className="font-semibold">Upcoming availability blocks</h2>
-            {data.availability.map((entry) => <article key={entry.id} className="rounded-2xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{resourceName(entry)}</p><p className="mt-1 text-xs text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")} - {entry.endDate.toLocaleDateString("en-UG")}  -  {entry.reason ?? "No reason"}</p></div><span className="text-xs capitalize">{entry.type.toLowerCase()}</span></div></article>)}
-            {!data.availability.length ? <p className="rounded-2xl border bg-white p-5 text-sm text-[#7b8580]">No future availability blocks.</p> : null}
+            {data.availability.map((entry) => <article key={entry.id} className="rounded-xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{resourceName(entry)}</p><p className="mt-1 text-xs text-[#6b7280]">{entry.startDate.toLocaleDateString("en-UG")} - {entry.endDate.toLocaleDateString("en-UG")}  -  {entry.reason ?? "No reason"}</p></div><span className="text-xs capitalize">{entry.type.toLowerCase()}</span></div></article>)}
+            {!data.availability.length ? <p className="rounded-xl border bg-white p-5 text-sm text-[#6b7280]">No future availability blocks.</p> : null}
           </div>
           <div className="space-y-3">
             <h2 className="font-semibold">Vehicle maintenance</h2>
-            {data.maintenance.map((entry) => <article key={entry.id} className="rounded-2xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{entry.vehicle.registration}  -  {entry.description}</p><p className="mt-1 text-xs text-[#7b8580]">{entry.startDate.toLocaleDateString("en-UG")} - {entry.endDate.toLocaleDateString("en-UG")}  -  {entry.serviceProvider ?? "Provider not set"}</p></div><div className="text-right"><p className="font-semibold">{formatMoney(entry.cost.toString(),entry.currencyCode)}</p><p className="text-xs capitalize text-[#7b8580]">{entry.status.toLowerCase().replaceAll("_"," ")}</p></div></div></article>)}
-            {!data.maintenance.length ? <p className="rounded-2xl border bg-white p-5 text-sm text-[#7b8580]">No upcoming maintenance.</p> : null}
+            {data.maintenance.map((entry) => <article key={entry.id} className="rounded-xl border bg-white p-5"><div className="flex justify-between gap-4"><div><p className="font-semibold">{entry.vehicle.registration}  -  {entry.description}</p><p className="mt-1 text-xs text-[#6b7280]">{entry.startDate.toLocaleDateString("en-UG")} - {entry.endDate.toLocaleDateString("en-UG")}  -  {entry.serviceProvider ?? "Provider not set"}</p></div><div className="text-right"><p className="font-semibold">{formatMoney(entry.cost.toString(),entry.currencyCode)}</p><p className="text-xs capitalize text-[#6b7280]">{entry.status.toLowerCase().replaceAll("_"," ")}</p></div></div></article>)}
+            {!data.maintenance.length ? <p className="rounded-xl border bg-white p-5 text-sm text-[#6b7280]">No upcoming maintenance.</p> : null}
           </div>
         </div>
       </section>
 
-      <p className="mt-8 flex items-center gap-2 text-xs text-[#7b8580]">
-        <CheckCircle2 className="size-4 text-[#176b55]" />
+      <p className="mt-8 flex items-center gap-2 text-xs text-[#6b7280]">
+        <CheckCircle2 className="size-4 text-[#011478]" />
         Conflict overrides remain visible and permanently audited.
       </p>
     </div>

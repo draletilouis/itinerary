@@ -10,7 +10,7 @@ import {
 } from "@/modules/packages/presentation";
 import type { PackageCostTemplate } from "@/modules/packages/types";
 
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
 const categories = [
   "Accommodation",
   "Activities",
@@ -256,7 +256,7 @@ export function PackageCostForm({
             onChange={(event) => setTravellers(event.target.value)}
             required
           />
-          <span className="mt-1 block text-[11px] text-[#7b8580]">
+          <span className="mt-1 block text-[11px] text-[#6b7280]">
             Filled from the package’s default guest count.
           </span>
         </label>
@@ -315,11 +315,11 @@ export function PackageCostForm({
         </>
       ) : null}
 
-      <div className="rounded-xl border border-[#b8cfc7] bg-[#f2f8f5] p-4 sm:col-span-2 lg:col-span-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#176b55]">
+      <div className="rounded-lg border border-[#bfdbfe] bg-[#eff3ff] p-4 sm:col-span-2 lg:col-span-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#011478]">
           Cost preview
         </p>
-        <p className="mt-2 text-sm text-[#59635e]">
+        <p className="mt-2 text-sm text-[#4b5563]">
           {currency} {preview.formula}
           {preview.tax ? ` + ${tax}% tax` : ""}
           {preview.commission ? ` − ${commission}% commission` : ""}
@@ -333,8 +333,8 @@ export function PackageCostForm({
         </p>
       </div>
 
-      <details className="rounded-xl border bg-white sm:col-span-2 lg:col-span-4">
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+      <details className="rounded-lg border bg-white sm:col-span-2 lg:col-span-4">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
           More options: itinerary day, tax and commission
         </summary>
         <div className="grid gap-4 border-t p-4 sm:grid-cols-3">
@@ -377,7 +377,7 @@ export function PackageCostForm({
       </details>
 
       <div className="lg:col-span-4">
-        <button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">
+        <button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">
           Add standard cost
         </button>
       </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { updateTourPackagePricingAction } from "@/modules/packages/actions/packages";
 
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
 
 export function PackagePricingForm({
   packageId,
@@ -96,8 +96,8 @@ export function PackagePricingForm({
         />
       </label>
 
-      <details className="rounded-xl border bg-[#fafaf7] sm:col-span-2">
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+      <details className="rounded-lg border bg-[#f9fafb] sm:col-span-2">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
           Advanced pricing: tax, discount and margin protection
         </summary>
         <div className="grid gap-4 border-t p-4 sm:grid-cols-2">
@@ -179,7 +179,7 @@ export function PackagePricingForm({
       </details>
 
       <div className="sm:col-span-2">
-        <button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">
+        <button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">
           Save pricing defaults
         </button>
       </div>

@@ -57,27 +57,27 @@ export default async function TourDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl">
-      <Link href="/tours" className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+      <Link href="/tours" className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
         <ArrowLeft className="size-4" /> Back to tours
       </Link>
       <div className="mt-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex flex-wrap gap-3">
-            <span className="rounded-full bg-[#edf5f1] px-2.5 py-1 text-xs font-semibold text-[#176b55]">{tour.reference}</span>
-            <span className="rounded-full bg-[#f1f3ef] px-2.5 py-1 text-xs capitalize text-[#68736e]">{tour.status.toLowerCase().replaceAll("_", " ")}</span>
+            <span className="rounded-full bg-[#eff3ff] px-2.5 py-1 text-xs font-semibold text-[#011478]">{tour.reference}</span>
+            <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-xs capitalize text-[#4b5563]">{tour.status.toLowerCase().replaceAll("_", " ")}</span>
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">{tour.name}</h1>
-          <p className="mt-2 text-sm text-[#68736e]">
+          <p className="mt-2 text-sm text-[#4b5563]">
             {tour.customer.fullName} · owned by {tour.owner.fullName}
           </p>
         </div>
         {tour.sourceEnquiry ? (
-          <Link href={`/enquiries/${tour.sourceEnquiry.id}`} className="text-sm font-semibold text-[#176b55]">
+          <Link href={`/enquiries/${tour.sourceEnquiry.id}`} className="text-sm font-semibold text-[#011478]">
             Source enquiry {tour.sourceEnquiry.reference}
           </Link>
         ) : null}
         {tour.sourcePackage ? (
-          <Link href={`/packages/${tour.sourcePackage.id}`} className="text-sm font-semibold text-[#176b55]">
+          <Link href={`/packages/${tour.sourcePackage.id}`} className="text-sm font-semibold text-[#011478]">
             Package {tour.sourcePackage.reference} · revision {tour.sourcePackageRevision}
           </Link>
         ) : null}
@@ -85,9 +85,9 @@ export default async function TourDetailPage({
 
       <TourWorkspaceNav tourId={tour.id} active="overview" itineraryId={itinerary?.id} bookingId={tour.booking?.id} />
 
-      <section className="mt-6 flex flex-col gap-4 rounded-2xl border border-[#b8cfc7] bg-[#f2f8f5] p-5 sm:flex-row sm:items-center">
-        <div className="min-w-0 flex-1"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#176b55]">Recommended next step</p><h2 className="mt-2 text-lg font-semibold">{nextStep.label}</h2><p className="mt-1 text-sm text-[#68736e]">{nextStep.detail}</p></div>
-        <Link href={nextStep.href} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">Continue <ArrowRight className="size-4" /></Link>
+      <section className="mt-6 flex flex-col gap-4 rounded-xl border border-[#bfdbfe] bg-[#eff3ff] p-5 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#011478]">Recommended next step</p><h2 className="mt-2 text-lg font-semibold">{nextStep.label}</h2><p className="mt-1 text-sm text-[#4b5563]">{nextStep.detail}</p></div>
+        <Link href={nextStep.href} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">Continue <ArrowRight className="size-4" /></Link>
       </section>
 
       <section className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -99,36 +99,36 @@ export default async function TourDetailPage({
         ].map(([Icon, label, value]) => {
           const CardIcon = Icon as typeof MapPin;
           return (
-            <article key={String(label)} className="rounded-2xl border bg-white p-5">
-              <CardIcon className="size-4 text-[#176b55]" />
-              <p className="mt-4 text-xs text-[#7b8580]">{String(label)}</p>
+            <article key={String(label)} className="rounded-xl border bg-white p-5">
+              <CardIcon className="size-4 text-[#011478]" />
+              <p className="mt-4 text-xs text-[#6b7280]">{String(label)}</p>
               <p className="mt-1 truncate text-sm font-semibold">{String(value)}</p>
             </article>
           );
         })}
       </section>
 
-      <details className="mt-6 rounded-2xl border bg-white">
+      <details className="mt-6 rounded-xl border bg-white">
         <summary className="cursor-pointer px-5 py-4 text-sm font-semibold">Advanced status control</summary>
         <form action={setTourStatusAction} className="grid gap-3 border-t p-5 sm:grid-cols-[240px_1fr_auto]">
           <input type="hidden" name="tourId" value={tour.id} />
-          <select className="h-11 rounded-xl border px-3 text-sm capitalize" name="status" defaultValue={tour.status}>
+          <select className="h-11 rounded-lg border px-3 text-sm capitalize" name="status" defaultValue={tour.status}>
             {["DRAFT", "PLANNING", "COSTING", "QUOTED", "AWAITING_CONFIRMATION", "CONFIRMED", "OPERATIONAL_PREPARATION", "READY", "IN_PROGRESS", "COMPLETED", "CANCELLED", "ARCHIVED"].map(
               (status) => <option key={status} value={status}>{status.toLowerCase().replaceAll("_", " ")}</option>,
             )}
           </select>
-          <input className="h-11 rounded-xl border px-3 text-sm" name="reason" placeholder="Reason required for cancellation" />
-          <button className="h-11 rounded-xl border bg-[#f8f8f5] px-4 text-sm font-semibold">Update</button>
+          <input className="h-11 rounded-lg border px-3 text-sm" name="reason" placeholder="Reason required for cancellation" />
+          <button className="h-11 rounded-lg border bg-[#f9fafb] px-4 text-sm font-semibold">Update</button>
         </form>
       </details>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <section className="rounded-2xl border bg-white p-6">
+        <section className="rounded-xl border bg-white p-6">
           <div className="flex items-center gap-3">
-            <TrendingUp className="size-5 text-[#176b55]" />
+            <TrendingUp className="size-5 text-[#011478]" />
             <div>
               <h2 className="font-semibold">Financial overview</h2>
-              <p className="mt-1 text-xs text-[#7b8580]">Estimated and actual tour performance</p>
+              <p className="mt-1 text-xs text-[#6b7280]">Estimated and actual tour performance</p>
             </div>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -140,28 +140,28 @@ export default async function TourDetailPage({
               ["Actual revenue", formatMoney(tour.actualRevenue.toString(), tour.costingCurrencyCode)],
               ["Actual profit", formatMoney(tour.actualProfit.toString(), tour.costingCurrencyCode)],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-xl bg-[#f8f8f5] p-4">
-                <p className="text-xs text-[#7b8580]">{label}</p>
+              <div key={label} className="rounded-lg bg-[#f9fafb] p-4">
+                <p className="text-xs text-[#6b7280]">{label}</p>
                 <p className="mt-2 text-lg font-semibold">{value}</p>
               </div>
             ))}
           </div>
-          <p className="mt-5 rounded-xl border border-dashed px-4 py-3 text-xs leading-5 text-[#7b8580]">
+          <p className="mt-5 rounded-lg border border-dashed px-4 py-3 text-xs leading-5 text-[#6b7280]">
             Recorded customer allocations and tour expenses update actual revenue, cost, profit, and margin in the tour costing currency.
           </p>
         </section>
 
-        <section className="rounded-2xl border bg-white p-6">
+        <section className="rounded-xl border bg-white p-6">
           <h2 className="font-semibold">Status history</h2>
           <div className="mt-5 space-y-4">
             {tour.statusHistory.map((event) => (
-              <div key={event.id} className="relative border-l-2 border-[#dce4df] pl-4">
-                <span className="absolute -left-[5px] top-1 size-2 rounded-full bg-[#176b55]" />
+              <div key={event.id} className="relative border-l-2 border-[#e5e7eb] pl-4">
+                <span className="absolute -left-[5px] top-1 size-2 rounded-full bg-[#011478]" />
                 <p className="text-sm font-medium capitalize">{event.toStatus.toLowerCase().replaceAll("_", " ")}</p>
-                <p className="mt-1 text-xs text-[#7b8580]">
+                <p className="mt-1 text-xs text-[#6b7280]">
                   {event.createdAt.toLocaleString("en-UG")} · {event.changedBy.fullName}
                 </p>
-                {event.reason ? <p className="mt-1 text-xs text-[#59635e]">{event.reason}</p> : null}
+                {event.reason ? <p className="mt-1 text-xs text-[#4b5563]">{event.reason}</p> : null}
               </div>
             ))}
           </div>

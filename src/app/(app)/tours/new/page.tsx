@@ -7,7 +7,7 @@ import { prisma } from "@/server/db/prisma";
 export const metadata = { title: "Create tour" };
 export const dynamic = "force-dynamic";
 
-const input = "mt-2 h-11 w-full rounded-xl border bg-white px-3 text-sm";
+const input = "mt-2 h-11 w-full rounded-lg border bg-white px-3 text-sm";
 const tourTypes = [
   "CUSTOM",
   "STANDARD_PACKAGE",
@@ -56,34 +56,34 @@ export default async function NewTourPage({
   if (!mode) {
     return (
       <div className="mx-auto max-w-5xl">
-        <Link href="/tours" className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+        <Link href="/tours" className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
           <ArrowLeft className="size-4" /> Back to tours
         </Link>
-        <p className="mt-6 text-sm font-semibold uppercase tracking-[0.16em] text-[#176b55]">
+        <p className="mt-6 text-sm font-semibold uppercase tracking-[0.16em] text-[#011478]">
           Guided tour creation
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">How should this tour start?</h1>
-        <p className="mt-3 text-sm text-[#68736e]">
+        <p className="mt-3 text-sm text-[#4b5563]">
           Every option opens the same tour workspace. Choose the fastest starting point.
         </p>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
-          <Link href="/tours/new?mode=enquiry" className="rounded-2xl border bg-white p-6 hover:border-[#176b55]">
-            <FileText className="size-6 text-[#176b55]" />
+          <Link href="/tours/new?mode=enquiry" className="rounded-xl border bg-white p-6 hover:border-[#011478]">
+            <FileText className="size-6 text-[#011478]" />
             <h2 className="mt-5 font-semibold">From an enquiry</h2>
-            <p className="mt-2 text-sm leading-6 text-[#68736e]">Carry an existing customer request into planning.</p>
-            <p className="mt-5 text-sm font-semibold text-[#176b55]">{enquiries.length} available</p>
+            <p className="mt-2 text-sm leading-6 text-[#4b5563]">Carry an existing customer request into planning.</p>
+            <p className="mt-5 text-sm font-semibold text-[#011478]">{enquiries.length} available</p>
           </Link>
-          <Link href="/tours/new?mode=package" className="rounded-2xl border bg-white p-6 hover:border-[#176b55]">
-            <PackageOpen className="size-6 text-[#176b55]" />
+          <Link href="/tours/new?mode=package" className="rounded-xl border bg-white p-6 hover:border-[#011478]">
+            <PackageOpen className="size-6 text-[#011478]" />
             <h2 className="mt-5 font-semibold">Use a standard package</h2>
-            <p className="mt-2 text-sm leading-6 text-[#68736e]">Copy a reusable itinerary, costs, pricing, and terms.</p>
-            <p className="mt-5 text-sm font-semibold text-[#176b55]">{packages.length} available</p>
+            <p className="mt-2 text-sm leading-6 text-[#4b5563]">Copy a reusable itinerary, costs, pricing, and terms.</p>
+            <p className="mt-5 text-sm font-semibold text-[#011478]">{packages.length} available</p>
           </Link>
-          <Link href="/tours/new?mode=direct" className="rounded-2xl border bg-white p-6 hover:border-[#176b55]">
-            <Sparkles className="size-6 text-[#176b55]" />
+          <Link href="/tours/new?mode=direct" className="rounded-xl border bg-white p-6 hover:border-[#011478]">
+            <Sparkles className="size-6 text-[#011478]" />
             <h2 className="mt-5 font-semibold">Create a custom direct tour</h2>
-            <p className="mt-2 text-sm leading-6 text-[#68736e]">Start immediately without creating an enquiry first.</p>
-            <p className="mt-5 text-sm font-semibold text-[#176b55]">Start from blank</p>
+            <p className="mt-2 text-sm leading-6 text-[#4b5563]">Start immediately without creating an enquiry first.</p>
+            <p className="mt-5 text-sm font-semibold text-[#011478]">Start from blank</p>
           </Link>
         </div>
       </div>
@@ -99,18 +99,18 @@ export default async function NewTourPage({
           <Link
             key={entry.id}
             href={`/tours/new?mode=package&packageId=${entry.id}`}
-            className="rounded-2xl border bg-white p-5 hover:border-[#176b55]"
+            className="rounded-xl border bg-white p-5 hover:border-[#011478]"
           >
-            <p className="text-xs font-semibold text-[#176b55]">{entry.reference} · revision {entry.revision}</p>
+            <p className="text-xs font-semibold text-[#011478]">{entry.reference} · revision {entry.revision}</p>
             <h2 className="mt-3 font-semibold">{entry.name}</h2>
-            <p className="mt-2 text-sm text-[#68736e]">{entry.durationDays} days / {packageNights(entry.durationDays)} nights · {entry.defaultAdults + entry.defaultChildren} guests</p>
-            <p className="mt-4 text-xs text-[#7b8580]">{entry.description ?? "No description"}</p>
+            <p className="mt-2 text-sm text-[#4b5563]">{entry.durationDays} days / {packageNights(entry.durationDays)} nights · {entry.defaultAdults + entry.defaultChildren} guests</p>
+            <p className="mt-4 text-xs text-[#6b7280]">{entry.description ?? "No description"}</p>
           </Link>
         ))}
         {!packages.length ? (
-          <div className="rounded-2xl border border-dashed p-8 text-center">
+          <div className="rounded-xl border border-dashed p-8 text-center">
             <p className="font-semibold">No packages yet</p>
-            <Link href="/packages" className="mt-3 inline-block text-sm font-semibold text-[#176b55]">Create the first package</Link>
+            <Link href="/packages" className="mt-3 inline-block text-sm font-semibold text-[#011478]">Create the first package</Link>
           </div>
         ) : null}
       </SelectionPage>
@@ -123,18 +123,18 @@ export default async function NewTourPage({
           <Link
             key={entry.id}
             href={`/tours/new?mode=enquiry&enquiryId=${entry.id}`}
-            className="rounded-2xl border bg-white p-5 hover:border-[#176b55]"
+            className="rounded-xl border bg-white p-5 hover:border-[#011478]"
           >
-            <p className="text-xs font-semibold text-[#176b55]">{entry.reference}</p>
+            <p className="text-xs font-semibold text-[#011478]">{entry.reference}</p>
             <h2 className="mt-3 font-semibold">{entry.customer.fullName}</h2>
-            <p className="mt-2 text-sm text-[#68736e]">{entry.adults} adults · {entry.children} children</p>
-            <p className="mt-4 text-xs text-[#7b8580]">{entry.destinationsOfInterest.join(", ") || "Destinations not selected"}</p>
+            <p className="mt-2 text-sm text-[#4b5563]">{entry.adults} adults · {entry.children} children</p>
+            <p className="mt-4 text-xs text-[#6b7280]">{entry.destinationsOfInterest.join(", ") || "Destinations not selected"}</p>
           </Link>
         ))}
         {!enquiries.length ? (
-          <div className="rounded-2xl border border-dashed p-8 text-center">
+          <div className="rounded-xl border border-dashed p-8 text-center">
             <p className="font-semibold">No unconverted enquiries</p>
-            <Link href="/enquiries/new" className="mt-3 inline-block text-sm font-semibold text-[#176b55]">Create an enquiry</Link>
+            <Link href="/enquiries/new" className="mt-3 inline-block text-sm font-semibold text-[#011478]">Create an enquiry</Link>
           </div>
         ) : null}
       </SelectionPage>
@@ -155,20 +155,20 @@ export default async function NewTourPage({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <Link href="/tours/new" className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+      <Link href="/tours/new" className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
         <ArrowLeft className="size-4" /> Change starting point
       </Link>
       <div className="mt-6 flex items-center gap-3">
-        <Route className="size-6 text-[#176b55]" />
+        <Route className="size-6 text-[#011478]" />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#176b55]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#011478]">
             {mode === "package" ? `Package · ${selectedPackage?.reference}` : mode === "enquiry" ? `Enquiry · ${selectedEnquiry?.reference}` : "Direct tour"}
           </p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">Create tour</h1>
         </div>
       </div>
 
-      <form action={createTourFromWizardAction} className="mt-7 rounded-2xl border bg-white p-6">
+      <form action={createTourFromWizardAction} className="mt-7 rounded-xl border bg-white p-6">
         <input type="hidden" name="mode" value={mode.toUpperCase()} />
         <input type="hidden" name="packageId" value={selectedPackage?.id ?? ""} />
         <input type="hidden" name="enquiryId" value={selectedEnquiry?.id ?? ""} />
@@ -217,7 +217,7 @@ export default async function NewTourPage({
           </div>
         </section>
         <div className="mt-7 flex justify-end">
-          <button className="h-11 rounded-xl bg-[#176b55] px-6 text-sm font-semibold text-white">
+          <button className="h-11 rounded-lg bg-[#011478] px-6 text-sm font-semibold text-white">
             Create tour and open workspace
           </button>
         </div>
@@ -237,7 +237,7 @@ function SelectionPage({
 }) {
   return (
     <div className="mx-auto max-w-5xl">
-      <Link href={back} className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+      <Link href={back} className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
         <ArrowLeft className="size-4" /> Back
       </Link>
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">{title}</h1>

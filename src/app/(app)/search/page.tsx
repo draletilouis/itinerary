@@ -88,14 +88,14 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#176b55]">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#011478]">
         Global search
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
         {query ? `Results for “${query}”` : "Find a record"}
       </h1>
-      <form className="mt-6 flex items-center gap-3 rounded-xl border bg-white px-4">
-        <Search className="size-4 text-[#7b8580]" />
+      <form className="mt-6 flex items-center gap-3 rounded-lg border bg-white px-4">
+        <Search className="size-4 text-[#6b7280]" />
         <input
           className="h-12 flex-1 bg-transparent text-sm outline-none"
           name="q"
@@ -106,21 +106,21 @@ export default async function SearchPage({
       </form>
       <div className="mt-6 grid gap-5 lg:grid-cols-3">
         {sections.map((section) => (
-          <section key={section.title} className="overflow-hidden rounded-2xl border bg-white">
+          <section key={section.title} className="overflow-hidden rounded-xl border bg-white">
             <div className="flex items-center gap-3 border-b px-5 py-4">
-              <section.icon className="size-4 text-[#176b55]" />
+              <section.icon className="size-4 text-[#011478]" />
               <h2 className="font-semibold">{section.title}</h2>
-              <span className="ml-auto text-xs text-[#7b8580]">{section.items.length}</span>
+              <span className="ml-auto text-xs text-[#6b7280]">{section.items.length}</span>
             </div>
             <div className="divide-y">
               {section.items.map((item) => (
-                <Link key={item.id} href={item.href} className="block px-5 py-4 hover:bg-[#fafaf7]">
+                <Link key={item.id} href={item.href} className="block px-5 py-4 hover:bg-[#f9fafb]">
                   <p className="text-sm font-medium">{item.title}</p>
-                  <p className="mt-1 text-xs capitalize text-[#7b8580]">{item.detail}</p>
+                  <p className="mt-1 text-xs capitalize text-[#6b7280]">{item.detail}</p>
                 </Link>
               ))}
               {!section.items.length ? (
-                <p className="px-5 py-8 text-center text-xs text-[#8b948f]">No matches</p>
+                <p className="px-5 py-8 text-center text-xs text-[#9ca3af]">No matches</p>
               ) : null}
             </div>
           </section>

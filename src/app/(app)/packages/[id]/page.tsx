@@ -28,8 +28,8 @@ import {
 } from "@/modules/packages/queries/packages";
 
 export const dynamic = "force-dynamic";
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
-const area = "mt-2 min-h-24 w-full rounded-xl border bg-white p-3 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
+const area = "mt-2 min-h-24 w-full rounded-lg border bg-white p-3 text-sm";
 
 export default async function PackageDetailPage({
   params,
@@ -50,25 +50,25 @@ export default async function PackageDetailPage({
     <div className="mx-auto max-w-7xl">
       <Link
         href="/packages"
-        className="inline-flex items-center gap-2 text-sm text-[#68736e]"
+        className="inline-flex items-center gap-2 text-sm text-[#4b5563]"
       >
         <ArrowLeft className="size-4" /> Back to packages
       </Link>
 
       <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#176b55]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#011478]">
             {entry.reference} · revision {entry.revision}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">{entry.name}</h1>
-          <p className="mt-2 text-sm text-[#68736e]">
+          <p className="mt-2 text-sm text-[#4b5563]">
             {entry.durationDays} days / {nights} nights · {defaultTravellers} default
             guests · used by {entry._count.tours} tours
           </p>
         </div>
         <Link
           href={`/tours/new?mode=package&packageId=${entry.id}`}
-          className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white"
+          className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white"
         >
           <PackageOpen className="size-4" /> Use this package
         </Link>
@@ -88,27 +88,27 @@ export default async function PackageDetailPage({
         ].map(([Icon, number, label, value]) => {
           const StepIcon = Icon as typeof CheckCircle2;
           return (
-            <article key={String(number)} className="rounded-2xl border bg-white p-4">
+            <article key={String(number)} className="rounded-xl border bg-white p-4">
               <div className="flex items-center gap-2">
-                <span className="flex size-7 items-center justify-center rounded-full bg-[#edf5f1] text-xs font-semibold text-[#176b55]">
+                <span className="flex size-7 items-center justify-center rounded-full bg-[#eff3ff] text-xs font-semibold text-[#011478]">
                   {String(number)}
                 </span>
-                <StepIcon className="size-4 text-[#176b55]" />
+                <StepIcon className="size-4 text-[#011478]" />
               </div>
               <p className="mt-3 text-sm font-semibold">{String(label)}</p>
-              <p className="mt-1 text-xs text-[#7b8580]">{String(value)}</p>
+              <p className="mt-1 text-xs text-[#6b7280]">{String(value)}</p>
             </article>
           );
         })}
       </section>
 
-      <section className="mt-6 rounded-2xl border bg-white">
+      <section className="mt-6 rounded-xl border bg-white">
         <div className="border-b px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#176b55]">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#011478]">
             Step 1
           </p>
           <h2 className="mt-1 font-semibold">Package basics</h2>
-          <p className="mt-1 text-xs text-[#7b8580]">
+          <p className="mt-1 text-xs text-[#6b7280]">
             Define the standard duration, guests and currency. Nights are calculated
             automatically from the days.
           </p>
@@ -134,9 +134,9 @@ export default async function PackageDetailPage({
               defaultValue={entry.durationDays}
             />
           </label>
-          <div className="rounded-xl bg-[#f2f8f5] p-3">
-            <p className="text-xs text-[#68736e]">Current duration</p>
-            <p className="mt-2 text-sm font-semibold text-[#176b55]">
+          <div className="rounded-lg bg-[#eff3ff] p-3">
+            <p className="text-xs text-[#4b5563]">Current duration</p>
+            <p className="mt-2 text-sm font-semibold text-[#011478]">
               {entry.durationDays} days / {nights} nights
             </p>
           </div>
@@ -187,8 +187,8 @@ export default async function PackageDetailPage({
             </select>
           </label>
 
-          <details className="rounded-xl border bg-[#fafaf7] sm:col-span-2 lg:col-span-4">
-            <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+          <details className="rounded-lg border bg-[#f9fafb] sm:col-span-2 lg:col-span-4">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
               Customer wording and advanced package details
             </summary>
             <div className="grid gap-4 border-t p-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -261,7 +261,7 @@ export default async function PackageDetailPage({
             </div>
           </details>
           <div className="lg:col-span-4">
-            <button className="h-10 rounded-xl border bg-[#f8f8f5] px-4 text-sm font-semibold">
+            <button className="h-10 rounded-lg border bg-[#f9fafb] px-4 text-sm font-semibold">
               Save package basics
             </button>
           </div>
@@ -270,11 +270,11 @@ export default async function PackageDetailPage({
 
       <section className="mt-6 space-y-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#176b55]">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#011478]">
             Step 2
           </p>
           <h2 className="mt-1 font-semibold">Itinerary</h2>
-          <p className="mt-1 text-xs text-[#7b8580]">
+          <p className="mt-1 text-xs text-[#6b7280]">
             Complete the day title, destination and client narrative first. Open
             “More day details” only when needed.
           </p>
@@ -282,12 +282,12 @@ export default async function PackageDetailPage({
         {entry.days.map((day) => {
           const overnightAfterDay = day.dayNumber <= nights;
           return (
-            <details key={day.dayNumber} className="rounded-2xl border bg-white">
+            <details key={day.dayNumber} className="rounded-xl border bg-white">
               <summary className="cursor-pointer px-5 py-4">
                 <span className="font-semibold">
                   Day {day.dayNumber} · {day.title}
                 </span>
-                <span className="ml-3 rounded-full bg-[#f1f3ef] px-2.5 py-1 text-[11px] text-[#68736e]">
+                <span className="ml-3 rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] text-[#4b5563]">
                   {overnightAfterDay ? "Overnight after this day" : "Departure / no package night"}
                 </span>
               </summary>
@@ -332,8 +332,8 @@ export default async function PackageDetailPage({
                     />
                   </label>
 
-                  <details className="rounded-xl border bg-[#fafaf7] sm:col-span-2">
-                    <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+                  <details className="rounded-lg border bg-[#f9fafb] sm:col-span-2">
+                    <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
                       More day details
                     </summary>
                     <div className="grid gap-4 border-t p-4 sm:grid-cols-2">
@@ -372,34 +372,34 @@ export default async function PackageDetailPage({
                     </div>
                   </details>
                   <div className="sm:col-span-2">
-                    <button className="h-10 rounded-xl border px-4 text-sm font-semibold">
+                    <button className="h-10 rounded-lg border px-4 text-sm font-semibold">
                       Save day
                     </button>
                   </div>
                 </form>
 
-                <div className="mt-5 divide-y rounded-xl border">
+                <div className="mt-5 divide-y rounded-lg border">
                   {day.items.map((item, index) => (
                     <div key={`${item.title}-${index}`} className="px-4 py-3">
                       <p className="text-sm font-medium">
                         {item.startTime ? `${item.startTime} · ` : ""}
                         {item.title}
                       </p>
-                      <p className="mt-1 text-xs text-[#7b8580]">
+                      <p className="mt-1 text-xs text-[#6b7280]">
                         {item.type.toLowerCase()} ·{" "}
                         {item.clientDescription ?? "No client description"}
                       </p>
                     </div>
                   ))}
                   {!day.items.length ? (
-                    <p className="px-4 py-5 text-xs text-[#7b8580]">
+                    <p className="px-4 py-5 text-xs text-[#6b7280]">
                       No activities, accommodation or other items added yet.
                     </p>
                   ) : null}
                 </div>
 
-                <details className="mt-4 rounded-xl bg-[#fafaf7] p-4">
-                  <summary className="cursor-pointer text-sm font-semibold text-[#176b55]">
+                <details className="mt-4 rounded-lg bg-[#f9fafb] p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-[#011478]">
                     <Plus className="mr-1 inline size-4" /> Add itinerary item
                   </summary>
                   <form
@@ -435,8 +435,8 @@ export default async function PackageDetailPage({
                       Client description
                       <input className={input} name="clientDescription" />
                     </label>
-                    <details className="rounded-xl border bg-white sm:col-span-2">
-                      <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+                    <details className="rounded-lg border bg-white sm:col-span-2">
+                      <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
                         Link catalogue records or add internal notes
                       </summary>
                       <div className="grid gap-3 border-t p-4 sm:grid-cols-2">
@@ -480,7 +480,7 @@ export default async function PackageDetailPage({
                       </div>
                     </details>
                     <div className="sm:col-span-2">
-                      <button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white">
+                      <button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white">
                         Add itinerary item
                       </button>
                     </div>
@@ -492,13 +492,13 @@ export default async function PackageDetailPage({
         })}
       </section>
 
-      <section className="mt-6 rounded-2xl border bg-white">
+      <section className="mt-6 rounded-xl border bg-white">
         <div className="border-b px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#176b55]">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#011478]">
             Step 3
           </p>
           <h2 className="mt-1 font-semibold">Standard costs</h2>
-          <p className="mt-1 text-xs text-[#7b8580]">
+          <p className="mt-1 text-xs text-[#6b7280]">
             Only fields used by the selected charging method are shown. Exchange
             rates are refreshed when the package becomes a tour.
           </p>
@@ -513,12 +513,12 @@ export default async function PackageDetailPage({
               <div key={`${cost.description}-${index}`} className="flex items-start gap-4 px-5 py-4">
                 <div className="flex-1">
                   <p className="text-sm font-semibold">{cost.description}</p>
-                  <p className="mt-1 text-xs text-[#7b8580]">
+                  <p className="mt-1 text-xs text-[#6b7280]">
                     {cost.category} · {packageCostBasisLabels[cost.basis]}
                     {supplier ? ` · ${supplier.name}` : ""}
                     {cost.dayNumber ? ` · Day ${cost.dayNumber}` : ""}
                   </p>
-                  <p className="mt-2 text-xs text-[#59635e]">
+                  <p className="mt-2 text-xs text-[#4b5563]">
                     {cost.originalCurrencyCode} {preview.formula} ={" "}
                     <span className="font-semibold">
                       {cost.originalCurrencyCode}{" "}
@@ -543,14 +543,14 @@ export default async function PackageDetailPage({
             );
           })}
           {!entry.costs.length ? (
-            <p className="px-5 py-8 text-center text-sm text-[#7b8580]">
+            <p className="px-5 py-8 text-center text-sm text-[#6b7280]">
               No standard costs yet. Add accommodation, guide, transport and
               activity costs below.
             </p>
           ) : null}
         </div>
-        <details className="border-t bg-[#fafaf7]" open={!entry.costs.length}>
-          <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-[#176b55]">
+        <details className="border-t bg-[#f9fafb]" open={!entry.costs.length}>
+          <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-[#011478]">
             Add a standard cost
           </summary>
           <div className="border-t p-5">
@@ -570,13 +570,13 @@ export default async function PackageDetailPage({
         </details>
       </section>
 
-      <section className="mt-6 rounded-2xl border bg-white">
+      <section className="mt-6 rounded-xl border bg-white">
         <div className="border-b px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#176b55]">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#011478]">
             Step 4
           </p>
           <h2 className="mt-1 font-semibold">Price and review</h2>
-          <p className="mt-1 text-xs text-[#7b8580]">
+          <p className="mt-1 text-xs text-[#6b7280]">
             Choose the normal profit rule. Tax, discounts and margin protection
             remain available under advanced pricing.
           </p>
@@ -596,29 +596,29 @@ export default async function PackageDetailPage({
               minimumMargin: entry.minimumMargin?.toString() ?? "",
             }}
           />
-          <aside className="rounded-xl bg-[#f2f8f5] p-5">
+          <aside className="rounded-lg bg-[#eff3ff] p-5">
             <h3 className="text-sm font-semibold">Package review</h3>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-3">
-                <dt className="text-[#68736e]">Duration</dt>
+                <dt className="text-[#4b5563]">Duration</dt>
                 <dd className="font-semibold">
                   {entry.durationDays}D / {nights}N
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-[#68736e]">Default guests</dt>
+                <dt className="text-[#4b5563]">Default guests</dt>
                 <dd className="font-semibold">{defaultTravellers}</dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-[#68736e]">Standard costs</dt>
+                <dt className="text-[#4b5563]">Standard costs</dt>
                 <dd className="font-semibold">{entry.costs.length}</dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-[#68736e]">Customer currency</dt>
+                <dt className="text-[#4b5563]">Customer currency</dt>
                 <dd className="font-semibold">{entry.quotationCurrencyCode}</dd>
               </div>
             </dl>
-            <p className="mt-5 text-xs leading-5 text-[#68736e]">
+            <p className="mt-5 text-xs leading-5 text-[#4b5563]">
               The final selling price is recalculated when this package is used,
               using the tour’s guest count, dates and current exchange rates.
             </p>

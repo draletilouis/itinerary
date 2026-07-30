@@ -41,7 +41,7 @@ export function TourWorkspaceNav({
   };
 
   return (
-    <nav className="mt-6 overflow-x-auto rounded-2xl border bg-white p-2" aria-label="Tour workspace">
+    <nav className="mt-6 overflow-x-auto rounded-xl border bg-white p-2" aria-label="Tour workspace">
       <div className="flex min-w-max gap-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -50,8 +50,8 @@ export function TourWorkspaceNav({
             <Link
               key={tab.key}
               href={hrefs[tab.key]}
-              className={`flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold ${
-                selected ? "bg-[#176b55] text-white" : "text-[#59635e] hover:bg-[#f4f6f3]"
+              className={`flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold ${
+                selected ? "bg-[#011478] text-white" : "text-[#4b5563] hover:bg-[#f9fafb]"
               }`}
             >
               <Icon className="size-4" /> {tab.label}

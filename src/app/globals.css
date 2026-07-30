@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f4ef;
-  --foreground: #17201d;
+  --background: #f3f4f6;
+  --foreground: #111827;
   --surface: #ffffff;
-  --muted: #68736e;
-  --line: #e2e5df;
-  --brand: #176b55;
-  --brand-dark: #0f4e3d;
-  --accent: #dca45c;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --brand: #011478;
+  --brand-dark: #00105f;
+  --brand-soft: #eff3ff;
+  --accent: #3a57e8;
 }
 
 * {
@@ -17,15 +18,32 @@
 
 html {
   background: var(--background);
+  color-scheme: light;
 }
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 82% -10%, rgba(220, 164, 92, 0.12), transparent 28rem),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+summary {
+  outline-color: var(--brand);
+}
+
+button,
+a,
+summary {
+  -webkit-tap-highlight-color: transparent;
 }
 
 button,
@@ -33,14 +51,102 @@ a,
 input,
 select,
 textarea {
-  outline-color: var(--brand);
+  transition-duration: 150ms;
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-timing-function: ease-in-out;
 }
 
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+select,
+textarea {
+  color: #111827;
+  background-color: #ffffff;
+  border-color: #d1d5db;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: #6b7280;
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #3a57e8;
+  box-shadow: 0 0 0 3px rgb(58 87 232 / 12%);
+}
+
+select option,
+select optgroup {
+  color: #111827;
+  background: #ffffff;
+}
+
+summary {
+  cursor: pointer;
 }
 
 ::selection {
-  background: rgba(23, 107, 85, 0.2);
+  color: #011478;
+  background: #dbe6ff;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+:where(.rounded-lg.border.bg-white, .rounded-lg.border.bg-white) {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+}
+
+:where(table) {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+:where(thead) {
+  color: #6b7280;
+}
+
+:where(tbody tr) {
+  transition: background-color 150ms ease;
+}
+
+:where(tbody tr:hover) {
+  background-color: #f9fafb;
+}
+
+@media (max-width: 767px) {
+  :where(.overflow-hidden:has(table)) {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  :where(.overflow-hidden:has(table)) table {
+    min-width: 680px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

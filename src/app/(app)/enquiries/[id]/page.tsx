@@ -29,9 +29,9 @@ import { formatMoney } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "mt-2 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 h-11 w-full rounded-lg border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 const textareaClass =
-  "mt-2 min-h-24 w-full rounded-xl border bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 min-h-24 w-full rounded-lg border bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 
 export default async function EnquiryDetailPage({
   params,
@@ -47,37 +47,37 @@ export default async function EnquiryDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl">
-      <Link href="/enquiries" className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+      <Link href="/enquiries" className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
         <ArrowLeft className="size-4" /> Back to enquiries
       </Link>
 
       <div className="mt-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-[#edf5f1] px-2.5 py-1 text-xs font-semibold text-[#176b55]">
+            <span className="rounded-full bg-[#eff3ff] px-2.5 py-1 text-xs font-semibold text-[#011478]">
               {enquiry.reference}
             </span>
-            <span className="rounded-full bg-[#f1f3ef] px-2.5 py-1 text-xs capitalize text-[#68736e]">
+            <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-xs capitalize text-[#4b5563]">
               {enquiry.status.toLowerCase().replaceAll("_", " ")}
             </span>
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">
             {enquiry.customer.fullName}
           </h1>
-          <p className="mt-2 text-sm text-[#68736e]">
+          <p className="mt-2 text-sm text-[#4b5563]">
             Received via {enquiry.source} on {enquiry.dateReceived.toLocaleDateString("en-UG")}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <form action={duplicateEnquiryAction}>
             <input type="hidden" name="enquiryId" value={enquiry.id} />
-            <button className="flex h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold">
+            <button className="flex h-11 items-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold">
               <Copy className="size-4" /> Duplicate
             </button>
           </form>
           <Link
             href={`/customers/${enquiry.customer.id}`}
-            className="grid h-11 place-items-center rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white"
+            className="grid h-11 place-items-center rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white"
           >
             Open customer
           </Link>
@@ -97,20 +97,20 @@ export default async function EnquiryDetailPage({
         ].map(([Icon, label, value]) => {
           const CardIcon = Icon as typeof Phone;
           return (
-            <article key={String(label)} className="rounded-2xl border bg-white p-5">
-              <CardIcon className="size-4 text-[#176b55]" />
-              <p className="mt-4 text-xs text-[#7b8580]">{String(label)}</p>
+            <article key={String(label)} className="rounded-xl border bg-white p-5">
+              <CardIcon className="size-4 text-[#011478]" />
+              <p className="mt-4 text-xs text-[#6b7280]">{String(label)}</p>
               <p className="mt-1 truncate text-sm font-semibold">{String(value)}</p>
             </article>
           );
         })}
       </section>
 
-      <section className="mt-6 rounded-2xl border bg-white p-5">
+      <section className="mt-6 rounded-xl border bg-white p-5">
         <h2 className="font-semibold">Move enquiry</h2>
         <form action={setEnquiryStatusAction} className="mt-4 grid gap-3 sm:grid-cols-[220px_1fr_auto]">
           <input type="hidden" name="enquiryId" value={enquiry.id} />
-          <select className="h-11 rounded-xl border px-3 text-sm" name="status" defaultValue={enquiry.status}>
+          <select className="h-11 rounded-lg border px-3 text-sm" name="status" defaultValue={enquiry.status}>
             {[
               "NEW",
               "CONTACTED",
@@ -128,11 +128,11 @@ export default async function EnquiryDetailPage({
             ))}
           </select>
           <input
-            className="h-11 rounded-xl border px-3 text-sm"
+            className="h-11 rounded-lg border px-3 text-sm"
             name="reason"
             placeholder="Reason required for lost or cancelled"
           />
-          <button className="h-11 rounded-xl border bg-[#f8f8f5] px-4 text-sm font-semibold">
+          <button className="h-11 rounded-lg border bg-[#f9fafb] px-4 text-sm font-semibold">
             Update status
           </button>
         </form>
@@ -140,12 +140,12 @@ export default async function EnquiryDetailPage({
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
-          <section className="overflow-hidden rounded-2xl border bg-white">
+          <section className="overflow-hidden rounded-xl border bg-white">
             <div className="flex items-center gap-3 border-b px-6 py-5">
-              <MessageSquareText className="size-5 text-[#176b55]" />
+              <MessageSquareText className="size-5 text-[#011478]" />
               <div>
                 <h2 className="font-semibold">Communication timeline</h2>
-                <p className="mt-1 text-xs text-[#7b8580]">Calls, messages, email, and notes</p>
+                <p className="mt-1 text-xs text-[#6b7280]">Calls, messages, email, and notes</p>
               </div>
             </div>
             <div className="divide-y">
@@ -153,35 +153,35 @@ export default async function EnquiryDetailPage({
                 <article key={communication.id} className="px-6 py-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-[#f1f3ef] px-2.5 py-1 text-[11px] font-semibold">
+                      <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-semibold">
                         {communication.channel}
                       </span>
-                      <span className="text-[11px] capitalize text-[#7b8580]">
+                      <span className="text-[11px] capitalize text-[#6b7280]">
                         {communication.direction.toLowerCase()}
                       </span>
                     </div>
-                    <span className="text-[11px] text-[#8b948f]">
+                    <span className="text-[11px] text-[#9ca3af]">
                       {communication.occurredAt.toLocaleString("en-UG")}
                     </span>
                   </div>
                   {communication.subject ? (
                     <p className="mt-3 text-sm font-semibold">{communication.subject}</p>
                   ) : null}
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#59635e]">
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#4b5563]">
                     {communication.content}
                   </p>
-                  <p className="mt-3 text-[11px] text-[#8b948f]">
+                  <p className="mt-3 text-[11px] text-[#9ca3af]">
                     Added by {communication.createdBy.fullName}
                   </p>
                 </article>
               ))}
               {!enquiry.communications.length ? (
-                <p className="px-6 py-10 text-center text-sm text-[#7b8580]">
+                <p className="px-6 py-10 text-center text-sm text-[#6b7280]">
                   No communication recorded yet.
                 </p>
               ) : null}
             </div>
-            <details className="border-t bg-[#fafaf7]">
+            <details className="border-t bg-[#f9fafb]">
               <summary className="cursor-pointer px-6 py-4 text-sm font-semibold">Add communication</summary>
               <form action={addCommunicationAction} className="grid gap-4 border-t p-6 sm:grid-cols-2">
                 <input type="hidden" name="enquiryId" value={enquiry.id} />
@@ -211,7 +211,7 @@ export default async function EnquiryDetailPage({
                   <textarea className={textareaClass} name="content" required />
                 </label>
                 <div className="sm:col-span-2">
-                  <button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">
+                  <button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">
                     Add to timeline
                   </button>
                 </div>
@@ -219,12 +219,12 @@ export default async function EnquiryDetailPage({
             </details>
           </section>
 
-          <section className="overflow-hidden rounded-2xl border bg-white">
+          <section className="overflow-hidden rounded-xl border bg-white">
             <div className="flex items-center gap-3 border-b px-6 py-5">
-              <CalendarClock className="size-5 text-[#176b55]" />
+              <CalendarClock className="size-5 text-[#011478]" />
               <div>
                 <h2 className="font-semibold">Follow-ups</h2>
-                <p className="mt-1 text-xs text-[#7b8580]">Scheduled actions and outcomes</p>
+                <p className="mt-1 text-xs text-[#6b7280]">Scheduled actions and outcomes</p>
               </div>
             </div>
             <div className="divide-y">
@@ -235,11 +235,11 @@ export default async function EnquiryDetailPage({
                       <p className="text-sm font-medium">
                         {followUp.scheduledFor.toLocaleString("en-UG")}
                       </p>
-                      <p className="mt-1 text-xs text-[#7b8580]">
+                      <p className="mt-1 text-xs text-[#6b7280]">
                         {followUp.notes ?? "No notes"} · {followUp.assignedTo?.fullName ?? "Unassigned"}
                       </p>
                       {followUp.outcome ? (
-                        <p className="mt-2 text-xs text-[#59635e]">Outcome: {followUp.outcome}</p>
+                        <p className="mt-2 text-xs text-[#4b5563]">Outcome: {followUp.outcome}</p>
                       ) : null}
                     </div>
                     {followUp.status === "PENDING" ? (
@@ -247,12 +247,12 @@ export default async function EnquiryDetailPage({
                         <input type="hidden" name="followUpId" value={followUp.id} />
                         <input type="hidden" name="enquiryId" value={enquiry.id} />
                         <input className="h-9 rounded-lg border px-3 text-xs" name="outcome" placeholder="Outcome" />
-                        <button aria-label="Complete follow-up" className="grid size-9 place-items-center rounded-lg bg-[#edf5f1] text-[#176b55]">
+                        <button aria-label="Complete follow-up" className="grid size-9 place-items-center rounded-lg bg-[#eff3ff] text-[#011478]">
                           <Check className="size-4" />
                         </button>
                       </form>
                     ) : (
-                      <span className="text-xs font-semibold capitalize text-[#176b55]">
+                      <span className="text-xs font-semibold capitalize text-[#011478]">
                         {followUp.status.toLowerCase()}
                       </span>
                     )}
@@ -260,7 +260,7 @@ export default async function EnquiryDetailPage({
                 </article>
               ))}
             </div>
-            <details className="border-t bg-[#fafaf7]">
+            <details className="border-t bg-[#f9fafb]">
               <summary className="cursor-pointer px-6 py-4 text-sm font-semibold">Schedule follow-up</summary>
               <form action={scheduleFollowUpAction} className="grid gap-4 border-t p-6 sm:grid-cols-2">
                 <input type="hidden" name="enquiryId" value={enquiry.id} />
@@ -280,7 +280,7 @@ export default async function EnquiryDetailPage({
                   <input className={inputClass} name="notes" />
                 </label>
                 <div className="sm:col-span-2">
-                  <button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">Schedule</button>
+                  <button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">Schedule</button>
                 </div>
               </form>
             </details>
@@ -288,7 +288,7 @@ export default async function EnquiryDetailPage({
         </div>
 
         <div className="space-y-6">
-          <section className="rounded-2xl border bg-white p-6">
+          <section className="rounded-xl border bg-white p-6">
             <h2 className="font-semibold">Request details</h2>
             <dl className="mt-5 space-y-4 text-sm">
               {[
@@ -302,27 +302,27 @@ export default async function EnquiryDetailPage({
                 ["Special requests", enquiry.specialRequests ?? "None"],
               ].map(([label, value]) => (
                 <div key={label} className="grid grid-cols-[130px_1fr] gap-3">
-                  <dt className="text-[#7b8580]">{label}</dt>
+                  <dt className="text-[#6b7280]">{label}</dt>
                   <dd className="font-medium">{value}</dd>
                 </div>
               ))}
             </dl>
           </section>
 
-          <section className="rounded-2xl border bg-white p-6">
+          <section className="rounded-xl border bg-white p-6">
             <div className="flex items-center gap-3">
-              <Route className="size-5 text-[#176b55]" />
+              <Route className="size-5 text-[#011478]" />
               <div>
                 <h2 className="font-semibold">Create tour</h2>
-                <p className="mt-1 text-xs text-[#7b8580]">Carry this enquiry into tour planning</p>
+                <p className="mt-1 text-xs text-[#6b7280]">Carry this enquiry into tour planning</p>
               </div>
             </div>
             {enquiry.tours.length ? (
               <div className="mt-5 space-y-3">
                 {enquiry.tours.map((tour) => (
-                  <Link key={tour.id} href={`/tours/${tour.id}`} className="block rounded-xl border p-4 hover:bg-[#fafaf7]">
+                  <Link key={tour.id} href={`/tours/${tour.id}`} className="block rounded-lg border p-4 hover:bg-[#f9fafb]">
                     <p className="text-sm font-semibold">{tour.name}</p>
-                    <p className="mt-1 text-xs text-[#7b8580]">{tour.reference} · {tour.status.toLowerCase().replaceAll("_", " ")}</p>
+                    <p className="mt-1 text-xs text-[#6b7280]">{tour.reference} · {tour.status.toLowerCase().replaceAll("_", " ")}</p>
                   </Link>
                 ))}
               </div>
@@ -363,26 +363,26 @@ export default async function EnquiryDetailPage({
                     </select>
                   </label>
                 </div>
-                <button className="h-11 w-full rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">
+                <button className="h-11 w-full rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">
                   Create tour
                 </button>
               </form>
             )}
           </section>
 
-          <section className="rounded-2xl border bg-white p-6">
+          <section className="rounded-xl border bg-white p-6">
             <h2 className="font-semibold">Status history</h2>
             <div className="mt-5 space-y-4">
               {enquiry.statusHistory.map((event) => (
-                <div key={event.id} className="relative border-l-2 border-[#dce4df] pl-4">
-                  <span className="absolute -left-[5px] top-1 size-2 rounded-full bg-[#176b55]" />
+                <div key={event.id} className="relative border-l-2 border-[#e5e7eb] pl-4">
+                  <span className="absolute -left-[5px] top-1 size-2 rounded-full bg-[#011478]" />
                   <p className="text-sm font-medium capitalize">
                     {event.toStatus.toLowerCase().replaceAll("_", " ")}
                   </p>
-                  <p className="mt-1 text-xs text-[#7b8580]">
+                  <p className="mt-1 text-xs text-[#6b7280]">
                     {event.createdAt.toLocaleString("en-UG")} · {event.changedBy.fullName}
                   </p>
-                  {event.reason ? <p className="mt-1 text-xs text-[#59635e]">{event.reason}</p> : null}
+                  {event.reason ? <p className="mt-1 text-xs text-[#4b5563]">{event.reason}</p> : null}
                 </div>
               ))}
             </div>

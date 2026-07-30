@@ -13,8 +13,8 @@ import {
 import { getItinerary, getItineraryOptions } from "@/modules/itineraries/queries/itineraries";
 
 export const dynamic = "force-dynamic";
-const input = "mt-2 h-10 w-full rounded-xl border bg-white px-3 text-sm";
-const area = "mt-2 min-h-24 w-full rounded-xl border bg-white p-3 text-sm";
+const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
+const area = "mt-2 min-h-24 w-full rounded-lg border bg-white p-3 text-sm";
 
 export default async function ItineraryDetailPage({
   params,
@@ -44,14 +44,14 @@ export default async function ItineraryDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl">
-      <Link href="/itineraries" className="inline-flex items-center gap-2 text-sm text-[#68736e]"><ArrowLeft className="size-4" /> Back to itineraries</Link>
+      <Link href="/itineraries" className="inline-flex items-center gap-2 text-sm text-[#4b5563]"><ArrowLeft className="size-4" /> Back to itineraries</Link>
       <div className="mt-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div><div className="flex flex-wrap gap-3"><span className="rounded-full bg-[#edf5f1] px-2.5 py-1 text-xs font-semibold text-[#176b55]">{itinerary.reference}</span><span className="rounded-full bg-[#f1f3ef] px-2.5 py-1 text-xs capitalize">{selected.status.toLowerCase().replaceAll("_", " ")}</span></div><h1 className="mt-3 text-3xl font-semibold tracking-tight">{selected.title}</h1><p className="mt-2 text-sm text-[#68736e]">{itinerary.tour?.name} · {itinerary.tour?.customer.fullName}</p></div>
-        <div className="flex flex-wrap gap-2">{itinerary.versions.map((item) => <Link key={item.id} href={`/itineraries/${itinerary.id}?version=${item.versionNumber}`} className={`rounded-xl border px-3 py-2 text-xs font-semibold ${item.id === selected.id ? "bg-[#176b55] text-white" : "bg-white"}`}>v{item.versionNumber}</Link>)}</div>
+        <div><div className="flex flex-wrap gap-3"><span className="rounded-full bg-[#eff3ff] px-2.5 py-1 text-xs font-semibold text-[#011478]">{itinerary.reference}</span><span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-xs capitalize">{selected.status.toLowerCase().replaceAll("_", " ")}</span></div><h1 className="mt-3 text-3xl font-semibold tracking-tight">{selected.title}</h1><p className="mt-2 text-sm text-[#4b5563]">{itinerary.tour?.name} · {itinerary.tour?.customer.fullName}</p></div>
+        <div className="flex flex-wrap gap-2">{itinerary.versions.map((item) => <Link key={item.id} href={`/itineraries/${itinerary.id}?version=${item.versionNumber}`} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${item.id === selected.id ? "bg-[#011478] text-white" : "bg-white"}`}>v{item.versionNumber}</Link>)}</div>
       </div>
       {itinerary.tour ? <TourWorkspaceNav tourId={itinerary.tour.id} active="itinerary" itineraryId={itinerary.id} bookingId={itinerary.tour.booking?.id} /> : null}
 
-      <section className="mt-6 rounded-2xl border bg-white p-5">
+      <section className="mt-6 rounded-xl border bg-white p-5">
         {editable ? (
           <form action={updateItineraryVersionAction} className="grid gap-4 lg:grid-cols-2">
             <input type="hidden" name="itineraryId" value={itinerary.id} /><input type="hidden" name="versionId" value={selected.id} />
@@ -62,17 +62,17 @@ export default async function ItineraryDetailPage({
             <label className="text-sm font-medium">Exclusions, one per line<textarea className={area} name="exclusions" defaultValue={selected.exclusions.join("\n")} /></label>
             <label className="text-sm font-medium">Important notes<textarea className={area} name="importantNotes" defaultValue={selected.importantNotes ?? ""} /></label>
             <label className="text-sm font-medium">Terms<textarea className={area} name="terms" defaultValue={selected.terms ?? ""} /></label>
-            <div className="lg:col-span-2"><button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white">Save itinerary details</button></div>
+            <div className="lg:col-span-2"><button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white">Save itinerary details</button></div>
           </form>
         ) : (
-          <div><p className="text-sm leading-7 text-[#59635e]">{selected.introduction ?? "No introduction provided."}</p><div className="mt-5 grid gap-5 sm:grid-cols-2"><div><h3 className="text-sm font-semibold">Inclusions</h3><ul className="mt-2 space-y-1 text-sm text-[#68736e]">{selected.inclusions.map((item) => <li key={item}>• {item}</li>)}</ul></div><div><h3 className="text-sm font-semibold">Exclusions</h3><ul className="mt-2 space-y-1 text-sm text-[#68736e]">{selected.exclusions.map((item) => <li key={item}>• {item}</li>)}</ul></div></div></div>
+          <div><p className="text-sm leading-7 text-[#4b5563]">{selected.introduction ?? "No introduction provided."}</p><div className="mt-5 grid gap-5 sm:grid-cols-2"><div><h3 className="text-sm font-semibold">Inclusions</h3><ul className="mt-2 space-y-1 text-sm text-[#4b5563]">{selected.inclusions.map((item) => <li key={item}>• {item}</li>)}</ul></div><div><h3 className="text-sm font-semibold">Exclusions</h3><ul className="mt-2 space-y-1 text-sm text-[#4b5563]">{selected.exclusions.map((item) => <li key={item}>• {item}</li>)}</ul></div></div></div>
         )}
       </section>
 
       <section className="mt-6 space-y-4">
         {selected.days.map((day) => (
-          <details key={day.id} className="overflow-hidden rounded-2xl border bg-white" open={selected.days.length <= 3}>
-            <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4"><span className="grid size-11 place-items-center rounded-xl bg-[#edf5f1] text-sm font-bold text-[#176b55]">{day.dayNumber}</span><span className="min-w-0 flex-1"><span className="block truncate font-semibold">{day.title}</span><span className="mt-1 block text-xs text-[#7b8580]">{day.date?.toLocaleDateString("en-UG") ?? "No date"} · {day.destination?.name ?? "Destination not set"}</span></span><CalendarDays className="size-5 text-[#7b8580]" /></summary>
+          <details key={day.id} className="overflow-hidden rounded-xl border bg-white" open={selected.days.length <= 3}>
+            <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4"><span className="grid size-11 place-items-center rounded-lg bg-[#eff3ff] text-sm font-bold text-[#011478]">{day.dayNumber}</span><span className="min-w-0 flex-1"><span className="block truncate font-semibold">{day.title}</span><span className="mt-1 block text-xs text-[#6b7280]">{day.date?.toLocaleDateString("en-UG") ?? "No date"} · {day.destination?.name ?? "Destination not set"}</span></span><CalendarDays className="size-5 text-[#6b7280]" /></summary>
             <div className="border-t p-5">
               {editable ? (
                 <form action={updateItineraryDayAction} className="grid gap-4 lg:grid-cols-2">
@@ -84,13 +84,13 @@ export default async function ItineraryDetailPage({
                   <label className="text-xs lg:col-span-2">Client narrative<textarea className={area} name="clientNarrative" defaultValue={day.clientNarrative ?? ""} /></label>
                   <label className="text-xs">Meals, comma separated<input className={input} name="meals" defaultValue={day.meals.join(", ")} /></label>
                   <label className="text-xs">Transport<input className={input} name="transport" defaultValue={day.transport ?? ""} /></label>
-                  <div className="lg:col-span-2 flex gap-3"><button className="h-10 rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white">Save day</button></div>
+                  <div className="lg:col-span-2 flex gap-3"><button className="h-10 rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white">Save day</button></div>
                 </form>
-              ) : <p className="text-sm leading-7 text-[#59635e]">{day.clientNarrative ?? "No client narrative."}</p>}
+              ) : <p className="text-sm leading-7 text-[#4b5563]">{day.clientNarrative ?? "No client narrative."}</p>}
 
-              <div className="mt-5 divide-y rounded-xl border">
-                {day.items.map((item) => <div key={item.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[90px_1fr_auto]"><span className="text-xs font-semibold text-[#176b55]">{item.startTime ?? "Any time"}</span><div><p className="text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-[#7b8580]">{item.clientDescription ?? item.type.toLowerCase()}</p>{item.type === "ACCOMMODATION" && item.roomType ? <p className="mt-1 text-xs font-medium text-[#176b55]">{item.roomType.name} · {item.guestsPerRoom ?? item.roomType.maximumOccupancy ?? 2} people per room</p> : null}</div><span className="text-[11px] capitalize text-[#8b948f]">{item.type.toLowerCase()}</span></div>)}
-                {!day.items.length ? <p className="px-4 py-6 text-center text-xs text-[#8b948f]">No timed items yet.</p> : null}
+              <div className="mt-5 divide-y rounded-lg border">
+                {day.items.map((item) => <div key={item.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[90px_1fr_auto]"><span className="text-xs font-semibold text-[#011478]">{item.startTime ?? "Any time"}</span><div><p className="text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-[#6b7280]">{item.clientDescription ?? item.type.toLowerCase()}</p>{item.type === "ACCOMMODATION" && item.roomType ? <p className="mt-1 text-xs font-medium text-[#011478]">{item.roomType.name} · {item.guestsPerRoom ?? item.roomType.maximumOccupancy ?? 2} people per room</p> : null}</div><span className="text-[11px] capitalize text-[#9ca3af]">{item.type.toLowerCase()}</span></div>)}
+                {!day.items.length ? <p className="px-4 py-6 text-center text-xs text-[#9ca3af]">No timed items yet.</p> : null}
               </div>
 
               {editable ? <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto]"><ItineraryItemForm
@@ -101,14 +101,14 @@ export default async function ItineraryDetailPage({
                 destinationName={day.destination?.name ?? null}
                 activities={options.activities}
                 accommodations={options.accommodations}
-              /><form action={duplicateItineraryDayAction} className="self-end"><input type="hidden" name="itineraryId" value={itinerary.id} /><input type="hidden" name="versionId" value={selected.id} /><input type="hidden" name="dayId" value={day.id} /><button className="flex h-10 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold"><Copy className="size-4" /> Duplicate day</button></form></div> : null}
+              /><form action={duplicateItineraryDayAction} className="self-end"><input type="hidden" name="itineraryId" value={itinerary.id} /><input type="hidden" name="versionId" value={selected.id} /><input type="hidden" name="dayId" value={day.id} /><button className="flex h-10 items-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold"><Copy className="size-4" /> Duplicate day</button></form></div> : null}
             </div>
           </details>
         ))}
       </section>
 
-      <section className="mt-6 flex flex-wrap justify-end gap-3 rounded-2xl border bg-white p-5">
-        {editable ? <form action={publishItineraryVersionAction}><input type="hidden" name="itineraryId" value={itinerary.id} /><input type="hidden" name="versionId" value={selected.id} /><button className="flex h-11 items-center gap-2 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white"><Send className="size-4" /> Publish version {selected.versionNumber}</button></form> : <form action={createItineraryRevisionAction} className="flex gap-3"><input type="hidden" name="itineraryId" value={itinerary.id} /><input type="hidden" name="versionId" value={selected.id} /><input className="h-11 rounded-xl border px-3 text-sm" name="changeNote" placeholder="Revision note" /><button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">Create new version</button></form>}
+      <section className="mt-6 flex flex-wrap justify-end gap-3 rounded-xl border bg-white p-5">
+        {editable ? <form action={publishItineraryVersionAction}><input type="hidden" name="itineraryId" value={itinerary.id} /><input type="hidden" name="versionId" value={selected.id} /><button className="flex h-11 items-center gap-2 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white"><Send className="size-4" /> Publish version {selected.versionNumber}</button></form> : <form action={createItineraryRevisionAction} className="flex gap-3"><input type="hidden" name="itineraryId" value={itinerary.id} /><input type="hidden" name="versionId" value={selected.id} /><input className="h-11 rounded-lg border px-3 text-sm" name="changeNote" placeholder="Revision note" /><button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">Create new version</button></form>}
       </section>
     </div>
   );

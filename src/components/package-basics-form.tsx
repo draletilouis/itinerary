@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createTourPackageAction } from "@/modules/packages/actions/packages";
 import { packageNights } from "@/modules/packages/presentation";
 
-const input = "mt-2 h-11 w-full rounded-xl border bg-white px-3 text-sm";
+const input = "mt-2 h-11 w-full rounded-lg border bg-white px-3 text-sm";
 
 export function PackageBasicsForm({
   currencies,
@@ -39,9 +39,9 @@ export function PackageBasicsForm({
             required
           />
         </label>
-        <div className="rounded-xl bg-[#f2f8f5] p-3">
-          <p className="text-xs text-[#68736e]">Package duration</p>
-          <p className="mt-2 text-sm font-semibold text-[#176b55]">
+        <div className="rounded-lg bg-[#eff3ff] p-3">
+          <p className="text-xs text-[#4b5563]">Package duration</p>
+          <p className="mt-2 text-sm font-semibold text-[#011478]">
             {days} days / {packageNights(days)} nights
           </p>
         </div>
@@ -69,8 +69,8 @@ export function PackageBasicsForm({
         </label>
       </div>
 
-      <details className="rounded-xl border bg-[#fafaf7]">
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#176b55]">
+      <details className="rounded-lg border bg-[#f9fafb]">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#011478]">
           Optional package details
         </summary>
         <div className="grid gap-4 border-t p-4">
@@ -100,18 +100,18 @@ export function PackageBasicsForm({
           <label className="text-xs font-medium">
             Short description
             <textarea
-              className="mt-2 min-h-20 w-full rounded-xl border bg-white p-3 text-sm"
+              className="mt-2 min-h-20 w-full rounded-lg border bg-white p-3 text-sm"
               name="description"
             />
           </label>
         </div>
       </details>
 
-      <p className="text-xs leading-5 text-[#7b8580]">
+      <p className="text-xs leading-5 text-[#6b7280]">
         Customer currency initially matches the costing currency. Pricing and other
         advanced settings are configured after creation.
       </p>
-      <button className="h-11 w-full rounded-xl bg-[#176b55] px-4 text-sm font-semibold text-white">
+      <button className="h-11 w-full rounded-lg bg-[#011478] px-4 text-sm font-semibold text-white">
         Create package and add itinerary
       </button>
     </form>

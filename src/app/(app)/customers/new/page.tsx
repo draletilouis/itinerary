@@ -5,22 +5,22 @@ import { createCustomerAction } from "@/modules/customers/actions/customers";
 export const metadata = { title: "New customer" };
 
 const inputClass =
-  "mt-2 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 h-11 w-full rounded-lg border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 const textareaClass =
-  "mt-2 min-h-24 w-full rounded-xl border bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#176b55]/20";
+  "mt-2 min-h-24 w-full rounded-lg border bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#011478]/20";
 
 export default function NewCustomerPage() {
   return (
     <div className="mx-auto max-w-4xl">
-      <Link href="/customers" className="inline-flex items-center gap-2 text-sm text-[#68736e]">
+      <Link href="/customers" className="inline-flex items-center gap-2 text-sm text-[#4b5563]">
         <ArrowLeft className="size-4" /> Back to customers
       </Link>
       <h1 className="mt-5 text-3xl font-semibold tracking-tight">New customer</h1>
-      <p className="mt-2 text-sm text-[#68736e]">
+      <p className="mt-2 text-sm text-[#4b5563]">
         Start with essential contact details. Preferences can be expanded below.
       </p>
 
-      <form action={createCustomerAction} className="mt-7 rounded-2xl border bg-white p-6">
+      <form action={createCustomerAction} className="mt-7 rounded-xl border bg-white p-6">
         <div className="grid gap-5 sm:grid-cols-2">
           <label>
             <span className="text-sm font-medium">Customer type</span>
@@ -66,7 +66,7 @@ export default function NewCustomerPage() {
           </label>
         </div>
 
-        <details className="mt-6 rounded-xl border bg-[#fafaf7]">
+        <details className="mt-6 rounded-lg border bg-[#f9fafb]">
           <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">More details</summary>
           <div className="grid gap-5 border-t p-4 sm:grid-cols-2">
             {[
@@ -98,10 +98,10 @@ export default function NewCustomerPage() {
         </details>
 
         <div className="mt-6 flex justify-end gap-3">
-          <Link href="/customers" className="grid h-11 place-items-center rounded-xl border px-5 text-sm font-semibold">
+          <Link href="/customers" className="grid h-11 place-items-center rounded-lg border px-5 text-sm font-semibold">
             Cancel
           </Link>
-          <button className="h-11 rounded-xl bg-[#176b55] px-5 text-sm font-semibold text-white">
+          <button className="h-11 rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">
             Create customer
           </button>
         </div>
