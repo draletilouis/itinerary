@@ -44,7 +44,7 @@ export async function getPackageOptions() {
         orderBy: { name: "asc" },
         include: { roomTypes: { where: { status: "ACTIVE" }, orderBy: { name: "asc" } } },
       }),
-      prisma.supplier.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
+      prisma.supplier.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" }, include: { rates: { where: { status: "ACTIVE" }, orderBy: { startDate: "desc" } } } }),
     ]);
   return { currencies, destinations, activities, accommodations, suppliers };
 }

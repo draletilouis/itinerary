@@ -1,7 +1,7 @@
 import { formatMoney } from "@/lib/utils";
 
 type CostItemDisplayInput = {
-  basis: "STANDARD" | "ACCOMMODATION" | "PER_PERSON" | "VEHICLE" | "OVERRIDE";
+  basis: "STANDARD" | "ACCOMMODATION" | "PER_PERSON" | "PER_PERSON_PER_NIGHT" | "PER_PERSON_PER_DAY" | "VEHICLE" | "OVERRIDE";
   unitCost: { toString(): string };
   quantity: { toString(): string };
   days: { toString(): string };
@@ -31,6 +31,14 @@ export function costItemDisplay(item: CostItemDisplayInput) {
     case "PER_PERSON":
       basisLabel = "Per traveller";
       formula = `${unit} × ${count(item.eligibleTravellers)} traveller(s)`;
+      break;
+    case "PER_PERSON_PER_NIGHT":
+      basisLabel = "Per traveller per night";
+      formula = `${unit} x ${count(item.eligibleTravellers)} traveller(s) x ${count(item.nights)} night(s)`;
+      break;
+    case "PER_PERSON_PER_DAY":
+      basisLabel = "Per traveller per day";
+      formula = `${unit} x ${count(item.eligibleTravellers)} traveller(s) x ${count(item.days)} day(s)`;
       break;
     case "VEHICLE":
       basisLabel = "Per vehicle per day";

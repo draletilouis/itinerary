@@ -1,4 +1,4 @@
-export type PackageItineraryItemTemplate = {
+﻿export type PackageItineraryItemTemplate = {
   type: "ACTIVITY" | "ACCOMMODATION" | "TRANSPORT" | "MEAL" | "NOTE" | "OTHER";
   startTime?: string;
   endTime?: string;
@@ -26,7 +26,7 @@ export type PackageDayTemplate = {
 export type PackageCostTemplate = {
   category: string;
   description: string;
-  basis: "STANDARD" | "ACCOMMODATION" | "PER_PERSON" | "VEHICLE" | "OVERRIDE";
+  basis: "STANDARD" | "ACCOMMODATION" | "PER_PERSON" | "PER_PERSON_PER_NIGHT" | "PER_PERSON_PER_DAY" | "VEHICLE" | "OVERRIDE";
   unitCost: string;
   quantity: string;
   days: string;
@@ -41,4 +41,8 @@ export type PackageCostTemplate = {
   originalCurrencyCode: string;
   supplierId?: string;
   dayNumber?: number;
+  classification: "INCLUDED" | "OPTIONAL" | "EXCLUDED";
+  optionCode?: string;
+  inclusionText?: string;
+  supplierRateId?: string;
 };

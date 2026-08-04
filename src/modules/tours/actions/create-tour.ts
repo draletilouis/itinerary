@@ -27,6 +27,7 @@ const formSchema = z.object({
   mode: z.enum(["DIRECT", "ENQUIRY", "PACKAGE"]),
   enquiryId: z.string().optional().default(""),
   packageId: z.string().optional().default(""),
+  packageVariant: z.enum(["BASE", "ALL_OPTIONS"]).optional().default("BASE"),
   customerId: z.string().optional().default(""),
   newCustomerName: z.string().trim().optional().default(""),
   newCustomerPhone: z.string().trim().optional().default(""),
@@ -72,7 +73,15 @@ export async function createTourFromWizardAction(formData: FormData) {
   }
 
   const templateDays = packageEntry ? packageDays(packageEntry.itineraryTemplate) : [];
-  const templateCosts = packageEntry ? packageCosts(packageEntry.costTemplate) : [];
+  const allTemplateCosts = packageEntry ? packageCosts(packageEntry.costTemplate) : [];
+  const templateCosts = allTemplateCosts.filter((cost) =>
+    cost.classification === "INCLUDED" ||
+    (cost.classification === "OPTIONAL" && data.packageVariant === "ALL_OPTIONS"),
+  );
+  const derivedInclusions = Array.from(new Set([
+    ...(packageEntry?.inclusions ?? []),
+    ...templateCosts.map((cost) => cost.inclusionText || cost.description),
+  ]));
   const travellerCount = data.adults + data.children;
   const preparedCosts: PreparedCost[] = [];
   for (const cost of templateCosts) {
@@ -82,7 +91,7 @@ export async function createTourFromWizardAction(formData: FormData) {
       startDate,
     );
     const eligibleTravellers =
-      cost.basis === "PER_PERSON" && new Prisma.Decimal(cost.eligibleTravellers).isZero()
+      cost.basis.startsWith("PER_PERSON") && new Prisma.Decimal(cost.eligibleTravellers).isZero()
         ? String(travellerCount)
         : cost.eligibleTravellers;
     const result = calculateCostItem({
@@ -211,7 +220,7 @@ export async function createTourFromWizardAction(formData: FormData) {
         title: packageEntry?.name ?? data.name,
         introduction: packageEntry?.introduction ?? null,
         summary: packageEntry?.summary ?? null,
-        inclusions: packageEntry?.inclusions ?? [],
+        inclusions: packageEntry ? derivedInclusions : [],
         exclusions: packageEntry?.exclusions ?? [],
         importantNotes: packageEntry?.importantNotes ?? null,
         terms: packageEntry?.terms ?? null,
@@ -363,6 +372,7 @@ export async function createTourFromWizardAction(formData: FormData) {
         customerId,
         sourcePackageId: packageEntry?.id,
         sourcePackageRevision: packageEntry?.revision,
+        packageVariant: packageEntry ? data.packageVariant : undefined,
         sourceEnquiryId: enquiry?.id,
       },
     });

@@ -29,6 +29,12 @@ export function calculateCostItem(input: CostItemInput) {
     case "PER_PERSON":
       originalSubtotal = unitCost.mul(D(input.eligibleTravellers ?? 0));
       break;
+    case "PER_PERSON_PER_NIGHT":
+      originalSubtotal = unitCost.mul(D(input.eligibleTravellers ?? 0)).mul(D(input.nights ?? 0));
+      break;
+    case "PER_PERSON_PER_DAY":
+      originalSubtotal = unitCost.mul(D(input.eligibleTravellers ?? 0)).mul(D(input.days ?? 0));
+      break;
     case "VEHICLE":
       originalSubtotal = unitCost.mul(D(input.vehicles ?? 0)).mul(D(input.days ?? 0));
       break;

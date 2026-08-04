@@ -14,6 +14,7 @@ import {
   parseFutureValidityDate,
 } from "../services/lifecycle";
 import { calculateQuotationRevision } from "../services/totals";
+import { validateZeroMarginOverride } from "../services/margin-guard";
 import {
   allocateQuotationAmount,
   buildItineraryQuotationLines,
@@ -30,6 +31,7 @@ export async function generateQuotationAction(formData: FormData) {
     childUnitPrice: z.union([z.literal(""), z.string().trim().regex(/^\d+(\.\d{1,2})?$/)]).optional().default(""),
     customerNotes: z.string().trim().optional().default(""),
     terms: z.string().trim().optional().default(""),
+    zeroMarginReason: z.string().trim().optional().default(""),
   }).parse(Object.fromEntries(formData));
   const validUntil = parseFutureValidityDate(data.validUntil);
 
@@ -61,6 +63,7 @@ export async function generateQuotationAction(formData: FormData) {
     });
     const pricing = tour.pricingSnapshots[0];
     if (!pricing) throw new Error("Save tour pricing before generating a quotation.");
+    validateZeroMarginOverride(pricing, data.zeroMarginReason);
     const itineraryVersion = tour.itineraries[0]?.versions[0];
     if (!itineraryVersion) {
       throw new Error("Publish an itinerary version before generating a quotation.");
@@ -132,6 +135,9 @@ export async function generateQuotationAction(formData: FormData) {
         createdById: actor.id,
       },
     });
+    if (data.zeroMarginReason) {
+      await writeAuditEvent(tx, { actorId: actor.id, action: "quotation.zero-margin-overridden", entityType: "Quotation", entityId: created.id, next: { reason: data.zeroMarginReason, internalCost: pricing.internalCost, sellingPrice: pricing.sellingPrice, estimatedMargin: pricing.estimatedMargin } });
+    }
     await tx.quotationLine.createMany({
       data: quotationLines.map((line) => ({ ...line, versionId: version.id })),
     });

@@ -448,7 +448,7 @@ export async function addPackageCostAction(formData: FormData) {
       packageId: z.string().uuid(),
       category: z.string().trim().min(2),
       description: z.string().trim().min(2),
-      basis: z.enum(["STANDARD", "ACCOMMODATION", "PER_PERSON", "VEHICLE", "OVERRIDE"]),
+      basis: z.enum(["STANDARD", "ACCOMMODATION", "PER_PERSON", "PER_PERSON_PER_NIGHT", "PER_PERSON_PER_DAY", "VEHICLE", "OVERRIDE"]),
       unitCost: number,
       quantity: optionalNumber,
       days: optionalNumber,
@@ -463,6 +463,10 @@ export async function addPackageCostAction(formData: FormData) {
       originalCurrencyCode: z.string().length(3),
       supplierId: z.string().optional().default(""),
       dayNumber: z.string().optional().default(""),
+      classification: z.enum(["INCLUDED", "OPTIONAL", "EXCLUDED"]),
+      optionCode: z.string().trim().optional().default(""),
+      inclusionText: z.string().trim().optional().default(""),
+      supplierRateId: z.string().optional().default(""),
     })
     .parse(Object.fromEntries(formData));
   if (data.basis === "OVERRIDE" && (!data.overrideTotal || !data.overrideReason)) {
@@ -471,6 +475,9 @@ export async function addPackageCostAction(formData: FormData) {
 
   await prisma.$transaction(async (tx) => {
     const entry = await tx.tourPackage.findUniqueOrThrow({ where: { id: data.packageId } });
+    const supplierRate = data.supplierRateId
+      ? await tx.supplierRate.findFirstOrThrow({ where: { id: data.supplierRateId, status: "ACTIVE", startDate: { lte: new Date() }, OR: [{ endDate: null }, { endDate: { gte: new Date() } }] } })
+      : null;
     const costs = packageCosts(entry.costTemplate);
     const durationNights = Math.max(entry.durationDays - 1, 0);
     const quantity = data.quantity || "1";
@@ -492,9 +499,11 @@ export async function addPackageCostAction(formData: FormData) {
       requirePositive("Rooms", rooms);
       requirePositive("Nights", nights);
     }
-    if (data.basis === "PER_PERSON") {
+    if (data.basis.startsWith("PER_PERSON")) {
       requirePositive("People charged", eligibleTravellers);
     }
+    if (data.basis === "PER_PERSON_PER_NIGHT") requirePositive("Nights", nights);
+    if (data.basis === "PER_PERSON_PER_DAY") requirePositive("Days", days);
     if (data.basis === "VEHICLE") {
       requirePositive("Vehicles", vehicles);
       requirePositive("Days", days);
@@ -503,7 +512,7 @@ export async function addPackageCostAction(formData: FormData) {
       category: data.category,
       description: data.description,
       basis: data.basis,
-      unitCost: data.unitCost,
+      unitCost: supplierRate?.amount.toString() ?? data.unitCost,
       quantity,
       days,
       nights,
@@ -514,9 +523,13 @@ export async function addPackageCostAction(formData: FormData) {
       commissionPercentage: data.commissionPercentage || "0",
       overrideTotal: data.overrideTotal || undefined,
       overrideReason: data.overrideReason || undefined,
-      originalCurrencyCode: data.originalCurrencyCode,
-      supplierId: data.supplierId || undefined,
+      originalCurrencyCode: supplierRate?.currencyCode ?? data.originalCurrencyCode,
+      supplierId: supplierRate?.supplierId ?? (data.supplierId || undefined),
       dayNumber: data.dayNumber ? Number(data.dayNumber) : undefined,
+      classification: data.classification,
+      optionCode: data.classification === "OPTIONAL" ? data.optionCode || "OPTIONAL_EXTRAS" : undefined,
+      inclusionText: data.inclusionText || data.description,
+      supplierRateId: supplierRate?.id,
     });
     await tx.tourPackage.update({
       where: { id: entry.id },
@@ -527,7 +540,7 @@ export async function addPackageCostAction(formData: FormData) {
       action: "tour-package.cost-added",
       entityType: "TourPackage",
       entityId: entry.id,
-      next: { category: data.category, description: data.description },
+      next: { category: data.category, description: data.description, classification: data.classification, supplierRateId: supplierRate?.id },
     });
   });
   revalidatePath(`/packages/${data.packageId}`);

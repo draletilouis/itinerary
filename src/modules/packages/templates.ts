@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const packageItemSchema = z.object({
   type: z.enum(["ACTIVITY", "ACCOMMODATION", "TRANSPORT", "MEAL", "NOTE", "OTHER"]),
@@ -28,7 +28,7 @@ export const packageDaySchema = z.object({
 export const packageCostSchema = z.object({
   category: z.string().trim().min(2),
   description: z.string().trim().min(2),
-  basis: z.enum(["STANDARD", "ACCOMMODATION", "PER_PERSON", "VEHICLE", "OVERRIDE"]),
+  basis: z.enum(["STANDARD", "ACCOMMODATION", "PER_PERSON", "PER_PERSON_PER_NIGHT", "PER_PERSON_PER_DAY", "VEHICLE", "OVERRIDE"]),
   unitCost: z.string(),
   quantity: z.string(),
   days: z.string(),
@@ -43,6 +43,10 @@ export const packageCostSchema = z.object({
   originalCurrencyCode: z.string().length(3),
   supplierId: z.string().uuid().optional(),
   dayNumber: z.number().int().positive().optional(),
+  classification: z.enum(["INCLUDED", "OPTIONAL", "EXCLUDED"]).optional().default("INCLUDED"),
+  optionCode: z.string().trim().optional(),
+  inclusionText: z.string().trim().optional(),
+  supplierRateId: z.string().uuid().optional(),
 });
 
 export const packageDaysSchema = z.array(packageDaySchema);

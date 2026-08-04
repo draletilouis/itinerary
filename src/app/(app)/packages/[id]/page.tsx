@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  AlertTriangle,
   ArrowLeft,
   Calculator,
   CheckCircle2,
@@ -10,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { PackageCostForm } from "@/components/package-cost-form";
+import { calculateSellingPrice } from "@/modules/costing/services/pricing";
 import { PackagePricingForm } from "@/components/package-pricing-form";
 import {
   addPackageItemAction,
@@ -22,6 +24,7 @@ import {
   packageCostBasisLabels,
   packageNights,
 } from "@/modules/packages/presentation";
+import { reconcilePackage, summarizePackageCosts } from "@/modules/packages/reconciliation";
 import {
   getPackageOptions,
   getTourPackage,
@@ -45,6 +48,13 @@ export default async function PackageDetailPage({
 
   const nights = packageNights(entry.durationDays);
   const defaultTravellers = entry.defaultAdults + entry.defaultChildren;
+  const reconciliation = reconcilePackage(entry.days, entry.costs);
+  const costSummary = summarizePackageCosts(entry.costs);
+  const pricingSummary = costSummary.map((summary) => {
+    if (summary.currencyCode !== entry.quotationCurrencyCode) return { ...summary, pricing: null };
+    const pricing = calculateSellingPrice({ internalCost: summary.included, travellerCount: defaultTravellers, tourDays: entry.durationDays, contingencyMethod: entry.defaultContingencyMethod as "NONE" | "PERCENTAGE" | "FIXED" | "PER_PERSON" | "PER_DAY", contingencyValue: entry.defaultContingencyValue, markupMethod: entry.defaultMarkupMethod, markupValue: entry.defaultMarkupValue, taxMethod: entry.defaultTaxMethod as "NONE" | "PERCENTAGE" | "FIXED", taxValue: entry.defaultTaxValue, discountMethod: entry.defaultDiscountMethod as "NONE" | "PERCENTAGE" | "FIXED" | "PER_PERSON", discountValue: entry.defaultDiscountValue, minimumMargin: entry.minimumMargin ?? 0 });
+    return { ...summary, pricing };
+  });
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -490,6 +500,16 @@ export default async function PackageDetailPage({
             </details>
           );
         })}
+      </section>
+
+      <section className="mt-6 rounded-xl border bg-white p-5">
+        <div className="flex items-start gap-3">
+          {reconciliation.length ? <AlertTriangle className="mt-0.5 size-5 text-amber-600" /> : <CheckCircle2 className="mt-0.5 size-5 text-green-600" />}
+          <div className="flex-1"><h2 className="font-semibold">Automation check</h2><p className="mt-1 text-xs text-gray-500">Itinerary services, costs, options and customer inclusions should agree.</p>
+            {reconciliation.length ? <ul className="mt-4 space-y-2">{reconciliation.map((issue) => <li key={issue.message} className={`rounded-lg px-3 py-2 text-xs ${issue.level === "error" ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-800"}`}>{issue.message}</li>)}</ul> : <p className="mt-4 rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-800">The itinerary, costs and inclusions are reconciled.</p>}
+            {pricingSummary.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{pricingSummary.map((summary) => <div key={summary.currencyCode} className="rounded-lg border p-3 text-sm"><p className="font-semibold">{summary.currencyCode}</p><p className="mt-2 text-xs text-gray-600">Base internal cost: {summary.included.toLocaleString("en-UG")}</p><p className="mt-1 text-xs text-gray-600">With all options: {summary.withOptions.toLocaleString("en-UG")}</p>{summary.pricing ? <><p className="mt-1 text-xs font-semibold text-[#011478]">Selling price: {Number(summary.pricing.finalSellingPrice.toString()).toLocaleString("en-UG")}</p><p className="mt-1 text-xs text-gray-600">Per person: {Number(summary.pricing.pricePerTraveller.toString()).toLocaleString("en-UG")} · Margin: {Number(summary.pricing.estimatedMargin.toString()).toFixed(2)}%</p></> : <p className="mt-1 text-xs text-amber-700">Selling price is calculated when the tour exchange rate is known.</p>}</div>)}</div> : null}
+          </div>
+        </div>
       </section>
 
       <section className="mt-6 rounded-xl border bg-white">

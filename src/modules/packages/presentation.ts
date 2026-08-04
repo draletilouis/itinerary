@@ -8,6 +8,8 @@ export const packageCostBasisLabels: Record<PackageCostTemplate["basis"], string
   STANDARD: "Per item or day",
   ACCOMMODATION: "Per room per night",
   PER_PERSON: "Per traveller",
+  PER_PERSON_PER_NIGHT: "Per traveller per night",
+  PER_PERSON_PER_DAY: "Per traveller per day",
   VEHICLE: "Per vehicle per day",
   OVERRIDE: "Enter total manually",
 };
@@ -21,6 +23,8 @@ export function suggestedCostBasis(category: string): PackageCostTemplate["basis
 
 export function supplierRateBasis(unit: string, category: string): PackageCostTemplate["basis"] {
   const normalized = unit.toLowerCase().replace(/[^a-z]+/g, " ").trim();
+  if ((normalized.includes("person") || normalized.includes("traveller") || normalized.includes("pax")) && normalized.includes("night")) return "PER_PERSON_PER_NIGHT";
+  if ((normalized.includes("person") || normalized.includes("traveller") || normalized.includes("pax")) && normalized.includes("day")) return "PER_PERSON_PER_DAY";
   if (normalized.includes("room") || normalized.includes("night")) return "ACCOMMODATION";
   if (normalized.includes("vehicle") || normalized.includes("car") || normalized.includes("bus")) return "VEHICLE";
   if (normalized.includes("person") || normalized.includes("traveller") || normalized.includes("pax")) return "PER_PERSON";
@@ -61,6 +65,14 @@ export function estimatePackageCost(
     case "PER_PERSON":
       subtotal = unitCost * numeric(cost.eligibleTravellers);
       formula = `${unitCost} x ${numeric(cost.eligibleTravellers)} travellers`;
+      break;
+    case "PER_PERSON_PER_NIGHT":
+      subtotal = unitCost * numeric(cost.eligibleTravellers) * numeric(cost.nights);
+      formula = `${unitCost} x ${numeric(cost.eligibleTravellers)} travellers x ${numeric(cost.nights)} nights`;
+      break;
+    case "PER_PERSON_PER_DAY":
+      subtotal = unitCost * numeric(cost.eligibleTravellers) * numeric(cost.days);
+      formula = `${unitCost} x ${numeric(cost.eligibleTravellers)} travellers x ${numeric(cost.days)} days`;
       break;
     case "VEHICLE":
       subtotal = unitCost * numeric(cost.vehicles) * numeric(cost.days);

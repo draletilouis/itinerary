@@ -1,7 +1,7 @@
-import type { Prisma } from "@prisma/client";
+﻿import type { Prisma } from "@prisma/client";
 
 export type DecimalValue = Prisma.Decimal.Value;
-export type CalculationBasis = "STANDARD" | "ACCOMMODATION" | "PER_PERSON" | "VEHICLE" | "OVERRIDE";
+export type CalculationBasis = "STANDARD" | "ACCOMMODATION" | "PER_PERSON" | "PER_PERSON_PER_NIGHT" | "PER_PERSON_PER_DAY" | "VEHICLE" | "OVERRIDE";
 export type AdjustmentMethod = "NONE" | "PERCENTAGE" | "FIXED" | "PER_PERSON" | "PER_DAY";
 export type MarkupMethod = "PERCENTAGE" | "FIXED" | "PER_PERSON" | "CATEGORY" | "TARGET_PRICE" | "TARGET_MARGIN";
 
