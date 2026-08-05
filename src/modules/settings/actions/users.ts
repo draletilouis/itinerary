@@ -10,7 +10,7 @@ import { writeAuditEvent } from "@/server/audit/service";
 const createUserSchema = z.object({
   fullName: z.string().trim().min(2, "Enter the user's full name."),
   email: z.string().trim().toLowerCase().email(),
-  temporaryPassword: z.string().min(12, "Temporary password must contain 12 characters."),
+  temporaryPassword: z.string().min(1, "Temporary password is required."),
 });
 
 export async function createUserAction(formData: FormData) {

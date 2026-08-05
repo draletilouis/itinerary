@@ -49,19 +49,16 @@ export default async function SetupPage() {
             Password
             <span className="mt-2 flex items-center gap-3 rounded-lg border px-4 focus-within:ring-2 focus-within:ring-[#011478]/20">
               <KeyRound className="size-4 text-[#6b7280]" />
-              <input name="password" type="password" required minLength={12} autoComplete="new-password" className="h-12 w-full outline-none" />
+              <input name="password" type="password" required autoComplete="new-password" className="h-12 w-full outline-none" />
             </span>
           </label>
           <label className="block text-sm font-medium">
             Confirm password
             <span className="mt-2 flex items-center gap-3 rounded-lg border px-4 focus-within:ring-2 focus-within:ring-[#011478]/20">
               <KeyRound className="size-4 text-[#6b7280]" />
-              <input name="confirmPassword" type="password" required minLength={12} autoComplete="new-password" className="h-12 w-full outline-none" />
+              <input name="confirmPassword" type="password" required autoComplete="new-password" className="h-12 w-full outline-none" />
             </span>
           </label>
-          <p className="text-xs leading-5 text-[#6b7280]">
-            Use at least 12 characters with uppercase, lowercase, number, and symbol.
-          </p>
           <button className="h-12 w-full rounded-lg bg-[#011478] px-5 text-sm font-semibold text-white">
             Create administrator and continue
           </button>

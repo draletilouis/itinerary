@@ -13,7 +13,9 @@ describe("password security", () => {
     await expect(verifyPassword("incorrect-password", hash)).resolves.toBe(false);
   });
 
-  it("requires at least 12 characters", async () => {
-    await expect(hashPassword("too-short")).rejects.toThrow("12 characters");
+  it("allows any non-empty password", async () => {
+    const hash = await hashPassword("password");
+    await expect(verifyPassword("password", hash)).resolves.toBe(true);
+    await expect(hashPassword("")).rejects.toThrow("required");
   });
 });

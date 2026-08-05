@@ -8,13 +8,7 @@ import { hashPassword } from "@/server/auth/password";
 import { createSession } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
 
-const passwordSchema = z
-  .string()
-  .min(12, "Use at least 12 characters.")
-  .regex(/[A-Z]/, "Include an uppercase letter.")
-  .regex(/[a-z]/, "Include a lowercase letter.")
-  .regex(/\d/, "Include a number.")
-  .regex(/[^A-Za-z0-9]/, "Include a symbol.");
+const passwordSchema = z.string().min(1, "Password is required.");
 
 export async function bootstrapAdministratorAction(formData: FormData) {
   const data = z

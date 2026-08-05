@@ -418,7 +418,6 @@ export default async function SettingsPage() {
                 className={inputClass}
                 name="temporaryPassword"
                 type="password"
-                minLength={12}
                 required
               />
             </label>

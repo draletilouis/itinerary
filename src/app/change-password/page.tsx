@@ -44,7 +44,6 @@ export default async function ChangePasswordPage({
                 name={name}
                 type="password"
                 required
-                minLength={name === "currentPassword" ? undefined : 12}
                 autoComplete={name === "currentPassword" ? "current-password" : "new-password"}
               />
             </label>
