@@ -47,6 +47,12 @@ export const packageCostSchema = z.object({
   optionCode: z.string().trim().optional(),
   inclusionText: z.string().trim().optional(),
   supplierRateId: z.string().uuid().optional(),
+  travellerRateBands: z.array(z.object({
+    pricingCategory: z.enum(["UGANDAN", "EAST_AFRICAN", "NON_EAST_AFRICAN"]),
+    ageBand: z.enum(["ADULT", "CHILD"]),
+    unitCost: z.string(),
+    currencyCode: z.string().length(3),
+  })).optional(),
 });
 
 export const packageDaysSchema = z.array(packageDaySchema);

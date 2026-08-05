@@ -45,4 +45,12 @@ export type PackageCostTemplate = {
   optionCode?: string;
   inclusionText?: string;
   supplierRateId?: string;
+  travellerRateBands?: TravellerRateBand[];
+};
+
+export type TravellerRateBand = {
+  pricingCategory: "UGANDAN" | "EAST_AFRICAN" | "NON_EAST_AFRICAN";
+  ageBand: "ADULT" | "CHILD";
+  unitCost: string;
+  currencyCode: string;
 };

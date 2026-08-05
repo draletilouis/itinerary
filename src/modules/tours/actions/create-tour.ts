@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { calculateCostItem, calculateSellingPrice } from "@/modules/costing/services/pricing";
+import { calculateRateBandTotals, validateTravellerMix } from "@/modules/costing/services/traveller-rate-bands";
 import { resolveExchangeRate } from "@/modules/costing/services/exchange-rates";
 import { packageCosts, packageDays } from "@/modules/packages/templates";
 import type { PackageDayTemplate } from "@/modules/packages/types";
@@ -38,11 +39,16 @@ const formSchema = z.object({
   endDate: z.string().min(1),
   adults: z.coerce.number().int().min(1),
   children: z.coerce.number().int().min(0),
+  ugandanAdults: z.coerce.number().int().min(0), ugandanChildren: z.coerce.number().int().min(0),
+  eastAfricanAdults: z.coerce.number().int().min(0), eastAfricanChildren: z.coerce.number().int().min(0),
+  nonEastAfricanAdults: z.coerce.number().int().min(0), nonEastAfricanChildren: z.coerce.number().int().min(0),
   costingCurrencyCode: z.string().length(3),
   quotationCurrencyCode: z.string().length(3),
 });
 
 type PreparedCost = ReturnType<typeof packageCosts>[number] & {
+  pricingCategory?: "UGANDAN" | "EAST_AFRICAN" | "NON_EAST_AFRICAN";
+  ageBand?: "ADULT" | "CHILD";
   exchangeRate: Prisma.Decimal;
   result: ReturnType<typeof calculateCostItem>;
 };
@@ -58,6 +64,7 @@ export async function createTourFromWizardAction(formData: FormData) {
   const endDate = new Date(data.endDate);
   if (endDate < startDate) throw new Error("Tour end date cannot be before the start date.");
   const duration = Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1;
+  const travellerMix = validateTravellerMix({ ugandanAdults: data.ugandanAdults, ugandanChildren: data.ugandanChildren, eastAfricanAdults: data.eastAfricanAdults, eastAfricanChildren: data.eastAfricanChildren, nonEastAfricanAdults: data.nonEastAfricanAdults, nonEastAfricanChildren: data.nonEastAfricanChildren }, data.adults, data.children);
 
   const enquiry =
     data.mode === "ENQUIRY"
@@ -85,6 +92,14 @@ export async function createTourFromWizardAction(formData: FormData) {
   const travellerCount = data.adults + data.children;
   const preparedCosts: PreparedCost[] = [];
   for (const cost of templateCosts) {
+    if (cost.travellerRateBands?.length) {
+      for (const band of calculateRateBandTotals(cost.travellerRateBands, travellerMix)) {
+        const exchangeRate = await resolveExchangeRate(band.currencyCode, data.costingCurrencyCode, startDate);
+        const result = calculateCostItem({ ...cost, unitCost: band.unitCost, eligibleTravellers: band.travellerCount, exchangeRate });
+        preparedCosts.push({ ...cost, description: cost.description + " - " + band.pricingCategory.toLowerCase().replaceAll("_", " ") + " " + band.ageBand.toLowerCase(), unitCost: band.unitCost, originalCurrencyCode: band.currencyCode, eligibleTravellers: String(band.travellerCount), exchangeRate, result, pricingCategory: band.pricingCategory, ageBand: band.ageBand });
+      }
+      continue;
+    }
     const exchangeRate = await resolveExchangeRate(
       cost.originalCurrencyCode,
       data.costingCurrencyCode,
@@ -177,6 +192,7 @@ export async function createTourFromWizardAction(formData: FormData) {
         endDate,
         adults: data.adults,
         children: data.children,
+        ...travellerMix,
         ownerId: actor.id,
         costingCurrencyCode: data.costingCurrencyCode,
         quotationCurrencyCode: data.quotationCurrencyCode,
@@ -295,6 +311,8 @@ export async function createTourFromWizardAction(formData: FormData) {
           rooms: new Prisma.Decimal(cost.rooms),
           vehicles: new Prisma.Decimal(cost.vehicles),
           eligibleTravellers: new Prisma.Decimal(cost.eligibleTravellers),
+          pricingCategory: cost.pricingCategory ?? null,
+          ageBand: cost.ageBand ?? null,
           taxPercentage: new Prisma.Decimal(cost.taxPercentage),
           commissionPercentage: new Prisma.Decimal(cost.commissionPercentage),
           overrideTotal: cost.overrideTotal ? new Prisma.Decimal(cost.overrideTotal) : null,

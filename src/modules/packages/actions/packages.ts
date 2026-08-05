@@ -467,6 +467,13 @@ export async function addPackageCostAction(formData: FormData) {
       optionCode: z.string().trim().optional().default(""),
       inclusionText: z.string().trim().optional().default(""),
       supplierRateId: z.string().optional().default(""),
+      useTravellerRateBands: z.string().optional().default(""),
+      rate_UGANDAN_ADULT: z.string().optional().default(""), currency_UGANDAN_ADULT: z.string().optional().default("USD"),
+      rate_UGANDAN_CHILD: z.string().optional().default(""), currency_UGANDAN_CHILD: z.string().optional().default("USD"),
+      rate_EAST_AFRICAN_ADULT: z.string().optional().default(""), currency_EAST_AFRICAN_ADULT: z.string().optional().default("USD"),
+      rate_EAST_AFRICAN_CHILD: z.string().optional().default(""), currency_EAST_AFRICAN_CHILD: z.string().optional().default("USD"),
+      rate_NON_EAST_AFRICAN_ADULT: z.string().optional().default(""), currency_NON_EAST_AFRICAN_ADULT: z.string().optional().default("USD"),
+      rate_NON_EAST_AFRICAN_CHILD: z.string().optional().default(""), currency_NON_EAST_AFRICAN_CHILD: z.string().optional().default("USD"),
     })
     .parse(Object.fromEntries(formData));
   if (data.basis === "OVERRIDE" && (!data.overrideTotal || !data.overrideReason)) {
@@ -474,6 +481,14 @@ export async function addPackageCostAction(formData: FormData) {
   }
 
   await prisma.$transaction(async (tx) => {
+    const rateFields = data as unknown as Record<string, string>;
+    const travellerRateBands = data.useTravellerRateBands === "true"
+      ? (["UGANDAN", "EAST_AFRICAN", "NON_EAST_AFRICAN"] as const).flatMap((pricingCategory) => (["ADULT", "CHILD"] as const).flatMap((ageBand) => {
+          const amount = rateFields["rate_" + pricingCategory + "_" + ageBand];
+          return amount && Number(amount) >= 0 ? [{ pricingCategory, ageBand, unitCost: amount, currencyCode: rateFields["currency_" + pricingCategory + "_" + ageBand] }] : [];
+        }))
+      : undefined;
+    if (data.useTravellerRateBands === "true" && !travellerRateBands?.length) throw new Error("Enter at least one traveller-category rate.");
     const entry = await tx.tourPackage.findUniqueOrThrow({ where: { id: data.packageId } });
     const supplierRate = data.supplierRateId
       ? await tx.supplierRate.findFirstOrThrow({ where: { id: data.supplierRateId, status: "ACTIVE", startDate: { lte: new Date() }, OR: [{ endDate: null }, { endDate: { gte: new Date() } }] } })
@@ -499,7 +514,7 @@ export async function addPackageCostAction(formData: FormData) {
       requirePositive("Rooms", rooms);
       requirePositive("Nights", nights);
     }
-    if (data.basis.startsWith("PER_PERSON")) {
+    if (data.basis.startsWith("PER_PERSON") && !travellerRateBands?.length) {
       requirePositive("People charged", eligibleTravellers);
     }
     if (data.basis === "PER_PERSON_PER_NIGHT") requirePositive("Nights", nights);
@@ -530,6 +545,7 @@ export async function addPackageCostAction(formData: FormData) {
       optionCode: data.classification === "OPTIONAL" ? data.optionCode || "OPTIONAL_EXTRAS" : undefined,
       inclusionText: data.inclusionText || data.description,
       supplierRateId: supplierRate?.id,
+      travellerRateBands,
     });
     await tx.tourPackage.update({
       where: { id: entry.id },

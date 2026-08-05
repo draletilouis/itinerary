@@ -30,6 +30,17 @@ enum CustomerStatus {
   ARCHIVED
 }
 
+enum TravellerPricingCategory {
+  UGANDAN
+  EAST_AFRICAN
+  NON_EAST_AFRICAN
+}
+
+enum TravellerAgeBand {
+  ADULT
+  CHILD
+}
+
 enum EnquiryStatus {
   NEW
   CONTACTED
@@ -198,6 +209,7 @@ enum QuotationStatus {
   CANCELLED
   SUPERSEDED
 }
+
 enum QuotationPresentationMode {
   ITEMIZED
   PER_TRAVELLER
@@ -411,14 +423,15 @@ model Customer {
 }
 
 model Traveller {
-  id                String          @id @default(uuid()) @db.Uuid
-  customerId        String          @db.Uuid
-  customer          Customer        @relation(fields: [customerId], references: [id])
+  id                String                    @id @default(uuid()) @db.Uuid
+  customerId        String                    @db.Uuid
+  customer          Customer                  @relation(fields: [customerId], references: [id])
   fullName          String
-  dateOfBirth       DateTime?       @db.Date
+  dateOfBirth       DateTime?                 @db.Date
   nationality       String?
+  pricingCategory   TravellerPricingCategory?
   passportNumber    String?
-  passportExpiry    DateTime?       @db.Date
+  passportExpiry    DateTime?                 @db.Date
   visaStatus        String?
   dietaryNeeds      String?
   accessibilityNote String?
@@ -426,9 +439,9 @@ model Traveller {
   emergencyContact  String?
   relationship      String?
   tourLinks         TourTraveller[]
-  ledBookings       Booking[]       @relation("BookingLeadTraveller")
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  ledBookings       Booking[]                 @relation("BookingLeadTraveller")
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
 
   @@index([customerId])
   @@index([passportNumber])
@@ -532,58 +545,64 @@ model EnquiryStatusHistory {
 }
 
 model Tour {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  reference             String                 @unique
-  name                  String
-  customerId            String                 @db.Uuid
-  customer              Customer               @relation(fields: [customerId], references: [id])
-  sourceEnquiryId       String?                @db.Uuid
-  sourceEnquiry         Enquiry?               @relation(fields: [sourceEnquiryId], references: [id])
-  sourcePackageId       String?                @db.Uuid
-  sourcePackage         TourPackage?           @relation(fields: [sourcePackageId], references: [id])
-  sourcePackageRevision Int?
-  type                  TourType
-  startDate             DateTime               @db.Date
-  endDate               DateTime               @db.Date
-  adults                Int                    @default(1)
-  children              Int                    @default(0)
-  ownerId               String                 @db.Uuid
-  owner                 User                   @relation("TourOwner", fields: [ownerId], references: [id])
-  costingCurrencyCode   String                 @db.Char(3)
-  costingCurrency       Currency               @relation("TourCostingCurrency", fields: [costingCurrencyCode], references: [code])
-  quotationCurrencyCode String                 @db.Char(3)
-  quotationCurrency     Currency               @relation("TourQuotationCurrency", fields: [quotationCurrencyCode], references: [code])
-  estimatedInternalCost Decimal                @default(0) @db.Decimal(18, 2)
-  sellingPrice          Decimal                @default(0) @db.Decimal(18, 2)
-  estimatedProfit       Decimal                @default(0) @db.Decimal(18, 2)
-  estimatedMargin       Decimal                @default(0) @db.Decimal(9, 4)
-  actualCost            Decimal                @default(0) @db.Decimal(18, 2)
-  actualRevenue         Decimal                @default(0) @db.Decimal(18, 2)
-  actualProfit          Decimal                @default(0) @db.Decimal(18, 2)
-  actualMargin          Decimal                @default(0) @db.Decimal(9, 4)
-  paymentStatus         PaymentStatus          @default(UNPAID)
-  bookingStatus         BookingStatus?
-  status                TourStatus             @default(DRAFT)
-  notes                 String?
-  tags                  String[]
-  statusHistory         TourStatusHistory[]
-  booking               Booking?
-  travellers            TourTraveller[]
-  itineraries           Itinerary[]
-  costItems             TourCostItem[]
-  pricingSnapshots      TourPricing[]
-  marginSetting         TourMarginSetting?
-  quotations            Quotation[]
-  supplierBills         SupplierBill[]
-  expenses              TourExpense[]
-  resourceAssignments   ResourceAssignment[]
-  operationalTasks      OperationalTask[]
-  supplierConfirmations SupplierConfirmation[]
-  incidents             TourIncident[]
-  operationalDocuments  OperationalDocument[]
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  archivedAt            DateTime?
+  id                     String                 @id @default(uuid()) @db.Uuid
+  reference              String                 @unique
+  name                   String
+  customerId             String                 @db.Uuid
+  customer               Customer               @relation(fields: [customerId], references: [id])
+  sourceEnquiryId        String?                @db.Uuid
+  sourceEnquiry          Enquiry?               @relation(fields: [sourceEnquiryId], references: [id])
+  sourcePackageId        String?                @db.Uuid
+  sourcePackage          TourPackage?           @relation(fields: [sourcePackageId], references: [id])
+  sourcePackageRevision  Int?
+  type                   TourType
+  startDate              DateTime               @db.Date
+  endDate                DateTime               @db.Date
+  adults                 Int                    @default(1)
+  children               Int                    @default(0)
+  ugandanAdults          Int                    @default(0)
+  ugandanChildren        Int                    @default(0)
+  eastAfricanAdults      Int                    @default(0)
+  eastAfricanChildren    Int                    @default(0)
+  nonEastAfricanAdults   Int                    @default(0)
+  nonEastAfricanChildren Int                    @default(0)
+  ownerId                String                 @db.Uuid
+  owner                  User                   @relation("TourOwner", fields: [ownerId], references: [id])
+  costingCurrencyCode    String                 @db.Char(3)
+  costingCurrency        Currency               @relation("TourCostingCurrency", fields: [costingCurrencyCode], references: [code])
+  quotationCurrencyCode  String                 @db.Char(3)
+  quotationCurrency      Currency               @relation("TourQuotationCurrency", fields: [quotationCurrencyCode], references: [code])
+  estimatedInternalCost  Decimal                @default(0) @db.Decimal(18, 2)
+  sellingPrice           Decimal                @default(0) @db.Decimal(18, 2)
+  estimatedProfit        Decimal                @default(0) @db.Decimal(18, 2)
+  estimatedMargin        Decimal                @default(0) @db.Decimal(9, 4)
+  actualCost             Decimal                @default(0) @db.Decimal(18, 2)
+  actualRevenue          Decimal                @default(0) @db.Decimal(18, 2)
+  actualProfit           Decimal                @default(0) @db.Decimal(18, 2)
+  actualMargin           Decimal                @default(0) @db.Decimal(9, 4)
+  paymentStatus          PaymentStatus          @default(UNPAID)
+  bookingStatus          BookingStatus?
+  status                 TourStatus             @default(DRAFT)
+  notes                  String?
+  tags                   String[]
+  statusHistory          TourStatusHistory[]
+  booking                Booking?
+  travellers             TourTraveller[]
+  itineraries            Itinerary[]
+  costItems              TourCostItem[]
+  pricingSnapshots       TourPricing[]
+  marginSetting          TourMarginSetting?
+  quotations             Quotation[]
+  supplierBills          SupplierBill[]
+  expenses               TourExpense[]
+  resourceAssignments    ResourceAssignment[]
+  operationalTasks       OperationalTask[]
+  supplierConfirmations  SupplierConfirmation[]
+  incidents              TourIncident[]
+  operationalDocuments   OperationalDocument[]
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  archivedAt             DateTime?
 
   @@index([status, startDate])
   @@index([customerId])
@@ -829,20 +848,22 @@ model Supplier {
 }
 
 model SupplierRate {
-  id           String       @id @default(uuid()) @db.Uuid
-  supplierId   String       @db.Uuid
-  supplier     Supplier     @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  service      String
-  unit         String
-  amount       Decimal      @db.Decimal(18, 2)
-  currencyCode String       @db.Char(3)
-  currency     Currency     @relation(fields: [currencyCode], references: [code])
-  startDate    DateTime     @db.Date
-  endDate      DateTime?    @db.Date
-  notes        String?
-  status       RecordStatus @default(ACTIVE)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id              String                    @id @default(uuid()) @db.Uuid
+  supplierId      String                    @db.Uuid
+  supplier        Supplier                  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  service         String
+  unit            String
+  amount          Decimal                   @db.Decimal(18, 2)
+  pricingCategory TravellerPricingCategory?
+  ageBand         TravellerAgeBand?
+  currencyCode    String                    @db.Char(3)
+  currency        Currency                  @relation(fields: [currencyCode], references: [code])
+  startDate       DateTime                  @db.Date
+  endDate         DateTime?                 @db.Date
+  notes           String?
+  status          RecordStatus              @default(ACTIVE)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
 
   @@index([supplierId, startDate, endDate])
   @@index([currencyCode])
@@ -893,22 +914,24 @@ model Activity {
 }
 
 model ActivityRate {
-  id             String       @id @default(uuid()) @db.Uuid
-  activityId     String       @db.Uuid
-  activity       Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  supplierId     String?      @db.Uuid
-  supplier       Supplier?    @relation(fields: [supplierId], references: [id])
-  rateType       String
-  amount         Decimal      @db.Decimal(18, 2)
-  currencyCode   String       @db.Char(3)
-  currency       Currency     @relation(fields: [currencyCode], references: [code])
-  startDate      DateTime     @db.Date
-  endDate        DateTime?    @db.Date
-  commissionable Boolean      @default(false)
-  notes          String?
-  status         RecordStatus @default(ACTIVE)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id              String                    @id @default(uuid()) @db.Uuid
+  activityId      String                    @db.Uuid
+  activity        Activity                  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  supplierId      String?                   @db.Uuid
+  supplier        Supplier?                 @relation(fields: [supplierId], references: [id])
+  rateType        String
+  amount          Decimal                   @db.Decimal(18, 2)
+  pricingCategory TravellerPricingCategory?
+  ageBand         TravellerAgeBand?
+  currencyCode    String                    @db.Char(3)
+  currency        Currency                  @relation(fields: [currencyCode], references: [code])
+  startDate       DateTime                  @db.Date
+  endDate         DateTime?                 @db.Date
+  commissionable  Boolean                   @default(false)
+  notes           String?
+  status          RecordStatus              @default(ACTIVE)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
 
   @@index([activityId, startDate, endDate])
   @@index([supplierId])
@@ -1088,9 +1111,9 @@ model ItineraryItem {
   activity          Activity?         @relation(fields: [activityId], references: [id])
   accommodationId   String?           @db.Uuid
   accommodation     Accommodation?    @relation(fields: [accommodationId], references: [id])
-  roomTypeId         String?           @db.Uuid
-  roomType           RoomType?         @relation(fields: [roomTypeId], references: [id])
-  guestsPerRoom      Int?
+  roomTypeId        String?           @db.Uuid
+  roomType          RoomType?         @relation(fields: [roomTypeId], references: [id])
+  guestsPerRoom     Int?
   supplierId        String?           @db.Uuid
   supplier          Supplier?         @relation(fields: [supplierId], references: [id])
   importedCostItem  TourCostItem?
@@ -1103,47 +1126,50 @@ model ItineraryItem {
 }
 
 model TourCostItem {
-  id                    String               @id @default(uuid()) @db.Uuid
-  tourId                String               @db.Uuid
-  tour                  Tour                 @relation(fields: [tourId], references: [id])
-  itineraryDayId        String?              @db.Uuid
-  itineraryDay          ItineraryDay?        @relation(fields: [itineraryDayId], references: [id])
-  sourceItineraryItemId String?              @unique @db.Uuid
-  sourceItineraryItem   ItineraryItem?       @relation(fields: [sourceItineraryItemId], references: [id])
-  supplierId            String?              @db.Uuid
-  supplier              Supplier?            @relation(fields: [supplierId], references: [id])
+  id                    String                    @id @default(uuid()) @db.Uuid
+  tourId                String                    @db.Uuid
+  tour                  Tour                      @relation(fields: [tourId], references: [id])
+  itineraryDayId        String?                   @db.Uuid
+  itineraryDay          ItineraryDay?             @relation(fields: [itineraryDayId], references: [id])
+  sourceItineraryItemId String?                   @unique @db.Uuid
+  sourceItineraryItem   ItineraryItem?            @relation(fields: [sourceItineraryItemId], references: [id])
+  supplierId            String?                   @db.Uuid
+  supplier              Supplier?                 @relation(fields: [supplierId], references: [id])
   category              String
   description           String
   basis                 CostCalculationBasis
-  unitCost              Decimal              @db.Decimal(18, 4)
-  quantity              Decimal              @default(1) @db.Decimal(12, 4)
-  days                  Decimal              @default(1) @db.Decimal(12, 4)
-  nights                Decimal              @default(0) @db.Decimal(12, 4)
-  rooms                 Decimal              @default(0) @db.Decimal(12, 4)
-  vehicles              Decimal              @default(0) @db.Decimal(12, 4)
-  eligibleTravellers    Decimal              @default(0) @db.Decimal(12, 4)
-  taxPercentage         Decimal              @default(0) @db.Decimal(9, 4)
-  commissionPercentage  Decimal              @default(0) @db.Decimal(9, 4)
-  overrideTotal         Decimal?             @db.Decimal(18, 4)
+  unitCost              Decimal                   @db.Decimal(18, 4)
+  quantity              Decimal                   @default(1) @db.Decimal(12, 4)
+  days                  Decimal                   @default(1) @db.Decimal(12, 4)
+  nights                Decimal                   @default(0) @db.Decimal(12, 4)
+  rooms                 Decimal                   @default(0) @db.Decimal(12, 4)
+  vehicles              Decimal                   @default(0) @db.Decimal(12, 4)
+  eligibleTravellers    Decimal                   @default(0) @db.Decimal(12, 4)
+  pricingCategory       TravellerPricingCategory?
+  ageBand               TravellerAgeBand?
+  taxPercentage         Decimal                   @default(0) @db.Decimal(9, 4)
+  commissionPercentage  Decimal                   @default(0) @db.Decimal(9, 4)
+  overrideTotal         Decimal?                  @db.Decimal(18, 4)
   overrideReason        String?
-  originalCurrencyCode  String               @db.Char(3)
-  originalCurrency      Currency             @relation("OriginalCostCurrency", fields: [originalCurrencyCode], references: [code])
-  originalTotal         Decimal              @db.Decimal(18, 4)
-  exchangeRate          Decimal              @db.Decimal(24, 10)
-  exchangeRateDate      DateTime             @db.Date
-  convertedCurrencyCode String               @db.Char(3)
-  convertedCurrency     Currency             @relation("ConvertedCostCurrency", fields: [convertedCurrencyCode], references: [code])
-  convertedTotal        Decimal              @db.Decimal(18, 4)
-  isEstimate            Boolean              @default(true)
-  createdById           String               @db.Uuid
-  createdBy             User                 @relation("CostItemCreator", fields: [createdById], references: [id])
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  originalCurrencyCode  String                    @db.Char(3)
+  originalCurrency      Currency                  @relation("OriginalCostCurrency", fields: [originalCurrencyCode], references: [code])
+  originalTotal         Decimal                   @db.Decimal(18, 4)
+  exchangeRate          Decimal                   @db.Decimal(24, 10)
+  exchangeRateDate      DateTime                  @db.Date
+  convertedCurrencyCode String                    @db.Char(3)
+  convertedCurrency     Currency                  @relation("ConvertedCostCurrency", fields: [convertedCurrencyCode], references: [code])
+  convertedTotal        Decimal                   @db.Decimal(18, 4)
+  isEstimate            Boolean                   @default(true)
+  createdById           String                    @db.Uuid
+  createdBy             User                      @relation("CostItemCreator", fields: [createdById], references: [id])
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
   archivedAt            DateTime?
 
   @@index([tourId, category])
   @@index([supplierId])
   @@index([itineraryDayId])
+  @@index([pricingCategory, ageBand])
 }
 
 model TourMarginSetting {
