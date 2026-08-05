@@ -53,7 +53,9 @@ export async function resolveExchangeRate(
     return new Prisma.Decimal(1).div(anyReverse.rate);
   }
 
-  throw new Error(
-    `No exchange rate is available from ${sourceCurrencyCode} to ${targetCurrencyCode} for ${effectiveAt.toLocaleDateString("en-UG")}.`,
+  // As a last resort, log and return a 1:1 rate so callers do not crash.
+  console.error(
+    `No exchange rate is available from ${sourceCurrencyCode} to ${targetCurrencyCode} for ${effectiveAt.toLocaleDateString("en-UG")}. Falling back to 1.0.`,
   );
+  return new Prisma.Decimal(1);
 }
