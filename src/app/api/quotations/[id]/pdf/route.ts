@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
+import { drawPdfBrand, loadPdfBranding } from "@/server/branding/pdf";
 import { getCurrentUser } from "@/server/auth/session";
 import { formatMoney } from "@/lib/utils";
 import { getTravellerPricingRows } from "@/modules/quotations/services/presentation";
@@ -114,6 +115,7 @@ export async function GET(
   const pdf = await PDFDocument.create();
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const branding = await loadPdfBranding(pdf);
   const green = rgb(0.07, 0.3, 0.24);
   const gold = rgb(0.86, 0.64, 0.36);
   const grey = rgb(0.35, 0.4, 0.37);
@@ -144,7 +146,7 @@ export async function GET(
   };
 
   page.drawRectangle({ x: 0, y: height - 170, width, height: 170, color: green });
-  page.drawText("HINENI TOUR OPERATIONS", { x: margin, y: height - 65, size: 10, font: bold, color: gold });
+  drawPdfBrand({ page, branding, font: bold, x: margin, y: height - 65, maxWidth: 130, maxHeight: 28, color: gold });
   page.drawText(version.title, { x: margin, y: height - 100, size: 24, font: bold, color: rgb(1, 1, 1) });
   page.drawText(`Prepared for ${quotation.customer.fullName}`, { x: margin, y: height - 128, size: 11, font: regular, color: rgb(0.78, 0.86, 0.82) });
   y = height - 205;
@@ -216,7 +218,7 @@ export async function GET(
     pdfPage.drawText(`${quotation.reference}-V${version.versionNumber}  |  Valid until ${version.validUntil.toLocaleDateString("en-UG")}`, { x: margin, y: 25, size: 7, font: regular, color: rgb(0.5, 0.53, 0.51) });
   }
   pdf.setTitle(`${quotation.reference} - ${version.title}`);
-  pdf.setAuthor("Hineni Tour Operations");
+  pdf.setAuthor(branding.name);
   const bytes = await pdf.save();
   return new Response(Uint8Array.from(bytes), {
     headers: {

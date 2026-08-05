@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
+import { drawPdfBrand, loadPdfBranding } from "@/server/branding/pdf";
 
 type Snapshot = {
   generatedAt: string;
@@ -109,6 +110,7 @@ export async function GET(
   const pdf = await PDFDocument.create();
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const branding = await loadPdfBranding(pdf);
   const width = 595;
   const height = 842;
   const margin = 48;
@@ -117,11 +119,15 @@ export async function GET(
 
   const addPage = () => {
     page = pdf.addPage([width, height]);
-    page.drawText("HINENI TOUR OPERATIONS", {
+    drawPdfBrand({
+      page,
+      branding,
+      font: bold,
       x: margin,
       y: height - 42,
+      maxWidth: 115,
+      maxHeight: 24,
       size: 9,
-      font: bold,
       color: rgb(0.07, 0.24, 0.2),
     });
     page.drawText(document.reference, {
@@ -245,7 +251,7 @@ export async function GET(
   );
 
   pdf.setTitle(`${document.reference} ${document.title}`);
-  pdf.setAuthor("Hineni Tour Operations");
+  pdf.setAuthor(branding.name);
   pdf.setCreationDate(document.createdAt);
   const bytes = await pdf.save();
   return new NextResponse(Buffer.from(bytes), {

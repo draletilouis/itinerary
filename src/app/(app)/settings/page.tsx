@@ -101,6 +101,35 @@ export default async function SettingsPage() {
           </div>
           <form action={updateCompanyProfileAction} className="grid gap-5 p-6 sm:grid-cols-2">
             <label className="sm:col-span-2">
+              <span className="text-sm font-medium">Company logo</span>
+              <div className="mt-2 flex flex-col gap-4 rounded-lg border border-dashed p-4 sm:flex-row sm:items-center">
+                {data.profile?.logoUrl ? (
+                  // The authenticated attachment route cannot be used by Next image optimization.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={data.profile.logoUrl}
+                    alt={`${data.profile.name} logo`}
+                    className="h-20 w-32 rounded-md border bg-white object-contain p-2"
+                  />
+                ) : (
+                  <div className="grid h-20 w-32 place-items-center rounded-md bg-[#eff3ff] text-xs font-semibold text-[#011478]">
+                    No logo yet
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <input
+                    className="block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-[#011478] file:px-4 file:py-2 file:font-semibold file:text-white"
+                    name="logo"
+                    type="file"
+                    accept="image/png,image/jpeg"
+                  />
+                  <p className="mt-2 text-xs text-[#6b7280]">
+                    PNG or JPEG, up to 2 MB. Uploading a new logo replaces the current one.
+                  </p>
+                </div>
+              </div>
+            </label>
+            <label className="sm:col-span-2">
               <span className="text-sm font-medium">Company name</span>
               <input
                 className={inputClass}

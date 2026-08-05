@@ -6,6 +6,10 @@ import { z } from "zod";
 import { prisma } from "@/server/db/prisma";
 import { requireCurrentUser } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
+import { saveAttachment } from "@/server/storage/postgres";
+
+const LOGO_MIME_TYPES = new Set(["image/jpeg", "image/png"]);
+const MAX_LOGO_SIZE = 2 * 1024 * 1024;
 
 const companySchema = z.object({
   name: z.string().trim().min(2, "Company name is required."),
@@ -30,7 +34,17 @@ export async function updateCompanyProfileAction(formData: FormData) {
     throw new Error("Select an active reporting currency. Apply the core currency migration if none are available.");
   }
 
-  await prisma.$transaction(async (tx) => {
+  const logo = formData.get("logo");
+  if (logo instanceof File && logo.size > 0) {
+    if (!LOGO_MIME_TYPES.has(logo.type)) {
+      throw new Error("Upload a PNG or JPEG logo.");
+    }
+    if (logo.size > MAX_LOGO_SIZE) {
+      throw new Error("The logo must be 2 MB or smaller.");
+    }
+  }
+
+  const profile = await prisma.$transaction(async (tx) => {
     const previous = await tx.companyProfile.findUnique({
       where: { singletonKey: "primary" },
     });
@@ -60,7 +74,31 @@ export async function updateCompanyProfileAction(formData: FormData) {
       previous,
       next: profile,
     });
+    return profile;
   });
+
+  if (logo instanceof File && logo.size > 0) {
+    const attachment = await saveAttachment({
+      recordType: "CompanyProfile",
+      recordId: profile.id,
+      documentType: "COMPANY_LOGO",
+      fileName: logo.name || "company-logo",
+      mimeType: logo.type,
+      content: new Uint8Array(await logo.arrayBuffer()),
+      uploadedById: user.id,
+    });
+    const previousLogoUrl = profile.logoUrl;
+    await prisma.companyProfile.update({
+      where: { id: profile.id },
+      data: { logoUrl: `/api/attachments/${attachment.id}` },
+    });
+    const previousAttachmentId = previousLogoUrl?.match(/^\/api\/attachments\/([0-9a-f-]+)$/i)?.[1];
+    if (previousAttachmentId) {
+      await prisma.attachment.deleteMany({
+        where: { id: previousAttachmentId, recordType: "CompanyProfile", recordId: profile.id },
+      });
+    }
+  }
 
   revalidatePath("/settings");
 }

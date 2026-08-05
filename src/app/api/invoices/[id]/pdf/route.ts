@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
+import { drawPdfBrand, loadPdfBranding } from "@/server/branding/pdf";
 import { getCurrentUser } from "@/server/auth/session";
 import { formatMoney } from "@/lib/utils";
 
@@ -47,10 +48,11 @@ export async function GET(
   const page = pdf.addPage([595, 842]);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const branding = await loadPdfBranding(pdf);
   const green = rgb(0.07, 0.3, 0.24);
   const grey = rgb(0.35, 0.4, 0.37);
   page.drawRectangle({ x: 0, y: 690, width: 595, height: 152, color: green });
-  page.drawText("HINENI TOUR OPERATIONS", { x: 48, y: 790, size: 10, font: bold, color: rgb(0.86, 0.64, 0.36) });
+  drawPdfBrand({ page, branding, font: bold, x: 48, y: 790, maxWidth: 130, maxHeight: 28, color: rgb(0.86, 0.64, 0.36) });
   page.drawText("INVOICE", { x: 48, y: 748, size: 28, font: bold, color: rgb(1, 1, 1) });
   page.drawText(invoice.reference, { x: 430, y: 750, size: 11, font: bold, color: rgb(1, 1, 1) });
   page.drawText(`Bill to: ${invoice.customer.fullName}`, { x: 48, y: 650, size: 13, font: bold, color: green });
@@ -80,7 +82,7 @@ export async function GET(
   if (invoice.notes) page.drawText(invoice.notes.slice(0, 100), { x: 48, y: Math.max(y - 20, 80), size: 8, font: regular, color: grey });
   page.drawText(`${invoice.reference} · ${invoice.booking.tour.startDate.toLocaleDateString("en-UG")} to ${invoice.booking.tour.endDate.toLocaleDateString("en-UG")}`, { x: 48, y: 28, size: 7, font: regular, color: grey });
   pdf.setTitle(invoice.reference);
-  pdf.setAuthor("Hineni Tour Operations");
+  pdf.setAuthor(branding.name);
   const bytes = await pdf.save();
   return new Response(Uint8Array.from(bytes), {
     headers: {
