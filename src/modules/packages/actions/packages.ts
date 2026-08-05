@@ -392,7 +392,7 @@ export async function addPackageItemAction(formData: FormData) {
       activityId: z.string().optional().default(""),
       accommodationId: z.string().optional().default(""),
       roomTypeId: z.string().optional().default(""),
-      guestsPerRoom: z.coerce.number().int().positive().optional(),
+      guestsPerRoom: z.preprocess((val) => (val === "" ? undefined : val), z.coerce.number().int().positive().optional()),
       supplierId: z.string().optional().default(""),
     })
     .parse(Object.fromEntries(formData));
