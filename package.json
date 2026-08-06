@@ -20,7 +20,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "db:reset:local": "tsx scripts/reset-local-business-data.ts",
-    "db:reset:live": "tsx scripts/reset-live-business-data.ts"
+    "db:reset:live": "tsx scripts/reset-live-business-data.ts",
+    "start:with-reset": "node scripts/start-with-reset.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
