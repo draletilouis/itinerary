@@ -11,22 +11,33 @@ async function main() {
 
   const usersBefore = await prisma.user.findMany({ select: { id: true, email: true, passwordHash: true } });
   if (!usersBefore.length) throw new Error("No administrator exists; refusing to reset.");
-  const sessionsBefore = await prisma.authSession.count();
   const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
     SELECT table_name FROM information_schema.tables
     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
-      AND table_name NOT IN ('User', 'AuthSession', 'AuthLoginAttempt', '_prisma_migrations')
+      AND table_name NOT IN ('User', '_prisma_migrations')
     ORDER BY table_name
   `;
   const quoted = tables.map(({ table_name }) => `"${table_name.replaceAll('"', '""')}"`);
   await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${quoted.join(", ")} RESTART IDENTITY CASCADE`);
 
   const usersAfter = await prisma.user.findMany({ select: { id: true, email: true, passwordHash: true } });
-  const sessionsAfter = await prisma.authSession.count();
-  if (JSON.stringify(usersBefore) !== JSON.stringify(usersAfter) || sessionsBefore !== sessionsAfter) {
-    throw new Error("Authentication preservation check failed.");
+  const authSessionsAfter = await prisma.authSession.count();
+  const authAttemptsAfter = await prisma.authLoginAttempt.count();
+  if (
+    JSON.stringify(usersBefore) !== JSON.stringify(usersAfter) ||
+    authSessionsAfter !== 0 ||
+    authAttemptsAfter !== 0
+  ) {
+    throw new Error("Login credential preservation check failed.");
   }
-  console.log(JSON.stringify({ truncatedBusinessTables: tables.length, preservedUsers: usersAfter.map((u) => u.email), preservedSessions: sessionsAfter }));
+  console.log(
+    JSON.stringify({
+      truncatedBusinessTables: tables.length,
+      preservedLoginUsers: usersAfter.map((u) => u.email),
+      clearedSessions: authSessionsAfter,
+      clearedLoginAttempts: authAttemptsAfter,
+    }),
+  );
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; }).finally(() => prisma.$disconnect());
