@@ -2,7 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": { "builder": "RAILPACK", "buildCommand": "npm run build" },
   "deploy": {
-    "startCommand": "node scripts/start-with-reset.js",
+    "startCommand": "npm run db:deploy && npm start",
     "healthcheckPath": "/api/health",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 5
