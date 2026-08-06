@@ -177,7 +177,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
                 <section>
                   <h3 className="font-semibold">Operational documents</h3>
                   <form action={generateOperationalDocumentAction} className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]"><input type="hidden" name="tourId" value={tour.id} /><select className="h-10 rounded-lg border px-3 text-xs" name="documentType" defaultValue="FULL_OPERATIONS_PACK"><option>FULL_OPERATIONS_PACK</option><option>GUIDE_BRIEF</option><option>ROOMING_LIST</option><option>SUPPLIER_VOUCHER</option><option>VEHICLE_ALLOCATION</option><option>DAILY_OPERATIONS_SHEET</option></select><button className="h-10 rounded-lg bg-[#111827] px-3 text-xs font-semibold text-white">Generate frozen PDF</button></form>
-                  <div className="mt-3 space-y-2">{tour.operationalDocuments.map((document) => <a key={document.id} href={`/api/operations/documents/${document.id}/pdf`} className="flex items-center justify-between rounded-lg border p-3 text-xs"><span><strong>{document.reference}</strong>  -  {document.title}<span className="ml-2 text-[#6b7280]">{document.createdAt.toLocaleString("en-UG")}</span></span><FileDown className="size-4 text-[#011478]" /></a>)}</div>
+                  <div className="mt-3 space-y-2">{tour.operationalDocuments.map((document) => <a key={document.id} href={`/api/operations/documents/${document.id}/pdf`} download={document.fileName} className="flex items-center justify-between rounded-lg border p-3 text-xs"><span><strong>{document.reference}</strong>  -  {document.title}<span className="ml-2 text-[#6b7280]">{document.createdAt.toLocaleString("en-UG")}</span></span><FileDown className="size-4 text-[#011478]" /></a>)}</div>
                 </section>
               </div>
             </div>
@@ -188,3 +188,4 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
     </div>
   );
 }
+

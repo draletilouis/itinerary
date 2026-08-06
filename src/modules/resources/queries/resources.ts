@@ -1,8 +1,10 @@
 import { prisma } from "@/server/db/prisma";
+import { getPricingCurrencyCodes } from "@/modules/costing/services/pricing-currencies";
 
 export async function getResourcesWorkspace() {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
+  const pricingCurrencyCodes = await getPricingCurrencyCodes();
 
   const [
     vehicles,
@@ -93,7 +95,7 @@ export async function getResourcesWorkspace() {
       orderBy: { name: "asc" },
     }),
     prisma.currency.findMany({
-      where: { active: true },
+      where: { active: true, code: { in: pricingCurrencyCodes } },
       select: { code: true },
       orderBy: { code: "asc" },
     }),

@@ -11,6 +11,7 @@ import {
 } from "@/modules/packages/presentation";
 import type { PackageCostTemplate } from "@/modules/packages/types";
 import { roomsRequired } from "@/modules/costing/presentation/rooms";
+import { travellerPricingCategoryLabels } from "@/modules/costing/traveller-categories";
 
 const input = "mt-2 h-10 w-full rounded-lg border bg-white px-3 text-sm";
 const categories = ["Accommodation", "Activities", "Transport", "Meals", "Permits", "Guides", "Other"];
@@ -24,6 +25,8 @@ type RoomRateOption = {
 type ServiceRateOption = {
   id: string; service: string; unit: string; amount: string; currencyCode: string;
   startDate: string; endDate: string | null; notes: string | null;
+  pricingCategory?: keyof typeof travellerPricingCategoryLabels | null;
+  ageBand?: "ADULT" | "CHILD" | null;
 };
 type SupplierOption = { id: string; name: string; serviceRates: ServiceRateOption[]; roomRates: RoomRateOption[] };
 
@@ -187,14 +190,14 @@ export function TourCostForm({
               <option value="">Select a predefined supplier rate</option>
               {serviceRates.map((rate) => (
                 <option key={rate.id} value={rate.id}>
-                  {rate.service} - per {rate.unit} - {rate.currencyCode} {rate.amount}
+                  {rate.service}{rate.pricingCategory ? ` - ${travellerPricingCategoryLabels[rate.pricingCategory]} ${rate.ageBand?.toLowerCase() ?? ""}` : ""} - per {rate.unit} - {rate.currencyCode} {rate.amount}
                 </option>
               ))}
             </select>
           </label>
           {selectedServiceRate ? (
             <p className="mt-2 text-xs text-[#011478]">
-              Filled from the supplier rate: {selectedServiceRate.currencyCode} {selectedServiceRate.amount} per {selectedServiceRate.unit}.
+              Filled from the supplier rate: {selectedServiceRate.currencyCode} {selectedServiceRate.amount} per {selectedServiceRate.unit}{selectedServiceRate.pricingCategory ? ` (${travellerPricingCategoryLabels[selectedServiceRate.pricingCategory]} ${selectedServiceRate.ageBand?.toLowerCase() ?? ""})` : ""}.
             </p>
           ) : serviceRates.length ? (
             <p className="mt-2 text-xs text-[#4b5563]">Select a rate to fill the service, charging method, amount and currency.</p>
@@ -330,3 +333,7 @@ function NumberField({
     </label>
   );
 }
+
+
+
+

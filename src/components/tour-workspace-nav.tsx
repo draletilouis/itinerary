@@ -4,7 +4,6 @@ import {
   Calculator,
   ClipboardCheck,
   FileCheck2,
-  FolderOpen,
   LayoutDashboard,
   ReceiptText,
 } from "lucide-react";
@@ -16,7 +15,6 @@ const tabs = [
   { key: "quotation", label: "Quotation", icon: FileCheck2 },
   { key: "booking", label: "Booking", icon: ReceiptText },
   { key: "operations", label: "Operations", icon: ClipboardCheck },
-  { key: "documents", label: "Documents", icon: FolderOpen },
 ] as const;
 
 export function TourWorkspaceNav({
@@ -37,7 +35,6 @@ export function TourWorkspaceNav({
     quotation: `/tours/${tourId}/quotation`,
     booking: bookingId ? `/bookings/${bookingId}` : `/tours/${tourId}/quotation`,
     operations: `/operations?tourId=${tourId}`,
-    documents: `/documents?tourId=${tourId}`,
   };
 
   return (

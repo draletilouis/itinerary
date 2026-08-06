@@ -8,6 +8,7 @@ import {
 } from "@/modules/catalogue/actions/catalogue";
 import { getCatalogue } from "@/modules/catalogue/queries/catalogue";
 import { formatMoney } from "@/lib/utils";
+import { travellerAgeBands, travellerPricingCategories, travellerPricingCategoryLabels } from "@/modules/costing/traveller-categories";
 
 export const metadata = { title: "Suppliers" };
 export const dynamic = "force-dynamic";
@@ -44,7 +45,7 @@ export default async function SuppliersPage() {
               <p className="mt-1 text-xs text-[#6b7280]">{supplier.reference} / {supplier.category.name}</p>
               <p className="mt-4 text-sm text-[#4b5563]">{supplier.contactPerson ?? "No contact person"}{supplier.phone ? ` Â· ${supplier.phone}` : ""}</p>
               <p className="mt-3 text-xs text-[#6b7280]">{supplier._count.activities} activities / {supplier._count.accommodations} properties / {supplier.rates.length} general rates</p>
-              {supplier.rates.length ? <div className="mt-4 space-y-2 border-t pt-4">{supplier.rates.slice(0, 3).map((rate) => <div key={rate.id} className="flex items-start justify-between gap-3 text-xs"><div><p className="font-medium">{rate.service}</p><p className="text-[#6b7280]">per {rate.unit} / from {rate.startDate.toLocaleDateString("en-UG")}</p></div><span className="font-semibold text-[#011478]">{formatMoney(rate.amount.toString(), rate.currencyCode)}</span></div>)}</div> : null}
+              {supplier.rates.length ? <div className="mt-4 space-y-2 border-t pt-4">{supplier.rates.slice(0, 3).map((rate) => <div key={rate.id} className="flex items-start justify-between gap-3 text-xs"><div><p className="font-medium">{rate.service}</p><p className="text-[#6b7280]">{rate.pricingCategory ? `${travellerPricingCategoryLabels[rate.pricingCategory]} ${rate.ageBand?.toLowerCase() ?? ""}` : "General rate"}{rate.pricingCategory ? " · " : ""}per {rate.unit} / from {rate.startDate.toLocaleDateString("en-UG")}</p></div><span className="font-semibold text-[#011478]">{formatMoney(rate.amount.toString(), rate.currencyCode)}</span></div>)}</div> : null}
               {data.accommodations.filter((property) => property.supplierId === supplier.id).length ? (
                 <div className="mt-4 border-t pt-4">
                   <div className="flex items-center justify-between gap-3">
@@ -103,10 +104,24 @@ export default async function SuppliersPage() {
                     Room rates must be recorded under Manage rooms and rates so room occupancy is captured.
                   </p>
                 ) : null}
-                <form action={addSupplierRateAction} className="mt-3 grid gap-3">
+                                <form action={addSupplierRateAction} className="mt-3 grid gap-3">
                   <input type="hidden" name="supplierId" value={supplier.id} />
                   <input className={input} name="service" required placeholder="Service, e.g. airport transfer" />
                   <input className={input} name="unit" required placeholder="Unit, e.g. vehicle / day / person" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="text-[11px]">Traveller category
+                      <select className={input} name="pricingCategory" defaultValue="">
+                        <option value="">General rate</option>
+                        {travellerPricingCategories.map((category) => <option key={category} value={category}>{travellerPricingCategoryLabels[category]}</option>)}
+                      </select>
+                    </label>
+                    <label className="text-[11px]">Age band
+                      <select className={input} name="ageBand" defaultValue="">
+                        <option value="">Not set</option>
+                        {travellerAgeBands.map((ageBand) => <option key={ageBand} value={ageBand}>{ageBand.toLowerCase()}</option>)}
+                      </select>
+                    </label>
+                  </div>
                   <div className="grid grid-cols-2 gap-2"><input className={input} name="amount" inputMode="decimal" required placeholder="Amount" /><select className={input} name="currencyCode">{data.currencies.map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></div>
                   <div className="grid grid-cols-2 gap-2"><label className="text-[11px]">Valid from<input className={input} name="startDate" type="date" required /></label><label className="text-[11px]">Valid until<input className={input} name="endDate" type="date" /></label></div>
                   <input className={input} name="notes" placeholder="Rate notes" />
@@ -134,3 +149,5 @@ export default async function SuppliersPage() {
     </div>
   );
 }
+
+

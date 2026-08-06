@@ -1,4 +1,6 @@
-﻿export type PackageItineraryItemTemplate = {
+import type { TravellerAgeBand, TravellerPricingCategory } from "@/modules/costing/traveller-categories";
+
+export type PackageItineraryItemTemplate = {
   type: "ACTIVITY" | "ACCOMMODATION" | "TRANSPORT" | "MEAL" | "NOTE" | "OTHER";
   startTime?: string;
   endTime?: string;
@@ -49,8 +51,8 @@ export type PackageCostTemplate = {
 };
 
 export type TravellerRateBand = {
-  pricingCategory: "UGANDAN" | "EAST_AFRICAN" | "NON_EAST_AFRICAN";
-  ageBand: "ADULT" | "CHILD";
+  pricingCategory: TravellerPricingCategory;
+  ageBand: TravellerAgeBand;
   unitCost: string;
   currencyCode: string;
 };

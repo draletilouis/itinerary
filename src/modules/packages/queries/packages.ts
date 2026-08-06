@@ -1,5 +1,6 @@
 import { prisma } from "@/server/db/prisma";
 import { packageCosts, packageDays } from "../templates";
+import { getPricingCurrencyCodes } from "@/modules/costing/services/pricing-currencies";
 
 export async function listTourPackages() {
   const packages = await prisma.tourPackage.findMany({
@@ -34,9 +35,13 @@ export async function getTourPackage(id: string) {
 }
 
 export async function getPackageOptions() {
+  const pricingCurrencyCodes = await getPricingCurrencyCodes();
   const [currencies, destinations, activities, accommodations, suppliers] =
     await Promise.all([
-      prisma.currency.findMany({ where: { active: true }, orderBy: { code: "asc" } }),
+      prisma.currency.findMany({
+        where: { active: true, code: { in: pricingCurrencyCodes } },
+        orderBy: { code: "asc" },
+      }),
       prisma.destination.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
       prisma.activity.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } }),
       prisma.accommodation.findMany({
@@ -44,7 +49,16 @@ export async function getPackageOptions() {
         orderBy: { name: "asc" },
         include: { roomTypes: { where: { status: "ACTIVE" }, orderBy: { name: "asc" } } },
       }),
-      prisma.supplier.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" }, include: { rates: { where: { status: "ACTIVE" }, orderBy: { startDate: "desc" } } } }),
+      prisma.supplier.findMany({
+        where: { status: "ACTIVE" },
+        orderBy: { name: "asc" },
+        include: {
+          rates: {
+            where: { status: "ACTIVE", currencyCode: { in: pricingCurrencyCodes } },
+            orderBy: { startDate: "desc" },
+          },
+        },
+      }),
     ]);
   return { currencies, destinations, activities, accommodations, suppliers };
 }

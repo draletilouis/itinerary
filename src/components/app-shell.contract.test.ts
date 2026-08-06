@@ -18,7 +18,6 @@ describe("Kashtre-style application shell contract", () => {
       "/operations",
       "/suppliers",
       "/resources",
-      "/documents",
       "/finance",
       "/reports",
       "/settings",

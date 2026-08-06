@@ -8,6 +8,7 @@ import { requireCurrentUser } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
 import { calculateCostItem, calculateSellingPrice } from "../services/pricing";
 import { resolveExchangeRate } from "../services/exchange-rates";
+import { assertPricingCurrencyAvailable } from "../services/pricing-currencies";
 
 const number = z.string().trim().regex(/^\d+(\.\d+)?$/);
 const optionalNumber = z.string().trim().optional().default("").refine((value) => !value || /^\d+(\.\d+)?$/.test(value));
@@ -38,7 +39,8 @@ export async function addTourCostItemAction(formData: FormData) {
 
   const tour = await prisma.tour.findUniqueOrThrow({ where: { id: data.tourId } });
   const rateDate = new Date(data.exchangeRateDate);
-  const exchangeRate = await resolveExchangeRate(data.originalCurrencyCode, tour.costingCurrencyCode, rateDate);
+  const originalCurrencyCode = await assertPricingCurrencyAvailable(data.originalCurrencyCode);
+  const exchangeRate = await resolveExchangeRate(originalCurrencyCode, tour.costingCurrencyCode, rateDate);
   const result = calculateCostItem({
     category: data.category,
     basis: data.basis,
@@ -74,7 +76,7 @@ export async function addTourCostItemAction(formData: FormData) {
         commissionPercentage: new Prisma.Decimal(data.commissionPercentage || 0),
         overrideTotal: data.overrideTotal ? new Prisma.Decimal(data.overrideTotal) : null,
         overrideReason: data.overrideReason || null,
-        originalCurrencyCode: data.originalCurrencyCode,
+        originalCurrencyCode,
         originalTotal: result.originalTotal,
         exchangeRate,
         exchangeRateDate: rateDate,
@@ -206,3 +208,6 @@ export async function saveTourPricingAction(formData: FormData) {
   revalidatePath(`/tours/${tour.id}/costing`);
   revalidatePath(`/tours/${tour.id}`);
 }
+
+
+

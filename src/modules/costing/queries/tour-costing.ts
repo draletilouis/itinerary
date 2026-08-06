@@ -1,7 +1,9 @@
 import { prisma } from "@/server/db/prisma";
 import { getItineraryCostSuggestions } from "../services/itinerary-cost-import";
+import { getPricingCurrencyCodes } from "../services/pricing-currencies";
 
 export async function getTourCosting(tourId: string) {
+  const pricingCurrencyCodes = await getPricingCurrencyCodes();
   const [tour, suppliers, currencies, itineraryDays, itineraryCostReview] = await Promise.all([
     prisma.tour.findUnique({
       where: { id: tourId },
@@ -23,7 +25,7 @@ export async function getTourCosting(tourId: string) {
       orderBy: { name: "asc" },
       include: {
         rates: {
-          where: { status: "ACTIVE" },
+          where: { status: "ACTIVE", currencyCode: { in: pricingCurrencyCodes } },
           orderBy: [{ startDate: "desc" }, { service: "asc" }],
         },
         accommodations: {
@@ -31,7 +33,7 @@ export async function getTourCosting(tourId: string) {
           orderBy: { name: "asc" },
           include: {
             rates: {
-              where: { status: "ACTIVE" },
+              where: { status: "ACTIVE", currencyCode: { in: pricingCurrencyCodes } },
               orderBy: [{ startDate: "desc" }, { amount: "asc" }],
               include: { roomType: { select: { id: true, name: true, maximumOccupancy: true } } },
             },
@@ -39,7 +41,10 @@ export async function getTourCosting(tourId: string) {
         },
       },
     }),
-    prisma.currency.findMany({ where: { active: true }, orderBy: { code: "asc" } }),
+    prisma.currency.findMany({
+      where: { active: true, code: { in: pricingCurrencyCodes } },
+      orderBy: { code: "asc" },
+    }),
     prisma.itineraryDay.findMany({
       where: { version: { itinerary: { tourId }, status: "DRAFT" } },
       orderBy: { dayNumber: "asc" },

@@ -1,4 +1,5 @@
-﻿import { z } from "zod";
+import { z } from "zod";
+import { travellerAgeBands, travellerPricingCategories } from "@/modules/costing/traveller-categories";
 
 export const packageItemSchema = z.object({
   type: z.enum(["ACTIVITY", "ACCOMMODATION", "TRANSPORT", "MEAL", "NOTE", "OTHER"]),
@@ -48,8 +49,8 @@ export const packageCostSchema = z.object({
   inclusionText: z.string().trim().optional(),
   supplierRateId: z.string().uuid().optional(),
   travellerRateBands: z.array(z.object({
-    pricingCategory: z.enum(["UGANDAN", "EAST_AFRICAN", "NON_EAST_AFRICAN"]),
-    ageBand: z.enum(["ADULT", "CHILD"]),
+    pricingCategory: z.enum(travellerPricingCategories),
+    ageBand: z.enum(travellerAgeBands),
     unitCost: z.string(),
     currencyCode: z.string().length(3),
   })).optional(),

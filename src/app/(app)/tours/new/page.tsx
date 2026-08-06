@@ -2,14 +2,16 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { TourCreationForm } from "@/components/tour-creation-form";
 import { prisma } from "@/server/db/prisma";
+import { getPricingCurrencyCodes } from "@/modules/costing/services/pricing-currencies";
 
 export const metadata = { title: "Create tour" };
 export const dynamic = "force-dynamic";
 
 export default async function NewTourPage() {
+  const pricingCurrencyCodes = await getPricingCurrencyCodes();
   const [customers, currencies, packages, enquiries] = await Promise.all([
     prisma.customer.findMany({ where: { status: "ACTIVE" }, orderBy: { fullName: "asc" }, select: { id: true, fullName: true, reference: true } }),
-    prisma.currency.findMany({ where: { active: true }, orderBy: { code: "asc" }, select: { code: true } }),
+    prisma.currency.findMany({ where: { active: true, code: { in: pricingCurrencyCodes } }, orderBy: { code: "asc" }, select: { code: true } }),
     prisma.tourPackage.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" }, select: { id: true, reference: true, revision: true, name: true, type: true, durationDays: true, defaultAdults: true, defaultChildren: true, costingCurrencyCode: true, quotationCurrencyCode: true } }),
     prisma.enquiry.findMany({ where: { status: { notIn: ["LOST", "CANCELLED"] }, tours: { none: {} } }, orderBy: { createdAt: "desc" }, select: { id: true, reference: true, customerId: true, proposedStartDate: true, proposedEndDate: true, adults: true, children: true, budgetCurrencyCode: true, customer: { select: { fullName: true } } } }),
   ]);

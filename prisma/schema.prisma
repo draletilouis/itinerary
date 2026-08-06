@@ -31,9 +31,10 @@ enum CustomerStatus {
 }
 
 enum TravellerPricingCategory {
-  UGANDAN
-  EAST_AFRICAN
-  NON_EAST_AFRICAN
+  UGANDANS
+  FOREIGNERS
+  RESIDENT_FOREIGNERS
+  EAST_AFRICANS
 }
 
 enum TravellerAgeBand {
@@ -560,12 +561,14 @@ model Tour {
   endDate                DateTime               @db.Date
   adults                 Int                    @default(1)
   children               Int                    @default(0)
-  ugandanAdults          Int                    @default(0)
-  ugandanChildren        Int                    @default(0)
-  eastAfricanAdults      Int                    @default(0)
-  eastAfricanChildren    Int                    @default(0)
-  nonEastAfricanAdults   Int                    @default(0)
-  nonEastAfricanChildren Int                    @default(0)
+  ugandanAdults            Int                    @default(0)
+  ugandanChildren          Int                    @default(0)
+  foreignersAdults         Int                    @default(0)
+  foreignersChildren       Int                    @default(0)
+  residentForeignersAdults Int                    @default(0)
+  residentForeignersChildren Int                  @default(0)
+  eastAfricanAdults        Int                    @default(0)
+  eastAfricanChildren      Int                    @default(0)
   ownerId                String                 @db.Uuid
   owner                  User                   @relation("TourOwner", fields: [ownerId], references: [id])
   costingCurrencyCode    String                 @db.Char(3)
@@ -1908,3 +1911,4 @@ model OperationalDocument {
 
   @@index([tourId, createdAt(sort: Desc)])
 }
+

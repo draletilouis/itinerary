@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,7 +22,6 @@ const more = [
   { label: "Resources", href: "/resources", icon: Users },
   { label: "Itineraries", href: "/itineraries", icon: BookOpenCheck },
   { label: "Quotations", href: "/quotations", icon: FileText },
-  { label: "Documents", href: "/documents", icon: FileText },
   { label: "Reports", href: "/reports", icon: FileText },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
@@ -85,3 +84,5 @@ function NavLink({ item, selected, compact = false }: { item: { label: string; h
   const Icon = item.icon;
   return <Link href={item.href} className={cn("flex items-center rounded-lg text-sm transition", compact ? "min-h-9 gap-2 px-3" : "min-h-10 gap-3 px-3 font-medium", selected ? "bg-blue-50 font-semibold text-[#011478]" : "text-gray-700 hover:bg-blue-50 hover:text-[#011478]")}><Icon className={compact ? "size-4" : "size-5"} />{item.label}</Link>;
 }
+
+

@@ -12,6 +12,7 @@ import { prisma } from "@/server/db/prisma";
 import { requireCurrentUser } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
 import { nextReference } from "@/modules/settings/services/reference-number";
+import { assertPricingCurrencyAvailable } from "@/modules/costing/services/pricing-currencies";
 import {
   detectResourceConflicts,
   rangesOverlap,
@@ -290,7 +291,7 @@ export async function createVehicleMaintenanceAction(formData: FormData) {
         serviceProvider: data.serviceProvider || null,
         odometerKm,
         cost: new Prisma.Decimal(data.cost),
-        currencyCode: data.currencyCode.toUpperCase(),
+        currencyCode: await assertPricingCurrencyAvailable(data.currencyCode),
         notes: data.notes || null,
         createdById: actor.id,
       },
@@ -709,3 +710,5 @@ export async function setResourceStatusAction(formData: FormData) {
 
   revalidatePath("/resources");
 }
+
+

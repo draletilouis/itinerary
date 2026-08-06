@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { FileText, PackageOpen, Sparkles } from "lucide-react";
 import { createTourFromWizardAction } from "@/modules/tours/actions/create-tour";
 import { fieldClass, primaryButtonClass } from "@/components/ui/form-styles";
+import { travellerMixFieldEntries } from "@/modules/costing/traveller-categories";
 import { cn } from "@/lib/utils";
 
 type Customer = { id: string; fullName: string; reference: string };
@@ -58,11 +59,11 @@ export function TourCreationForm({ customers, currencies, packages, enquiries }:
           })}
         </div>
         {mode === "ENQUIRY" ? (
-          <label className="mt-5 block text-sm font-medium">Enquiry<select className={fieldClass} name="enquiryId" value={enquiryId} onChange={(event) => setEnquiryId(event.target.value)} required>{enquiries.map((item) => <option key={item.id} value={item.id}>{item.reference} · {item.customerName}</option>)}</select></label>
+          <label className="mt-5 block text-sm font-medium">Enquiry<select className={fieldClass} name="enquiryId" value={enquiryId} onChange={(event) => setEnquiryId(event.target.value)} required>{enquiries.map((item) => <option key={item.id} value={item.id}>{item.reference} / {item.customerName}</option>)}</select></label>
         ) : <input type="hidden" name="enquiryId" value="" />}
         {mode === "PACKAGE" ? (
           <>
-          <label className="mt-5 block text-sm font-medium">Package<select className={fieldClass} name="packageId" value={packageId} onChange={(event) => setPackageId(event.target.value)} required>{packages.map((item) => <option key={item.id} value={item.id}>{item.reference} · {item.name} · revision {item.revision}</option>)}</select></label>
+          <label className="mt-5 block text-sm font-medium">Package<select className={fieldClass} name="packageId" value={packageId} onChange={(event) => setPackageId(event.target.value)} required>{packages.map((item) => <option key={item.id} value={item.id}>{item.reference} / {item.name} / revision {item.revision}</option>)}</select></label>
           <label className="mt-4 block text-sm font-medium">Package option<select className={fieldClass} name="packageVariant" defaultValue="BASE"><option value="BASE">Base package only</option><option value="ALL_OPTIONS">Include all optional upgrades</option></select><span className="mt-1 block text-[11px] text-gray-500">Optional costs are added only when selected.</span></label>
           </>
         ) : <><input type="hidden" name="packageId" value="" /><input type="hidden" name="packageVariant" value="BASE" /></>}
@@ -78,7 +79,7 @@ export function TourCreationForm({ customers, currencies, packages, enquiries }:
             </div>
           </div>
           {customerChoice === "existing" ? (
-            <label className="mt-4 block text-sm font-medium">Customer<select className={fieldClass} name="customerId" required><option value="">Select customer</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.fullName} · {customer.reference}</option>)}</select></label>
+            <label className="mt-4 block text-sm font-medium">Customer<select className={fieldClass} name="customerId" required><option value="">Select customer</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.fullName} / {customer.reference}</option>)}</select></label>
           ) : (
             <div className="mt-4 grid gap-4 sm:grid-cols-2"><input type="hidden" name="customerId" value="" /><label className="text-sm font-medium">Full name<input className={fieldClass} name="newCustomerName" required /></label><label className="text-sm font-medium">Phone<input className={fieldClass} name="newCustomerPhone" required /></label><label className="text-sm font-medium sm:col-span-2">Email <span className="font-normal text-gray-400">(optional)</span><input className={fieldClass} name="newCustomerEmail" type="email" /></label></div>
           )}
@@ -92,7 +93,7 @@ export function TourCreationForm({ customers, currencies, packages, enquiries }:
           <label className="text-sm font-medium">Tour type<select className={fieldClass} name="type" defaultValue={selectedPackage?.type ?? "CUSTOM"}>{tourTypes.map((type) => <option key={type} value={type}>{type.toLowerCase().replaceAll("_", " ")}</option>)}</select></label><div className="hidden sm:block" />
           <label className="text-sm font-medium">Start date<input className={fieldClass} name="startDate" type="date" required defaultValue={start} /></label><label className="text-sm font-medium">End date<input className={fieldClass} name="endDate" type="date" required defaultValue={end} /></label>
           <label className="text-sm font-medium">Adults<input className={fieldClass} name="adults" type="number" min={1} required defaultValue={enquiry?.adults ?? selectedPackage?.defaultAdults ?? 2} /></label><label className="text-sm font-medium">Children<input className={fieldClass} name="children" type="number" min={0} required defaultValue={enquiry?.children ?? selectedPackage?.defaultChildren ?? 0} /></label>
-          <div className="rounded-lg border bg-[#f9fafb] p-4 sm:col-span-2"><h3 className="text-sm font-semibold">Traveller pricing mix</h3><p className="mt-1 text-xs text-gray-500">These totals must match the adult and child counts above.</p><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[["ugandanAdults", "Ugandan adults", 0], ["ugandanChildren", "Ugandan children", 0], ["eastAfricanAdults", "East African adults", 0], ["eastAfricanChildren", "East African children", 0], ["nonEastAfricanAdults", "Non-East African adults", enquiry?.adults ?? selectedPackage?.defaultAdults ?? 2], ["nonEastAfricanChildren", "Non-East African children", enquiry?.children ?? selectedPackage?.defaultChildren ?? 0]].map(([name, label, value]) => <label key={String(name)} className="text-xs font-medium">{label}<input className={fieldClass} name={String(name)} type="number" min={0} required defaultValue={Number(value)} /></label>)}</div></div>
+          <div className="rounded-lg border bg-[#f9fafb] p-4 sm:col-span-2"><h3 className="text-sm font-semibold">Traveller pricing mix</h3><p className="mt-1 text-xs text-gray-500">These totals must match the adult and child counts above.</p><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{travellerMixFieldEntries.map(({ fieldName, label, pricingCategory, ageBand }) => { const defaultValue = pricingCategory === "FOREIGNERS" ? ageBand === "ADULT" ? enquiry?.adults ?? selectedPackage?.defaultAdults ?? 2 : enquiry?.children ?? selectedPackage?.defaultChildren ?? 0 : 0; return <label key={fieldName} className="text-xs font-medium">{label}<input className={fieldClass} name={fieldName} type="number" min={0} required defaultValue={Number(defaultValue)} /></label>; })}</div></div>
           <label className="text-sm font-medium">Costing currency<select className={fieldClass} name="costingCurrencyCode" defaultValue={selectedPackage?.costingCurrencyCode ?? "USD"}>{currencies.map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label><label className="text-sm font-medium">Quotation currency<select className={fieldClass} name="quotationCurrencyCode" defaultValue={enquiry?.budgetCurrencyCode ?? selectedPackage?.quotationCurrencyCode ?? "USD"}>{currencies.map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
         </div>
       </section>

@@ -6,9 +6,11 @@ import { z } from "zod";
 import { calculateCostItem, calculateSellingPrice } from "@/modules/costing/services/pricing";
 import { calculateRateBandTotals, validateTravellerMix } from "@/modules/costing/services/traveller-rate-bands";
 import { resolveExchangeRate } from "@/modules/costing/services/exchange-rates";
+import { assertPricingCurrencyAvailable } from "@/modules/costing/services/pricing-currencies";
 import { packageCosts, packageDays } from "@/modules/packages/templates";
 import type { PackageDayTemplate } from "@/modules/packages/types";
 import { nextReference } from "@/modules/settings/services/reference-number";
+import { travellerPricingCategoryLabels, type TravellerAgeBand, type TravellerPricingCategory } from "@/modules/costing/traveller-categories";
 import { writeAuditEvent } from "@/server/audit/service";
 import { requireCurrentUser } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
@@ -40,15 +42,16 @@ const formSchema = z.object({
   adults: z.coerce.number().int().min(1),
   children: z.coerce.number().int().min(0),
   ugandanAdults: z.coerce.number().int().min(0), ugandanChildren: z.coerce.number().int().min(0),
+  foreignersAdults: z.coerce.number().int().min(0), foreignersChildren: z.coerce.number().int().min(0),
+  residentForeignersAdults: z.coerce.number().int().min(0), residentForeignersChildren: z.coerce.number().int().min(0),
   eastAfricanAdults: z.coerce.number().int().min(0), eastAfricanChildren: z.coerce.number().int().min(0),
-  nonEastAfricanAdults: z.coerce.number().int().min(0), nonEastAfricanChildren: z.coerce.number().int().min(0),
   costingCurrencyCode: z.string().length(3),
   quotationCurrencyCode: z.string().length(3),
 });
 
 type PreparedCost = ReturnType<typeof packageCosts>[number] & {
-  pricingCategory?: "UGANDAN" | "EAST_AFRICAN" | "NON_EAST_AFRICAN";
-  ageBand?: "ADULT" | "CHILD";
+  pricingCategory?: TravellerPricingCategory;
+  ageBand?: TravellerAgeBand;
   exchangeRate: Prisma.Decimal;
   result: ReturnType<typeof calculateCostItem>;
 };
@@ -60,11 +63,13 @@ function asOptional(value: string) {
 export async function createTourFromWizardAction(formData: FormData) {
   const actor = await requireCurrentUser();
   const data = formSchema.parse(Object.fromEntries(formData));
+  const costingCurrencyCode = await assertPricingCurrencyAvailable(data.costingCurrencyCode);
+  const quotationCurrencyCode = await assertPricingCurrencyAvailable(data.quotationCurrencyCode);
   const startDate = new Date(data.startDate);
   const endDate = new Date(data.endDate);
   if (endDate < startDate) throw new Error("Tour end date cannot be before the start date.");
   const duration = Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1;
-  const travellerMix = validateTravellerMix({ ugandanAdults: data.ugandanAdults, ugandanChildren: data.ugandanChildren, eastAfricanAdults: data.eastAfricanAdults, eastAfricanChildren: data.eastAfricanChildren, nonEastAfricanAdults: data.nonEastAfricanAdults, nonEastAfricanChildren: data.nonEastAfricanChildren }, data.adults, data.children);
+  const travellerMix = validateTravellerMix({ ugandanAdults: data.ugandanAdults, ugandanChildren: data.ugandanChildren, foreignersAdults: data.foreignersAdults, foreignersChildren: data.foreignersChildren, residentForeignersAdults: data.residentForeignersAdults, residentForeignersChildren: data.residentForeignersChildren, eastAfricanAdults: data.eastAfricanAdults, eastAfricanChildren: data.eastAfricanChildren }, data.adults, data.children);
 
   const enquiry =
     data.mode === "ENQUIRY"
@@ -94,15 +99,15 @@ export async function createTourFromWizardAction(formData: FormData) {
   for (const cost of templateCosts) {
     if (cost.travellerRateBands?.length) {
       for (const band of calculateRateBandTotals(cost.travellerRateBands, travellerMix)) {
-        const exchangeRate = await resolveExchangeRate(band.currencyCode, data.costingCurrencyCode, startDate);
+        const exchangeRate = await resolveExchangeRate(band.currencyCode, costingCurrencyCode, startDate);
         const result = calculateCostItem({ ...cost, unitCost: band.unitCost, eligibleTravellers: band.travellerCount, exchangeRate });
-        preparedCosts.push({ ...cost, description: cost.description + " - " + band.pricingCategory.toLowerCase().replaceAll("_", " ") + " " + band.ageBand.toLowerCase(), unitCost: band.unitCost, originalCurrencyCode: band.currencyCode, eligibleTravellers: String(band.travellerCount), exchangeRate, result, pricingCategory: band.pricingCategory, ageBand: band.ageBand });
+        preparedCosts.push({ ...cost, description: cost.description + " - " + travellerPricingCategoryLabels[band.pricingCategory] + " " + band.ageBand.toLowerCase(), unitCost: band.unitCost, originalCurrencyCode: band.currencyCode, eligibleTravellers: String(band.travellerCount), exchangeRate, result, pricingCategory: band.pricingCategory, ageBand: band.ageBand });
       }
       continue;
     }
     const exchangeRate = await resolveExchangeRate(
       cost.originalCurrencyCode,
-      data.costingCurrencyCode,
+      costingCurrencyCode,
       startDate,
     );
     const eligibleTravellers =
@@ -124,8 +129,8 @@ export async function createTourFromWizardAction(formData: FormData) {
   const costingToQuotationRate =
     preparedCosts.length
       ? await resolveExchangeRate(
-          data.costingCurrencyCode,
-          data.quotationCurrencyCode,
+          costingCurrencyCode,
+          quotationCurrencyCode,
           startDate,
         )
       : new Prisma.Decimal(1);
@@ -194,8 +199,8 @@ export async function createTourFromWizardAction(formData: FormData) {
         children: data.children,
         ...travellerMix,
         ownerId: actor.id,
-        costingCurrencyCode: data.costingCurrencyCode,
-        quotationCurrencyCode: data.quotationCurrencyCode,
+        costingCurrencyCode,
+        quotationCurrencyCode,
         estimatedInternalCost,
         sellingPrice: packagePricing?.finalSellingPrice ?? 0,
         estimatedProfit: packagePricing?.estimatedProfit ?? 0,
@@ -321,7 +326,7 @@ export async function createTourFromWizardAction(formData: FormData) {
           originalTotal: cost.result.originalTotal,
           exchangeRate: cost.exchangeRate,
           exchangeRateDate: startDate,
-          convertedCurrencyCode: data.costingCurrencyCode,
+          convertedCurrencyCode: costingCurrencyCode,
           convertedTotal: cost.result.baseCurrencyTotal,
           createdById: actor.id,
         },
@@ -333,7 +338,7 @@ export async function createTourFromWizardAction(formData: FormData) {
         data: {
           tourId: created.id,
           revision: 1,
-          currencyCode: data.quotationCurrencyCode,
+          currencyCode: quotationCurrencyCode,
           internalCost: estimatedInternalCost.mul(costingToQuotationRate),
           costingToQuotationRate,
           contingency: packagePricing.contingency,
@@ -399,3 +404,10 @@ export async function createTourFromWizardAction(formData: FormData) {
 
   redirect(`/tours/${tour.id}`);
 }
+
+
+
+
+
+
+

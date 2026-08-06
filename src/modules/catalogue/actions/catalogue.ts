@@ -7,6 +7,8 @@ import { prisma } from "@/server/db/prisma";
 import { requireCurrentUser } from "@/server/auth/session";
 import { writeAuditEvent } from "@/server/audit/service";
 import { nextReference } from "@/modules/settings/services/reference-number";
+import { assertPricingCurrencyAvailable } from "@/modules/costing/services/pricing-currencies";
+import { travellerAgeBands, travellerPricingCategories, type TravellerAgeBand, type TravellerPricingCategory } from "@/modules/costing/traveller-categories";
 
 const optional = z.string().trim().optional().default("");
 const decimal = optional.refine(
@@ -235,10 +237,24 @@ export async function addSupplierRateAction(formData: FormData) {
     currencyCode: z.string().length(3),
     startDate: z.string().min(1),
     endDate: optional,
+    pricingCategory: optional,
+    ageBand: optional,
     notes: optional,
   }).parse(Object.fromEntries(formData));
   if (data.endDate && new Date(data.endDate) < new Date(data.startDate)) {
     throw new Error("Rate end date cannot be before its start date.");
+  }
+
+  const pricingCategory = data.pricingCategory ? (data.pricingCategory as TravellerPricingCategory) : null;
+  const ageBand = data.ageBand ? (data.ageBand as TravellerAgeBand) : null;
+  if ((pricingCategory && !ageBand) || (!pricingCategory && ageBand)) {
+    throw new Error("Select both a traveller category and age band, or leave both blank.");
+  }
+  if (pricingCategory && !travellerPricingCategories.includes(pricingCategory as typeof travellerPricingCategories[number])) {
+    throw new Error("Select a valid traveller category.");
+  }
+  if (ageBand && !travellerAgeBands.includes(ageBand as typeof travellerAgeBands[number])) {
+    throw new Error("Select a valid traveller age band.");
   }
 
   const rate = await prisma.supplierRate.create({
@@ -247,7 +263,9 @@ export async function addSupplierRateAction(formData: FormData) {
       service: data.service,
       unit: data.unit,
       amount: new Prisma.Decimal(data.amount),
-      currencyCode: data.currencyCode,
+      pricingCategory,
+      ageBand,
+      currencyCode: await assertPricingCurrencyAvailable(data.currencyCode),
       startDate: new Date(data.startDate),
       endDate: data.endDate ? new Date(data.endDate) : null,
       notes: data.notes || null,
@@ -259,7 +277,7 @@ export async function addSupplierRateAction(formData: FormData) {
       action: "supplier-rate.created",
       entityType: "SupplierRate",
       entityId: rate.id,
-      newValues: { supplierId: rate.supplierId, service: rate.service, amount: rate.amount.toString(), currency: rate.currencyCode },
+      newValues: { supplierId: rate.supplierId, service: rate.service, amount: rate.amount.toString(), currency: rate.currencyCode, pricingCategory: rate.pricingCategory, ageBand: rate.ageBand },
     },
   });
   revalidatePath("/suppliers");
@@ -326,7 +344,7 @@ export async function addActivityRateAction(formData: FormData) {
       activityId: data.activityId,
       rateType: data.rateType,
       amount: new Prisma.Decimal(data.amount),
-      currencyCode: data.currencyCode,
+      currencyCode: await assertPricingCurrencyAvailable(data.currencyCode),
       startDate: new Date(data.startDate),
       endDate: data.endDate ? new Date(data.endDate) : null,
       supplierId: data.supplierId || null,
@@ -460,7 +478,7 @@ export async function addAccommodationRateAction(formData: FormData) {
       occupancy: `${roomType.maximumOccupancy} guest${roomType.maximumOccupancy === 1 ? "" : "s"}`,
       occupancyGuests: roomType.maximumOccupancy,
       amount: new Prisma.Decimal(data.amount),
-      currencyCode: data.currencyCode,
+      currencyCode: await assertPricingCurrencyAvailable(data.currencyCode),
       startDate: new Date(data.startDate),
       endDate: data.endDate ? new Date(data.endDate) : null,
       supplierId: roomType.accommodation.supplierId,
@@ -483,3 +501,11 @@ export async function addAccommodationRateAction(formData: FormData) {
   });
   revalidatePath("/settings/catalogue");
 }
+
+
+
+
+
+
+
+

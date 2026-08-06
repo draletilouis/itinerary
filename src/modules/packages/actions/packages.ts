@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { nextReference } from "@/modules/settings/services/reference-number";
+import { assertPricingCurrencyAvailable } from "@/modules/costing/services/pricing-currencies";
+import { travellerRateBandEntries } from "@/modules/costing/traveller-categories";
 import { writeAuditEvent } from "@/server/audit/service";
 import { requireCurrentUser } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
@@ -55,6 +57,9 @@ export async function createTourPackageAction(formData: FormData) {
     })
     .parse(Object.fromEntries(formData));
 
+  const costingCurrencyCode = await assertPricingCurrencyAvailable(data.costingCurrencyCode);
+  const quotationCurrencyCode = await assertPricingCurrencyAvailable(data.quotationCurrencyCode ?? data.costingCurrencyCode);
+
   const created = await prisma.$transaction(async (tx) => {
     const reference = await nextReference(tx, "package", "PKG");
     const days = Array.from({ length: data.durationDays }, (_, index) => ({
@@ -72,9 +77,8 @@ export async function createTourPackageAction(formData: FormData) {
         durationDays: data.durationDays,
         defaultAdults: data.defaultAdults,
         defaultChildren: data.defaultChildren,
-        costingCurrencyCode: data.costingCurrencyCode,
-        quotationCurrencyCode:
-          data.quotationCurrencyCode ?? data.costingCurrencyCode,
+        costingCurrencyCode,
+        quotationCurrencyCode,
         inclusions: [],
         exclusions: [],
         itineraryTemplate: json(days),
@@ -133,6 +137,8 @@ export async function updateTourPackageAction(formData: FormData) {
     })
     .parse(Object.fromEntries(formData));
 
+  const costingCurrencyCode = await assertPricingCurrencyAvailable(data.costingCurrencyCode);
+  const quotationCurrencyCode = await assertPricingCurrencyAvailable(data.quotationCurrencyCode);
   await prisma.$transaction(async (tx) => {
     const previous = await tx.tourPackage.findUniqueOrThrow({ where: { id: data.packageId } });
     const existingDays = packageDays(previous.itineraryTemplate);
@@ -157,8 +163,8 @@ export async function updateTourPackageAction(formData: FormData) {
         durationDays: data.durationDays,
         defaultAdults: data.defaultAdults,
         defaultChildren: data.defaultChildren,
-        costingCurrencyCode: data.costingCurrencyCode,
-        quotationCurrencyCode: data.quotationCurrencyCode,
+        costingCurrencyCode,
+        quotationCurrencyCode,
         introduction: data.introduction || null,
         summary: data.summary || null,
         inclusions: lines(data.inclusions),
@@ -214,6 +220,8 @@ export async function updateTourPackageBasicsAction(formData: FormData) {
     })
     .parse(Object.fromEntries(formData));
 
+  const costingCurrencyCode = await assertPricingCurrencyAvailable(data.costingCurrencyCode);
+  const quotationCurrencyCode = await assertPricingCurrencyAvailable(data.quotationCurrencyCode);
   await prisma.$transaction(async (tx) => {
     const previous = await tx.tourPackage.findUniqueOrThrow({
       where: { id: data.packageId },
@@ -240,8 +248,8 @@ export async function updateTourPackageBasicsAction(formData: FormData) {
         durationDays: data.durationDays,
         defaultAdults: data.defaultAdults,
         defaultChildren: data.defaultChildren,
-        costingCurrencyCode: data.costingCurrencyCode,
-        quotationCurrencyCode: data.quotationCurrencyCode,
+        costingCurrencyCode,
+        quotationCurrencyCode,
         introduction: data.introduction || null,
         summary: data.summary || null,
         inclusions: lines(data.inclusions),
@@ -468,12 +476,14 @@ export async function addPackageCostAction(formData: FormData) {
       inclusionText: z.string().trim().optional().default(""),
       supplierRateId: z.string().optional().default(""),
       useTravellerRateBands: z.string().optional().default(""),
-      rate_UGANDAN_ADULT: z.string().optional().default(""), currency_UGANDAN_ADULT: z.string().optional().default("USD"),
-      rate_UGANDAN_CHILD: z.string().optional().default(""), currency_UGANDAN_CHILD: z.string().optional().default("USD"),
-      rate_EAST_AFRICAN_ADULT: z.string().optional().default(""), currency_EAST_AFRICAN_ADULT: z.string().optional().default("USD"),
-      rate_EAST_AFRICAN_CHILD: z.string().optional().default(""), currency_EAST_AFRICAN_CHILD: z.string().optional().default("USD"),
-      rate_NON_EAST_AFRICAN_ADULT: z.string().optional().default(""), currency_NON_EAST_AFRICAN_ADULT: z.string().optional().default("USD"),
-      rate_NON_EAST_AFRICAN_CHILD: z.string().optional().default(""), currency_NON_EAST_AFRICAN_CHILD: z.string().optional().default("USD"),
+      rate_UGANDANS_ADULT: z.string().optional().default(""), currency_UGANDANS_ADULT: z.string().optional().default("USD"),
+      rate_UGANDANS_CHILD: z.string().optional().default(""), currency_UGANDANS_CHILD: z.string().optional().default("USD"),
+      rate_FOREIGNERS_ADULT: z.string().optional().default(""), currency_FOREIGNERS_ADULT: z.string().optional().default("USD"),
+      rate_FOREIGNERS_CHILD: z.string().optional().default(""), currency_FOREIGNERS_CHILD: z.string().optional().default("USD"),
+      rate_RESIDENT_FOREIGNERS_ADULT: z.string().optional().default(""), currency_RESIDENT_FOREIGNERS_ADULT: z.string().optional().default("USD"),
+      rate_RESIDENT_FOREIGNERS_CHILD: z.string().optional().default(""), currency_RESIDENT_FOREIGNERS_CHILD: z.string().optional().default("USD"),
+      rate_EAST_AFRICANS_ADULT: z.string().optional().default(""), currency_EAST_AFRICANS_ADULT: z.string().optional().default("USD"),
+      rate_EAST_AFRICANS_CHILD: z.string().optional().default(""), currency_EAST_AFRICANS_CHILD: z.string().optional().default("USD"),
     })
     .parse(Object.fromEntries(formData));
   if (data.basis === "OVERRIDE" && (!data.overrideTotal || !data.overrideReason)) {
@@ -482,18 +492,27 @@ export async function addPackageCostAction(formData: FormData) {
 
   await prisma.$transaction(async (tx) => {
     const rateFields = data as unknown as Record<string, string>;
-    const travellerRateBands = data.useTravellerRateBands === "true"
-      ? (["UGANDAN", "EAST_AFRICAN", "NON_EAST_AFRICAN"] as const).flatMap((pricingCategory) => (["ADULT", "CHILD"] as const).flatMap((ageBand) => {
-          const amount = rateFields["rate_" + pricingCategory + "_" + ageBand];
-          return amount && Number(amount) >= 0 ? [{ pricingCategory, ageBand, unitCost: amount, currencyCode: rateFields["currency_" + pricingCategory + "_" + ageBand] }] : [];
-        }))
-      : undefined;
-    if (data.useTravellerRateBands === "true" && !travellerRateBands?.length) throw new Error("Enter at least one traveller-category rate.");
+    const travellerRateBands: Array<{ pricingCategory: (typeof travellerRateBandEntries)[number]["pricingCategory"]; ageBand: (typeof travellerRateBandEntries)[number]["ageBand"]; unitCost: string; currencyCode: string }> = [];
+    if (data.useTravellerRateBands === "true") {
+      for (const { pricingCategory, ageBand, rateFieldName, currencyFieldName } of travellerRateBandEntries) {
+        const amount = rateFields[rateFieldName];
+        if (!amount || Number(amount) < 0) continue;
+        const currencyCode = await assertPricingCurrencyAvailable(rateFields[currencyFieldName]);
+        travellerRateBands.push({ pricingCategory, ageBand, unitCost: amount, currencyCode });
+      }
+      if (!travellerRateBands.length) throw new Error("Enter at least one traveller-category rate.");
+    }
     const entry = await tx.tourPackage.findUniqueOrThrow({ where: { id: data.packageId } });
     const supplierRate = data.supplierRateId
       ? await tx.supplierRate.findFirstOrThrow({ where: { id: data.supplierRateId, status: "ACTIVE", startDate: { lte: new Date() }, OR: [{ endDate: null }, { endDate: { gte: new Date() } }] } })
       : null;
+    if (supplierRate) {
+      await assertPricingCurrencyAvailable(supplierRate.currencyCode);
+    }
     const costs = packageCosts(entry.costTemplate);
+    const originalCurrencyCode = supplierRate
+      ? supplierRate.currencyCode
+      : await assertPricingCurrencyAvailable(data.originalCurrencyCode);
     const durationNights = Math.max(entry.durationDays - 1, 0);
     const quantity = data.quantity || "1";
     const days = data.days || String(entry.durationDays);
@@ -538,7 +557,7 @@ export async function addPackageCostAction(formData: FormData) {
       commissionPercentage: data.commissionPercentage || "0",
       overrideTotal: data.overrideTotal || undefined,
       overrideReason: data.overrideReason || undefined,
-      originalCurrencyCode: supplierRate?.currencyCode ?? data.originalCurrencyCode,
+      originalCurrencyCode,
       supplierId: supplierRate?.supplierId ?? (data.supplierId || undefined),
       dayNumber: data.dayNumber ? Number(data.dayNumber) : undefined,
       classification: data.classification,
@@ -589,3 +608,14 @@ export async function removePackageCostAction(formData: FormData) {
   });
   revalidatePath(`/packages/${data.packageId}`);
 }
+
+
+
+
+
+
+
+
+
+
+
