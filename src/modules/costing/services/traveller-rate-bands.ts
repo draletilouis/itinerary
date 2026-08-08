@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { travellerRateBandLabel, travellerPricingCategoryLabels, travellerMixFieldNames, type TravellerAgeBand, type TravellerPricingCategory } from "@/modules/costing/traveller-categories";
+import { travellerRateBandLabel, travellerMixFieldNames, type TravellerAgeBand, type TravellerPricingCategory } from "@/modules/costing/traveller-categories";
 import type { TravellerRateBand } from "@/modules/packages/types";
 
 export type TravellerMix = {

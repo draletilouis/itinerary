@@ -3,7 +3,6 @@ import {
   AlertOctagon,
   CheckCircle2,
   ClipboardCheck,
-  FileDown,
   PlayCircle,
   ShieldCheck,
   TimerReset,
@@ -12,7 +11,6 @@ import {
 import {
   createOperationalTaskAction,
   createSupplierConfirmationAction,
-  generateOperationalDocumentAction,
   initializeTourOperationsAction,
   refreshTourReadinessAction,
   reportTourIncidentAction,
@@ -61,12 +59,11 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Tour operations</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4b5563]">
         Readiness, tasks, supplier confirmations, live-tour control, incidents,
-        and frozen operational documents.
+        and live-tour control.
       </p>
       <div className="mt-5 flex flex-wrap gap-2">
         <Link href="/resources" className="h-10 rounded-lg border bg-white px-4 py-2 text-sm font-semibold">Resources</Link>
         <Link href="/suppliers" className="h-10 rounded-lg border bg-white px-4 py-2 text-sm font-semibold">Suppliers</Link>
-        <Link href="/documents" className="h-10 rounded-lg border bg-white px-4 py-2 text-sm font-semibold">Documents</Link>
       </div>
 
       {query.prepared === "1" ? (
@@ -172,12 +169,6 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
                     {tour.incidents.map((incident) => <div key={incident.id} className={`rounded-lg border p-3 ${["HIGH","CRITICAL"].includes(incident.severity) && !["RESOLVED","CLOSED"].includes(incident.status) ? "border-red-300 bg-red-50" : ""}`}><p className="text-sm font-semibold">{incident.reference}  -  {incident.title}</p><p className="mt-1 text-xs text-[#6b7280]">{incident.severity.toLowerCase()}  -  {incident.status.toLowerCase()}  -  {incident.occurredAt.toLocaleString("en-UG")}</p><p className="mt-2 text-xs leading-5">{incident.description}</p>{incident.resolution ? <p className="mt-2 text-xs text-[#011478]">Resolution: {incident.resolution}</p> : null}{!["RESOLVED","CLOSED"].includes(incident.status) ? <form action={resolveTourIncidentAction} className="mt-3 flex gap-2"><input type="hidden" name="incidentId" value={incident.id} /><input className="h-8 flex-1 rounded-lg border px-2 text-xs" name="resolution" required placeholder="Resolution" /><button name="status" value="RESOLVED" className="rounded-lg border px-2 text-xs">Resolve</button></form> : null}</div>)}
                   </div>
                   <details className="mt-3"><summary className="cursor-pointer text-xs font-semibold text-red-700">Report incident</summary><form action={reportTourIncidentAction} className="mt-3 grid gap-3 rounded-lg bg-red-50 p-4 sm:grid-cols-2"><input type="hidden" name="tourId" value={tour.id} /><label className="text-xs">Title<input className={input} name="title" required /></label><label className="text-xs">Severity<select className={input} name="severity" defaultValue="MEDIUM"><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label><label className="text-xs">Occurred at<input className={input} name="occurredAt" type="datetime-local" required defaultValue={nowLocal} /></label><label className="text-xs">Location<input className={input} name="location" /></label><label className="text-xs sm:col-span-2">People involved<input className={input} name="peopleInvolved" /></label><label className="text-xs sm:col-span-2">Description<textarea className={area} name="description" required /></label><button className="h-10 rounded-lg bg-red-700 px-3 text-xs font-semibold text-white sm:col-span-2">Report incident</button></form></details>
-                </section>
-
-                <section>
-                  <h3 className="font-semibold">Operational documents</h3>
-                  <form action={generateOperationalDocumentAction} className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]"><input type="hidden" name="tourId" value={tour.id} /><select className="h-10 rounded-lg border px-3 text-xs" name="documentType" defaultValue="FULL_OPERATIONS_PACK"><option>FULL_OPERATIONS_PACK</option><option>GUIDE_BRIEF</option><option>ROOMING_LIST</option><option>SUPPLIER_VOUCHER</option><option>VEHICLE_ALLOCATION</option><option>DAILY_OPERATIONS_SHEET</option></select><button className="h-10 rounded-lg bg-[#111827] px-3 text-xs font-semibold text-white">Generate frozen PDF</button></form>
-                  <div className="mt-3 space-y-2">{tour.operationalDocuments.map((document) => <a key={document.id} href={`/api/operations/documents/${document.id}/pdf`} download={document.fileName} className="flex items-center justify-between rounded-lg border p-3 text-xs"><span><strong>{document.reference}</strong>  -  {document.title}<span className="ml-2 text-[#6b7280]">{document.createdAt.toLocaleString("en-UG")}</span></span><FileDown className="size-4 text-[#011478]" /></a>)}</div>
                 </section>
               </div>
             </div>

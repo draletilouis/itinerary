@@ -1,6 +1,5 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/server/db/prisma";
@@ -11,14 +10,6 @@ import { calculateOperationalReadiness, nextOperationalStatus } from "../service
 import { initializeTourOperations } from "../services/initialize-operations";
 
 const optionalText = z.string().trim().optional().default("");
-const documentTypes = [
-  "FULL_OPERATIONS_PACK",
-  "GUIDE_BRIEF",
-  "ROOMING_LIST",
-  "SUPPLIER_VOUCHER",
-  "VEHICLE_ALLOCATION",
-  "DAILY_OPERATIONS_SHEET",
-] as const;
 
 function parseDate(value: string, label: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -29,18 +20,6 @@ function parseDate(value: string, label: string) {
     throw new Error(`Select a valid ${label.toLowerCase()}.`);
   }
   return result;
-}
-
-function resourceName(entry: {
-  vehicle?: { registration: string; make: string; model: string } | null;
-  driver?: { fullName: string } | null;
-  guide?: { fullName: string } | null;
-  equipment?: { name: string } | null;
-}) {
-  if (entry.vehicle) {
-    return `${entry.vehicle.registration} - ${entry.vehicle.make} ${entry.vehicle.model}`;
-  }
-  return entry.driver?.fullName ?? entry.guide?.fullName ?? entry.equipment?.name ?? "Unknown";
 }
 
 
@@ -396,161 +375,3 @@ export async function refreshTourReadinessAction(formData: FormData) {
   revalidatePath(`/tours/${data.tourId}`);
 }
 
-export async function generateOperationalDocumentAction(formData: FormData) {
-  const actor = await requireCurrentUser();
-  const data = z
-    .object({
-      tourId: z.string().uuid(),
-      documentType: z.enum(documentTypes),
-    })
-    .parse(Object.fromEntries(formData));
-
-  await prisma.$transaction(async (tx) => {
-    const tour = await tx.tour.findUniqueOrThrow({
-      where: { id: data.tourId },
-      include: {
-        customer: { select: { fullName: true, phone: true, email: true } },
-        booking: {
-          include: {
-            travellers: {
-              include: {
-                traveller: {
-                  select: {
-                    fullName: true,
-                    dateOfBirth: true,
-                    nationality: true,
-                    passportNumber: true,
-                    dietaryNeeds: true,
-                    accessibilityNote: true,
-                  },
-                },
-              },
-            },
-            acceptedItineraryVersion: {
-              include: {
-                days: {
-                  include: { items: { orderBy: { sortOrder: "asc" } } },
-                  orderBy: { dayNumber: "asc" },
-                },
-              },
-            },
-          },
-        },
-        resourceAssignments: {
-          where: { status: { in: ["CONFIRMED", "COMPLETED"] } },
-          include: {
-            vehicle: { select: { registration: true, make: true, model: true } },
-            driver: { select: { fullName: true, phone: true } },
-            guide: { select: { fullName: true, phone: true } },
-            equipment: { select: { name: true } },
-          },
-          orderBy: { resourceType: "asc" },
-        },
-        operationalTasks: { orderBy: { dueDate: "asc" } },
-        supplierConfirmations: {
-          include: { supplier: { select: { name: true, phone: true, email: true } } },
-          orderBy: { serviceDate: "asc" },
-        },
-      },
-    });
-    if (!tour.booking) {
-      throw new Error("An operations document requires a confirmed booking.");
-    }
-    const reference = await nextReference(
-      tx,
-      "operation_document",
-      "OPS",
-    );
-    const title = data.documentType
-      .toLowerCase()
-      .replaceAll("_", " ")
-      .replace(/\b\w/g, (character) => character.toUpperCase());
-    const snapshot: Prisma.InputJsonValue = {
-      generatedAt: new Date().toISOString(),
-      tour: {
-        reference: tour.reference,
-        name: tour.name,
-        startDate: tour.startDate.toISOString(),
-        endDate: tour.endDate.toISOString(),
-        customer: tour.customer,
-        notes: tour.notes,
-      },
-      booking: {
-        reference: tour.booking.reference,
-        status: tour.booking.status,
-        travellers: tour.booking.travellers.map((entry) => ({
-          isLead: entry.isLead,
-          fullName: entry.traveller.fullName,
-          dateOfBirth: entry.traveller.dateOfBirth?.toISOString() ?? null,
-          nationality: entry.traveller.nationality,
-          passportNumber: entry.traveller.passportNumber,
-          dietaryRequirements: entry.traveller.dietaryNeeds,
-          medicalNotes: entry.traveller.accessibilityNote,
-        })),
-      },
-      assignments: tour.resourceAssignments.map((entry) => ({
-        type: entry.resourceType,
-        resource: resourceName(entry),
-        startDate: entry.startDate.toISOString(),
-        endDate: entry.endDate.toISOString(),
-        notes: entry.notes,
-      })),
-      confirmations: tour.supplierConfirmations.map((entry) => ({
-        supplier: entry.supplier.name,
-        service: entry.service,
-        serviceDate: entry.serviceDate?.toISOString() ?? null,
-        status: entry.status,
-        externalReference: entry.externalReference,
-        phone: entry.supplier.phone,
-        email: entry.supplier.email,
-      })),
-      tasks: tour.operationalTasks.map((entry) => ({
-        title: entry.title,
-        status: entry.status,
-        mandatory: entry.mandatory,
-        dueDate: entry.dueDate?.toISOString() ?? null,
-      })),
-      itinerary:
-        tour.booking.acceptedItineraryVersion?.days.map((day) => ({
-          dayNumber: day.dayNumber,
-          date: day.date?.toISOString() ?? null,
-          title: day.title,
-          startLocation: day.startLocation,
-          endLocation: day.endLocation,
-          supplierNotes: day.supplierNotes,
-          items: day.items.map((item) => ({
-            type: item.type,
-            startTime: item.startTime,
-            endTime: item.endTime,
-            title: item.title,
-          })),
-        })) ?? [],
-    };
-    const result = await tx.operationalDocument.create({
-      data: {
-        reference,
-        tourId: tour.id,
-        documentType: data.documentType,
-        title,
-        fileName: `${reference}-${data.documentType.toLowerCase()}.pdf`,
-        snapshot,
-        generatedById: actor.id,
-      },
-    });
-    await writeAuditEvent(tx, {
-      actorId: actor.id,
-      action: "operations.document-generated",
-      entityType: "OperationalDocument",
-      entityId: result.id,
-      next: {
-        reference,
-        tourId: tour.id,
-        documentType: data.documentType,
-      },
-    });
-    return result;
-  });
-
-  revalidatePath("/operations");
-
-}

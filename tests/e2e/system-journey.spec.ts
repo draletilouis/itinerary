@@ -170,7 +170,6 @@ test.describe.serial("Hineni complete operational journey", () => {
       "/operations",
       "/suppliers",
       "/resources",
-      "/documents",
       "/finance",
       "/reports",
       "/notifications",

@@ -53,7 +53,6 @@ async function main() {
     ["guide", "GDE"],
     ["equipment", "EQP"],
     ["incident", "INC"],
-    ["operation_document", "OPS"],
   ] as const) {
     await prisma.referenceSequence.upsert({
       where: {

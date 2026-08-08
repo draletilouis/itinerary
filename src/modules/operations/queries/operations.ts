@@ -46,10 +46,6 @@ export async function getOperationsWorkspace() {
       incidents: {
         orderBy: { occurredAt: "desc" },
       },
-      operationalDocuments: {
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      },
     },
     orderBy: [{ startDate: "asc" }, { reference: "asc" }],
   });
