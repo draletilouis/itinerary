@@ -3,7 +3,6 @@ const { existsSync, writeFileSync } = require("fs");
 const { join } = require("path");
 
 const MARKER_PATH = join(process.cwd(), ".deployment-reset-done");
-const RESET_CONFIRMATION = "RESET_HINENI_PRODUCTION_KEEP_USERS";
 const isProduction = process.env.RAILWAY_ENVIRONMENT_NAME === "production";
 
 function runCommand(command, args) {
@@ -43,13 +42,7 @@ function startApp() {
 
 function main() {
   if (isProduction && !existsSync(MARKER_PATH)) {
-    if (process.env.CONFIRM_LIVE_RESET !== RESET_CONFIRMATION) {
-      throw new Error(
-        `Missing CONFIRM_LIVE_RESET=${RESET_CONFIRMATION} in production environment.`,
-      );
-    }
-
-    console.log("Production deployment detected. Running database reset before start.");
+    console.log("Production deployment detected. Running one-time database reset before start.");
     runCommand("npm", ["run", "db:deploy"]);
     runCommand("npm", ["run", "db:reset:live"]);
     writeFileSync(MARKER_PATH, `reset completed ${new Date().toISOString()}\n`);

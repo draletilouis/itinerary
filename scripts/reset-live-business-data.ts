@@ -6,21 +6,22 @@ if (process.env.DATABASE_PUBLIC_URL) {
 
 const prisma = new PrismaClient();
 const expectedProjectId = "1009e12a-c7ee-419f-8942-147014de3ffd";
-const confirmation = "RESET_HINENI_PRODUCTION_KEEP_USERS";
 
 async function main() {
   if (
     process.env.RAILWAY_PROJECT_ID !== expectedProjectId ||
     process.env.RAILWAY_ENVIRONMENT_NAME !== "production" ||
-    process.env.RAILWAY_SERVICE_NAME !== "hineni" ||
-    process.env.CONFIRM_LIVE_RESET !== confirmation
+    process.env.RAILWAY_SERVICE_NAME !== "hineni"
   ) {
-    throw new Error("Live reset guard rejected this environment or confirmation.");
+    throw new Error("Live reset guard rejected this environment.");
   }
 
   const usersBefore = await prisma.user.findMany({
     select: { id: true, email: true, passwordHash: true },
   });
+  if (!usersBefore.length) {
+    throw new Error("No login users exist; refusing to reset production data.");
+  }
 
   const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
     SELECT table_name
@@ -32,7 +33,7 @@ async function main() {
   `;
   const quotedTables = tables.map(({ table_name }) => `"${table_name.replaceAll('"', '""')}"`);
   if (quotedTables.length === 0) {
-    throw new Error("No business tables were found; refusing to continue.");
+    throw new Error("No resettable tables were found; refusing to continue.");
   }
 
   await prisma.$executeRawUnsafe(
@@ -53,7 +54,7 @@ async function main() {
 
   console.log(
     JSON.stringify({
-      truncatedBusinessTables: tables.length,
+      truncatedTables: tables.length,
       preservedLoginUsers: usersAfter.map(({ email }) => email),
       clearedSessions: authSessionsAfter,
       clearedLoginAttempts: authAttemptsAfter,
