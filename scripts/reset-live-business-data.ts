@@ -28,7 +28,7 @@ async function main() {
     FROM information_schema.tables
     WHERE table_schema = 'public'
       AND table_type = 'BASE TABLE'
-      AND table_name NOT IN ('User', '_prisma_migrations')
+      AND table_name NOT IN ('User', 'Currency', 'CompanyProfile', '_prisma_migrations')
     ORDER BY table_name
   `;
   const quotedTables = tables.map(({ table_name }) => `"${table_name.replaceAll('"', '""')}"`);
